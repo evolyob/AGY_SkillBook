@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-Frontend Tech Stack & Security Auditor (Lean Engine - Route B)
-Profiles Infrastructure, Framework, and Dependencies for URLs or Local Projects.
-"""
+"""Frontend Tech Stack & Security Auditor (Lean Engine - Route B)"""
 import re, sys, urllib.parse, urllib.request
 from pathlib import Path
 
@@ -15,18 +12,25 @@ PKG_RE = re.compile(
 )
 
 def audit_content(src, filename, size_bytes=0):
-    b, w = [], []
-    for s in SECRETS:
-        if re.search(s, src): b.append("Plaintext secret / API key detected")
-    if re.search(r"\b(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)\b", src): w.append("Internal private IP exposed")
-    if ("/Us" + "ers/") in src or ("/ho" + "me/") in src: b.append("Hardcoded local absolute user path")
-    if re.search(r"\bvar\s+[a-zA-Z0-9_$]+", src): w.append("Legacy 'var' keyword (use const/let)")
-    if re.search(r"document\.write\s*\(", src): b.append("Dangerous 'document.write()' call")
-    if re.search(r"\bXMLHttpRequest\b", src): w.append("Legacy 'XMLHttpRequest' (use fetch)")
+    b, w, is_html = [], [], bool(re.search(r"\.html?(\.|$)", filename.lower()))
+    checks = [
+        (any(re.search(s, src) for s in SECRETS), b, "Plaintext secret / API key detected"),
+        (re.search(r"\b(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)\b", src), w, "Internal private IP exposed"),
+        (("/Us" + "ers/") in src or ("/ho" + "me/") in src, b, "Hardcoded local absolute user path"),
+        (re.search(r"\b(openDatabase|showModalDialog)\s*\(", src), b, "Dead Web API (EOL in modern browsers)"),
+        (re.search(r"document\.write\s*\(", src), b, "Dangerous 'document.write()' call"),
+        (re.search(r'\beval\s*\(|new\s+Function\s*\(', src), b, "Dynamic code execution (eval or new Function)"),
+    ]
+    for cond, target, msg in checks:
+        if cond: target.append(msg)
+    user_src = "\n".join([s for s in re.findall(r"<script[^>]*>(.*?)</script>", src, re.DOTALL) if not re.search(r"/\*!|@license|SheetJS|min\.js", s, re.I)]) if is_html else src
+    if re.search(r"\bvar\s+[a-zA-Z0-9_$]+", user_src): w.append("Legacy 'var' keyword in user code (use const/let)")
     if re.search(r"(\.innerHTML\s*=|v-html|dangerouslySetInnerHTML)", src) and "DOMPurify" not in src:
-        b.append("Unsanitized HTML/rich-text assignment (DOMPurify required)")
-    if re.search(r'\beval\s*\(|new\s+Function\s*\(', src): b.append("Dynamic code execution (eval or new Function)")
-    if size_bytes > 102400: w.append(f"Asset budget exceeded ({size_bytes / 1024:.1f}KB > 100KB)")
+        (w if is_html else b).append("Unsanitized innerHTML assignment (recommend textContent or DOMPurify)" if is_html else "Unsanitized HTML/rich-text assignment (DOMPurify required)")
+    if is_html and re.search(r"\b(fetch\s*\(|XMLHttpRequest\b|<script[^>]+src=[\"']https?://)", src):
+        w.append("External network call detected in local HTML (verify offline integrity)")
+    budget = 3145728 if is_html else 102400
+    if size_bytes > budget: w.append(f"Asset budget exceeded ({size_bytes / 1024:.1f}KB > {budget / 1024:.0f}KB)")
 
     pkgs = [p for p in PKG_RE.findall(src) if p not in ["blob", "tree", "raw", "releases", "git"]]
     for sig, name in [(r"\[vuex\]", "vuex"), (r"\[vue-gtag\]", "vue-gtag"), (r"var lottie\s*=", "lottie-web")]:
@@ -71,22 +75,20 @@ def audit_remote(url: str):
 def audit_local(target: str):
     p, pkgs, blockers, warnings = Path(target), set(), set(), set()
     framework = ""
-    valid_exts = [".js", ".mjs", ".ts", ".jsx", ".tsx", ".vue"]
+    valid_exts = [".js", ".mjs", ".ts", ".jsx", ".tsx", ".vue", ".html", ".htm"]
     files = [p] if (p.is_file() and p.suffix.lower() in valid_exts) else [f for f in p.glob("**/*") if f.is_file() and f.suffix.lower() in valid_exts]
     for f in files:
         src = f.read_text(encoding="utf-8-sig", errors="ignore")
-        if not framework: framework = "Vue.js" if "vue" in f.suffix.lower() else ("React" if f.suffix.lower() in [".jsx", ".tsx"] else "")
+        if not framework:
+            framework = "Vue.js" if ("vue" in f.suffix.lower() or "id=app" in src) else ("React" if (f.suffix.lower() in [".jsx", ".tsx"] or 'id="root"' in src) else ("HTML/Vanilla JS" if f.suffix.lower() in [".html", ".htm"] else ""))
         p_set, b_set, w_set = audit_content(src, f.name, size_bytes=f.stat().st_size)
         pkgs.update(p_set); blockers.update(b_set); warnings.update(w_set)
     print_dashboard(target, "Local Filesystem", framework, pkgs, blockers, warnings)
 
 def audit_target(target: str):
-    if target.startswith(("http://", "https://")):
-        audit_remote(target)
-    elif Path(target).exists():
-        audit_local(target)
-    else:
-        print(f"[ERROR] Target does not exist: {target}")
+    if target.startswith(("http://", "https://")): audit_remote(target)
+    elif Path(target).exists(): audit_local(target)
+    else: print(f"[ERROR] Target does not exist: {target}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2: print("Usage: python3 audit_frontend.py <target_url_or_local_path>"); sys.exit(1)

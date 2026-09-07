@@ -10,6 +10,7 @@ from pathlib import Path
 PEP_594_REMOVED = {"cgi", "cgitb", "pipes", "crypt", "imghdr", "sndhdr", "aifc", "audioop", "chunk", "mailcap", "nntplib", "sunau", "telnetlib", "uu", "xdrlib", "distutils"}
 SECRETS = [r"sk-[a-zA-Z0-9]{20,}", r"AKIA[0-9A-Z]{16}", r"-----BEGIN [A-Z]+ PRIVATE KEY-----"]
 PRIVS = ["su" + "do ", "ch" + "mod +x", "ch" + "own ", "/et" + "c/shadow", "/et" + "c/passwd"]
+FRONTEND_EXTS = {".html", ".htm", ".js", ".mjs", ".ts", ".jsx", ".tsx", ".vue"}
 
 def audit_source(src, filename, is_markdown=False, skill_txt="", local_modules=None):
     lines = len(src.splitlines())
@@ -173,6 +174,8 @@ def audit_source(src, filename, is_markdown=False, skill_txt="", local_modules=N
 
 def audit_path(target):
     t = Path(target)
+    if t.is_file() and t.suffix.lower() in FRONTEND_EXTS:
+        import audit_frontend; return audit_frontend.audit_target(str(t))
     if t.is_file():
         skill_md = t if t.name == "SKILL.md" else (t.parent / "SKILL.md" if (t.parent / "SKILL.md").exists() else t.parent.parent / "SKILL.md")
         stxt = skill_md.read_text(encoding="utf-8-sig", errors="ignore") if skill_md.exists() else ""
@@ -189,6 +192,8 @@ def audit_path(target):
             if f.is_file() and f.suffix in [".json", ".yaml", ".csv", ".txt", ".xml"] and f.stat().st_size > 10240:
                 sz_kb = f.stat().st_size / 1024
                 print(f"[!] WARN {f.name} ({sz_kb:.1f}KB > 10KB)\n  └── [ADVISORY] Heavy static asset (>10KB)")
+            elif f.is_file() and f.suffix.lower() in FRONTEND_EXTS:
+                import audit_frontend; audit_frontend.audit_target(str(f))
             elif f.is_file() and f.suffix in [".py", ".md"]:
                 src = f.read_text(encoding="utf-8-sig", errors="ignore")
                 print(audit_source(src, f.name, is_markdown=f.suffix == ".md", skill_txt=stxt, local_modules=lmods))
