@@ -30,10 +30,25 @@ Icons load automatically from `assets/icons/` via engine backend semantic mappin
 
 ---
 
-## 3. Composable Slide API (`create_slide`)
-Divides canvas height dynamically into vertical layers. Zero coordinate math required.
+## 3. Core Engine Invocations & Composable Slide API
+
+### 3.1 Lifecycle & Execution Template
 
 ```python
+import sys
+from pathlib import Path
+
+# Dynamically resolve <skill_dir>/scripts
+_SCRIPTS_DIR = Path("~/.gemini/config/skills/pptx/scripts").expanduser()
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+
+from layout_engine import PPTXLayoutEngine
+
+# 1. Initialize Engine (themes: 'dark', 'light', 'yellow')
+engine = PPTXLayoutEngine(theme="dark", font="Noto Sans TC")
+
+# 2. Build Slides Declaratively
 engine.create_slide(
     title="Main Title (100% Full Width)", subtitle="Subtitle | Project Date",
     layers=[
@@ -50,13 +65,16 @@ engine.create_slide(
         ]}
     ]
 )
+
+# 3. Save Output Deck
+output_path = engine.save("~/Downloads/presentation_name.pptx")
 ```
 
 ---
 
-## 4. The 3 Core Visual Pillars (Cards, Diagrams, Charts)
+## 4. The 4 Core Visual Pillars (Cards, Diagrams, Charts, Tables)
 
-All layouts and components in `/pptx` map directly to one of the 3 fundamental visual pillars:
+All layouts and components in `/pptx` map directly to one of the 4 fundamental visual pillars:
 
 ### 4.1 Pillar 1: Cards (Structured Content & Containers)
 Focuses on structured business text, policy clauses, and decision frameworks. Rendered using 100% native editable PowerPoint shapes.
@@ -92,10 +110,3 @@ Focuses on feature comparisons, status summaries, and operational registries wit
 |---|---|---|
 | **Zebra Data Matrix** | `{"type": "table", "headers": ["Col 1", "Col 2"], "rows": [["A1", "B1"], ["A2", "B2"]], "zebra": True}` | Clean multi-column matrix with auto-aligned alternating row fills. |
 | **Weighted Registry** | `{"type": "table", "headers": [...], "rows": [...], "col_weights": [2, 1, 1]}` | Explicit column width weighting for primary descriptions + compact metrics. |
-
----
-
-## 5. QA Verification
-```bash
-python3 <skill_dir>/scripts/office/validate.py <output_deck.pptx>
-```
