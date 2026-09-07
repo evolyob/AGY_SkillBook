@@ -15,7 +15,7 @@ dependencies: [pptx, PIL, resvg_py, defusedxml, lxml]
 
 ### Step 2: Content Outline & Proof-Led Strategy
 - **Assertion Titles**: Build a title-only storyboard first; each title must state a conclusion-led claim (never neutral labels like "Overview"), so reading titles sequentially communicates the complete executive narrative.
-- **Proof-Led Visuals**: Deliver 1 governing takeaway supported by 1~3 distinct evidence points (avoid forcing 3 equal cards). Select from the 4 Visual Pillars (Cards, Diagrams, Charts, Tables) strictly to prove the claim, front-loading metrics only with clear baselines and sources.
+- **Proof-Led Visuals & Integrity**: 1 Primary Claim per slide → 1~3 Distinct Evidence Points (avoid forcing 3 equal cards) → Proven via 4 Visual Pillars (Cards, Diagrams, Charts, Tables) → Traceable Data (zero fabricated metrics or unbacked causality).
 
 ### Step 3: Semantic Intent, Layout & Icon Mapping
 - Map each slide's business intent to Single-Layer or Multi-Layer composable grid architectures (Flows, Bento Cards, Charts, Image Slots, KPIs, Tables).
