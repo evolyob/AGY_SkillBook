@@ -421,6 +421,8 @@ class PPTXLayoutEngine:
 
     def create_slide(self, title: Optional[str] = None, subtitle: Optional[str] = None, kicker: Optional[str] = None, tags: Optional[List[str]] = None, bar_gap: float = 0.20, layers: Optional[List[Dict[str, Any]]] = None, layer_gap: float = 0.35):
         slide = self.prs.slides.add_slide(self.blank)
+        slide.background.fill.solid()
+        slide.background.fill.fore_color.rgb = self.t["bg"]
         canvas_l, canvas_w = 0.50, 12.333
         cur_y = self._render_header(slide, canvas_l, 0.40, canvas_w, title=title, subtitle=subtitle, kicker=kicker, bar_gap=bar_gap)
         if not layers: return slide
