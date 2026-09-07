@@ -109,4 +109,3 @@ Focuses on feature comparisons, status summaries, and operational registries wit
 | Table Pattern | Declarative Slot Configuration | Description & Visual Rules |
 |---|---|---|
 | **Zebra Data Matrix** | `{"type": "table", "headers": ["Col 1", "Col 2"], "rows": [["A1", "B1"], ["A2", "B2"]], "zebra": True}` | Clean multi-column matrix with auto-aligned alternating row fills. |
-| **Weighted Registry** | `{"type": "table", "headers": [...], "rows": [...], "col_weights": [2, 1, 1]}` | Explicit column width weighting for primary descriptions + compact metrics. |

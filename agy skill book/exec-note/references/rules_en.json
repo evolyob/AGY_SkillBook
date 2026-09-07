@@ -1,0 +1,150 @@
+{
+  "generic_patterns": [
+    {
+      "label": "em dash",
+      "regex": "\\u2014",
+      "budget": 0.0,
+      "advice": "Replace with a full stop, comma, colon or parentheses."
+    },
+    {
+      "label": "negative parallelism (not just X but Y)",
+      "regex": "\\bnot (just|only|merely|simply)\\b[^.;!?]{0,60}\\bbut\\b",
+      "budget": 0.3,
+      "advice": "State the positive claim directly and drop the setup clause."
+    },
+    {
+      "label": "antithesis (It is not X. It is Y)",
+      "regex": "\\b(is|was|are|were) not [^.;!?]{2,50}[.;] +(It|They|That|This) (is|was|are|were)\\b",
+      "budget": 0.0,
+      "advice": "Humans rarely speak in constant opposites. Make the claim once."
+    },
+    {
+      "label": "formal connectives (Furthermore/Moreover/Additionally)",
+      "regex": "\\b(Furthermore|Moreover|Additionally|Consequently|Nevertheless|Nonetheless)\\b",
+      "budget": 0.5,
+      "advice": "Use 'also', 'but', 'so', or start a new sentence."
+    },
+    {
+      "label": "summary connectives (In summary/Overall/Ultimately)",
+      "regex": "\\b(In summary|In conclusion|Overall|Ultimately|All in all)\\b",
+      "budget": 0.3,
+      "advice": "Cut. If the paragraph is a summary the reader can tell."
+    },
+    {
+      "label": "LLM vocabulary (delve/leverage/robust/underscore)",
+      "regex": "\\bdelv\\w+|\\bleverag\\w+|\\brobust\\b|underscor\\w+|\\bharness\\w*\\b",
+      "budget": 0.3,
+      "advice": "Swap for plain words: dig into, use, strong, show, use."
+    },
+    {
+      "label": "puffery (pivotal/crucial/vital/testament/remarkable)",
+      "regex": "\\b(pivotal|crucial|vital|remarkable|profound|invaluable)\\b|testament to",
+      "budget": 0.5,
+      "advice": "Usually deletable. If the point matters, the evidence shows it."
+    },
+    {
+      "label": "abstract nouns (landscape/realm/tapestry/journey)",
+      "regex": "\\b(landscape|realm|tapestry|journey|ecosystem)\\b",
+      "budget": 0.4,
+      "advice": "Name the actual thing instead."
+    },
+    {
+      "label": "hedge preamble (It is important to note)",
+      "regex": "[Ii]t (is|should be) (important|worth) (to note|noting|mentioning)",
+      "budget": 0.0,
+      "advice": "Delete the preamble and keep the point."
+    },
+    {
+      "label": "rule of three in a sentence (A, B and C)",
+      "regex": "\\b\\w{4,}, \\w{4,} and \\w{4,}\\b",
+      "budget": 3.0,
+      "advice": "Check each one: is it a real list, or three items invented for rhythm?"
+    }
+  ],
+  "model_specific": {
+    "Claude": [
+      {
+        "label": "genuine / genuinely",
+        "regex": "\\bgenuine(ly)?\\b",
+        "budget": 0.3,
+        "advice": "Claude writes this ~10x more than other models. Cut or use 'real'."
+      },
+      {
+        "label": "honest / honestly",
+        "regex": "\\bhonest(ly)?\\b",
+        "budget": 0.3,
+        "advice": "Same sincerity cluster. Usually deletable."
+      },
+      {
+        "label": "it is worth noting",
+        "regex": "worth noting",
+        "budget": 0.0,
+        "advice": "People rarely announce that something is worth noticing."
+      },
+      {
+        "label": "nuanced / multifaceted / non-trivial",
+        "regex": "\\bnuanced\\b|\\bmultifaceted\\b|non-trivial",
+        "budget": 0.2,
+        "advice": "Plain-word replacements."
+      },
+      {
+        "label": "straightforward",
+        "regex": "\\bstraightforward\\b",
+        "budget": 0.2,
+        "advice": "Use 'simple' or cut."
+      },
+      {
+        "label": "let me unpack / key distinction",
+        "regex": "\\bunpack\\b|key distinction|several considerations",
+        "budget": 0.0,
+        "advice": "Cut."
+      },
+      {
+        "label": "rhetorical questions",
+        "regex": "\\?",
+        "budget": 0.5,
+        "advice": "Claude asks ~3.9 per 1,000 words. In a report, convert to statements."
+      }
+    ],
+    "ChatGPT": [
+      {
+        "label": "because-chaining",
+        "regex": "\\bbecause\\b",
+        "budget": 5.0,
+        "advice": "ChatGPT hooks clauses with 'because' at ~6.5 per 1,000 words."
+      },
+      {
+        "label": "simile scaffolding (as if)",
+        "regex": "\\bas if\\b",
+        "budget": 1.5,
+        "advice": "Mostly a fiction tell."
+      },
+      {
+        "label": "power verbs (supercharge/unleash/dive in)",
+        "regex": "supercharg\\w+|unleash\\w*|\\bdive in\\b|game.chang\\w+",
+        "budget": 0.0,
+        "advice": "Cut entirely."
+      }
+    ],
+    "Gemini": [
+      {
+        "label": "intensifiers (incredibly/highly/massive/vital)",
+        "regex": "\\b(incredibly|highly|massive|vitally)\\b",
+        "budget": 0.8,
+        "advice": "Gemini leads on booster words at ~6.1 per 1,000."
+      },
+      {
+        "label": "uncontracted formality (it is / we must / do not)",
+        "regex": "\\b(We must|To understand why)\\b",
+        "budget": 0.3,
+        "advice": "Softens to plain statements."
+      }
+    ]
+  },
+  "hedges_regex": "\\b(arguably|somewhat|relatively|fairly|reasonably|tends? to|usually|typically|often|generally|largely|mostly|roughly|approximately|perhaps|possibly|seems?|appears?|suggests?|might|could|may)\\b",
+  "font_standards": {
+    "recommended_western_fonts": ["Calibri", "Arial", "Aptos", "Times New Roman"],
+    "recommended_code_fonts": ["Consolas", "Courier New"],
+    "standard_body_pt": 11
+  }
+}

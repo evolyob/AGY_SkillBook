@@ -1,8 +1,8 @@
-# Executive Assistant & Revision Templates
+# Executive Assistant & Outline Templates
 
-## 1. 📌 Collection Template (Phase 1)
+## 1. Collection Template (Phase 1)
 ```text
-📌【內容歷史紀錄】
+【內容歷史紀錄】
 歷史輸入段落資料（目前狀態：收集模式）。
 
 本次最新納入重點：
@@ -12,12 +12,11 @@
 1. 繼續補充筆記（持續收集資料）
 2. 生成會議紀錄 / 主管摘要（Executive Brief 模式）
 3. 生成簡報大綱（Presentation Outline 模式）
-4. 生成審查意見 / 修正對照表（Revision Coach 模式）
 ```
 
 ---
 
-## 2. 📑 Branch A: Executive Brief Template (Phase 2 - Meeting / Brief Mode)
+## 2. Branch A: Executive Brief Template (Phase 2 - Meeting / Brief Mode)
 ```text
 # 會議基本資訊
 • 主題名稱：[Extract topic from source. If unstated, generate a concise descriptive title based on content.]
@@ -45,63 +44,40 @@
 
 ---
 
-## 3. 📑 Branch B: Presentation Outline Template (Phase 2 - Presentation / Slide Mode)
-*(規範：本分支一律採用「純 Markdown 格式」呈現，依據內容自適應彈性拆解頁數，並根據內容特性自動選擇最佳視覺版面：視覺資訊卡片 / 比較對照表格 / 階段流程圖)*
+## 3. Branch B: Presentation Outline Template (Phase 2 - Presentation / Slide Mode)
+*(Standard: Formatted in plain Markdown with adaptive slide count. Aligned with /pptx Step 2 & Step 3 Proof-Led Strategy. Pure Lego-like composability: Each slide assembles 1~N modular blocks using the 4 Core Visual Pillars—Cards, Diagrams, Charts, Tables—without rigid predefined layout patterns or redundant text.)*
 
 ```text
-# [主題名稱] — 簡報大綱 (純 Markdown 格式 / 自適應頁數)
+# [Topic Name] — Presentation Outline (Proof-Led Adaptive Outline)
 
-📌 【高階執行摘要 / Executive Summary】
-• 年度規劃對齊：[Explain alignment with strategic goals & annual planning.]
-• 關鍵維運數據：[Provide core KPI / SLA / ROI data comparisons.]
-• 待決策事項：[List key items requiring executive decision or support.]
+【Storyboard Narrative】
+• [Reading titles sequentially communicates the complete executive narrative]
+  - Slide 1: [Assertion Title 1]
+  - Slide 2: [Assertion Title 2]
+  - Slide 3: [Assertion Title 3]
+
+【Executive Summary】
+• Strategic Alignment: [Explain alignment with strategic goals & annual planning.]
+• Core Quantitative Baseline: [Provide core KPI / SLA / ROI baseline data.]
+• Executive Decisions Required: [List key items requiring executive decision or support.]
 
 ---
 
-### 📄 Slide [頁碼]：[標題名稱]
+### Slide [Page Number]: [Conclusion-Led Assertion Title (never neutral labels)]
 
-📌 【前三行重點提煉 / Key Takeaways】
-1. 核心成果：[Summarize the single key quantitative achievement or takeaway.]
-2. 風險衝擊：[State potential operational/business risk in one sentence.]
-3. 決策訴求：[State explicit request for executive decision or resources.]
+【Canvas Composition (Lego Modular Assembly)】
+(Freely snap together 1~3 visual blocks from the 4 Core Visual Pillars to prove the assertion title. Form strictly follows content.)
 
-🎨 【內容自適應視覺版面呈現 (Dynamically select the optimal visual component per slide)】
+• Block 1 [Pillar: Cards | Diagrams | Charts | Tables] — [Canvas Slot: e.g. Left 50% / Full Width / Col 1 of 3 / Top Layer]:
+  - [Evidence, metric, flow, or table content containerized directly here]
 
-[Option A - 視覺資訊卡片 (Visual Cards / Grid Component using native Markdown blockquotes)]
-> 📌 【卡片 1：標題】
-> • [核心細節/要點]
+• Block 2 [Pillar: Cards | Diagrams | Charts | Tables] — [Canvas Slot: e.g. Right 50% / Col 2 of 3 / Bottom Layer] (Optional):
+  - [Evidence, metric, flow, or table content containerized directly here]
 
-> 📌 【卡片 2：標題】
-> • [核心細節/要點]
+• Block 3 [Pillar: Cards | Diagrams | Charts | Tables] — [Canvas Slot: e.g. Col 3 of 3] (Optional):
+  - [Evidence, metric, flow, or table content containerized directly here]
 
-[Option B - 比較對照表格 (Comparison Table for As-Is vs. To-Be, Matrix, or data contrast)]
-| 比較維度 / 項目 | 現況 / 舊有做法 (As-Is) | 新型目標 / 建議模式 (To-Be) | 效益與風險對照 (Value & Impact) |
-|---|---|---|---|
-| [Dimension 1] | [Current status & data] | [Target status & data] | [Quantitative value & risk control] |
-
-[Option C - 階段流程 / 時間軸 (Timeline & Process Flow for roadmaps, execution steps)]
-`階段一：[Task 1]` ➔ `階段二：[Task 2]` ➔ `階段三：[Task 3]`
-
-⚠️ 【高階主管關注重點 (Executive Focus)】
-- 關鍵風險：[Detail key risk factor]
-- 建議行動：[Define explicit Action Item]
-```
-
----
-
-## 4. 📑 Branch C: Revision Coach Template (Phase 2 - Revision Mode)
-```text
-# 文章 / PRD / 審查意見修正對照報告
-
-【整體修正策略】
-• Minimal-Diff Revision (極小化異動修正)：僅精準修正受審查影響之段落，其餘內容 100% 保持原樣。
-• 語氣風格：保持原作者邏輯風格與審查者風格。
-
-【修正對照細節】
-| 項目 | 審查點 / 問題反饋 | 建議修正與執行細節 |
-|:---:|---|---|
-| 01 | [Specify target section, metric, or feedback meing addressed] | [State revision direction and include explicit Before/After text contrast when applicable:<br>• **修改前**：「...」<br>• **修改後**：「...」<br>If solution is unstated in source, proactively propose a logical revision direction, draft updated text (`• **建議修改文案**：「...」`), and list Action Items.] |
-
-【限制說明】
-• [List any unaddressable items due to architectural or operational constraints with clear reasons.]
+【Executive Focus】
+- Key Risk: [State key risk factor based strictly on input]
+- Recommended Action: [Define concrete next step / Action Item]
 ```
