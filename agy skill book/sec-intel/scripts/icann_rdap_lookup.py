@@ -95,11 +95,12 @@ def extract_entities(data: Dict[str, Any]) -> Dict[str, list]:
         name, email = "", ""
         if len(vcard) > 1 and isinstance(vcard[1], list):
             for item in vcard[1]:
-                if isinstance(item, list) and len(item) >= 4:
-                    if item[0] == "fn":
-                        name = item[3]
-                    elif item[0] == "email":
-                        email = item[3]
+                if not (isinstance(item, list) and len(item) >= 4):
+                    continue
+                if item[0] == "fn":
+                    name = item[3]
+                elif item[0] == "email":
+                    email = item[3]
         for role in entity.get("roles", ["entity"]):
             entities_by_role.setdefault(role, []).append({"handle": entity.get("handle", ""), "name": name, "email": email})
         for sub in entity.get("entities", []):
@@ -111,10 +112,10 @@ def extract_entities(data: Dict[str, Any]) -> Dict[str, list]:
 
 def format_ip_summary(data: Dict[str, Any], ip_str: str) -> str:
     if "error" in data:
-        return f"❌ [Lookup Failed] {ip_str}: {data['error']}"
+        return f"[Lookup Failed] {ip_str}: {data['error']}"
     if data.get("is_fallback"):
         records = "\n".join([f"    - {r['host']} ({r['type']}) [{r.get('date', '')}]" for r in data.get("records", [])])
-        return f"⚠️  [RapidDNS Fallback IP Intelligence] {ip_str}\n  • Resolved Hosts / Reverse DNS:\n{records}"
+        return f"[RapidDNS Fallback IP Intelligence] {ip_str}\n  • Resolved Hosts / Reverse DNS:\n{records}"
 
     handle, name, country = data.get("handle", "N/A"), data.get("name", "N/A"), data.get("country", "N/A")
     ip_v, start, end = str(data.get("ipVersion", "4")).lower().replace("v", ""), data.get("startAddress", ""), data.get("endAddress", "")
@@ -123,7 +124,7 @@ def format_ip_summary(data: Dict[str, Any], ip_str: str) -> str:
     reg_info = ", ".join([c['name'] or c['handle'] for c in entities.get("registrant", []) if c.get('name') or c.get('handle')]) or name
 
     return "\n".join([
-        "🌐 [ICANN / RIR RDAP IP Intelligence]",
+        "[ICANN / RIR RDAP IP Intelligence]",
         f"  • Query Target : {ip_str} (IPv{ip_v})",
         f"  • Network Name : {name} ({handle})",
         f"  • IP Range     : {f'{start} ~ {end}' if start else 'N/A'}",
@@ -137,10 +138,10 @@ def format_ip_summary(data: Dict[str, Any], ip_str: str) -> str:
 
 def format_domain_summary(data: Dict[str, Any], domain_str: str) -> str:
     if "error" in data:
-        return f"❌ [Lookup Failed] {domain_str}: {data['error']}"
+        return f"[Lookup Failed] {domain_str}: {data['error']}"
     if data.get("is_fallback"):
         records = "\n".join([f"    - {r['host']} -> {r['ip']} ({r['type']})" for r in data.get("records", [])])
-        return f"⚠️  [RapidDNS Fallback Domain Intelligence] {domain_str}\n  • Discovered DNS Records:\n{records}"
+        return f"[RapidDNS Fallback Domain Intelligence] {domain_str}\n  • Discovered DNS Records:\n{records}"
 
     ldh, handle, events = data.get("ldhName", domain_str), data.get("handle", "N/A"), {e.get("eventAction"): e.get("eventDate") for e in data.get("events", []) if isinstance(e, dict)}
     ns_list = [ns.get("ldhName", "") for ns in data.get("nameservers", []) if isinstance(ns, dict) and ns.get("ldhName")]
@@ -149,7 +150,7 @@ def format_domain_summary(data: Dict[str, Any], domain_str: str) -> str:
     abuse = ", ".join([c['email'] for c in entities.get("abuse", []) if c.get('email')]) or "N/A"
 
     return "\n".join([
-        "🌐 [ICANN RDAP Domain Intelligence]",
+        "[ICANN RDAP Domain Intelligence]",
         f"  • Domain Name  : {ldh}",
         f"  • Registry ID  : {handle}",
         f"  • Registrar    : {registrar}",
@@ -165,13 +166,13 @@ def format_domain_summary(data: Dict[str, Any], domain_str: str) -> str:
 
 def format_asn_summary(data: Dict[str, Any], asn_str: str) -> str:
     if "error" in data:
-        return f"❌ [RDAP Lookup Failed] AS{asn_str}: {data['error']}"
+        return f"[RDAP Lookup Failed] AS{asn_str}: {data['error']}"
     handle, name, country = data.get("handle", f"AS{asn_str}"), data.get("name", "N/A"), data.get("country", "N/A")
     s_aut, e_aut = data.get("startAutnum", asn_str), data.get("endAutnum", asn_str)
     org_name = extract_entities(data).get("registrant", [{}])[0].get("name", name)
 
     return "\n".join([
-        "🌐 [ICANN / RIR RDAP ASN Intelligence]",
+        "[ICANN / RIR RDAP ASN Intelligence]",
         f"  • AS Number    : {f'AS{s_aut}' if s_aut == e_aut else f'AS{s_aut} ~ AS{e_aut}'} ({handle})",
         f"  • AS Name      : {name}",
         f"  • Organization : {org_name}",

@@ -75,13 +75,13 @@ def format_mxtoolbox_report(data: Dict[str, Any]) -> str:
         is_clean = data.get("is_clean", True)
         listed = data.get("listed_on", [])
         if is_clean:
-            status_line = "✅ Clean (Not listed on any checked DNSBLs)"
+            status_line = "[PASS] Clean (Not listed on any checked DNSBLs)"
         else:
             rbl_names = [item["rbl"] for item in listed]
-            status_line = f"⚠️  LISTED on {len(listed)} blacklists: {', '.join(rbl_names)}"
+            status_line = f"[WARN] LISTED on {len(listed)} blacklists: {', '.join(rbl_names)}"
 
         lines = [
-            f"📧 [MXToolbox & DNSBL Reputation Report] {target}",
+            f"[MXToolbox & DNSBL Reputation Report] {target}",
             f"  • Overall Status : {status_line}",
             f"  • Blacklist RBLs : {data.get('clean_count', 0)}/{data.get('total_rbls', 0)} Clean",
             f"  • MXToolbox Link : {data.get('mxtoolbox_url', '')}",
@@ -94,7 +94,7 @@ def format_mxtoolbox_report(data: Dict[str, Any]) -> str:
 
     # Domain report
     lines = [
-        f"📧 [MXToolbox Domain & Email Security Report] {target}",
+        f"[MXToolbox Domain & Email Security Report] {target}",
         f"  • MX Diagnostic    : {data.get('mxtoolbox_mx_url', '')}",
         f"  • SPF Record Audit : {data.get('mxtoolbox_spf_url', '')}",
         f"  • DMARC Alignment  : {data.get('mxtoolbox_dmarc_url', '')}",

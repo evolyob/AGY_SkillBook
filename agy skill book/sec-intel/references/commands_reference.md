@@ -32,13 +32,20 @@ python3 <skill_dir>/scripts/euvd_lookup.py CVE-2024-3094
 python3 <skill_dir>/scripts/euvd_lookup.py OpenSSL --min-score 9.0 --min-epss 50.0 --size 3
 ```
 
+### 1.4 Web Security & Integrity Auditor (web_monitor.py)
+```bash
+# Snapshot and audit web endpoint security headers, cookies, and client code
+python3 <skill_dir>/scripts/web_monitor.py https://example.com
+```
+
 ---
 
 ## 2. Router CLI Options (`intel_router.py`)
 
 | Flag | Type | Description |
 | :--- | :--- | :--- |
-| `<TARGET>` | Positional | IP, Domain, ASN, or CVE-xxxx-xxxx |
+| `<TARGET>` | Positional | IP, Domain, ASN, URL, or CVE-xxxx-xxxx |
+| `--web` | Flag | Run web security & integrity audit |
 | `--mxtoolbox` / `--blacklist` | Flag | Run MXToolbox & DNSBL diagnostics |
 | `--no-curl` | Flag | Disable curl probe for domain/IP |
 | `--vuln` | Flag | Search software package in EUVD |

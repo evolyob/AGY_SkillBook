@@ -5,12 +5,7 @@ Authoritative European CVE, CVSS 4.0/3.1, EPSS, and KEV intelligence lookup via 
 Pure Python Standard Library (Zero Dependencies).
 """
 
-import json
-import argparse
-import urllib.request
-import urllib.parse
-import urllib.error
-import re
+import json, argparse, re, urllib.request, urllib.parse, urllib.error
 from typing import Dict, Any, Optional
 
 EUVD_API_BASE = "https://euvdservices.enisa.europa.eu/api"
@@ -88,7 +83,7 @@ def format_vuln_item(item: Dict[str, Any]) -> str:
         desc = desc[:297] + "..."
 
     return "\n".join([
-        f"🛡️  [{euvd_id}] {alias_str}",
+        f"[{euvd_id}] {alias_str}",
         f"  • CVSS Score   : {cvss_score} (v{cvss_version}) | Vector: {cvss_vector}",
         f"  • EPSS Score   : {epss_str} (Exploit Prediction)",
         f"  • Affected     : {product_str}",
@@ -115,7 +110,7 @@ def main():
         if args.json:
             print(json.dumps(data, indent=2, ensure_ascii=False))
         elif "error" in data:
-            print(f"❌ [EUVD Error] {data['error']}")
+            print(f"[EUVD Error] {data['error']}")
         else:
             print(format_vuln_item(data))
         return
@@ -126,16 +121,16 @@ def main():
         return
         
     if "error" in data:
-        print(f"❌ [EUVD Error] {data['error']}")
+        print(f"[EUVD Error] {data['error']}")
         return
         
     items = data.get("items", [])
     total = data.get("total", len(items))
     if not items:
-        print(f"⚠️  No vulnerabilities found in ENISA EUVD matching query: '{query}'")
+        print(f"[WARNING] No vulnerabilities found in ENISA EUVD matching query: '{query}'")
         return
 
-    print(f"🇪🇺 [ENISA European Vulnerability Database] Found {total} records for '{query}':\n")
+    print(f"[ENISA European Vulnerability Database] Found {total} records for '{query}':\n")
     for idx, item in enumerate(items, start=1):
         print(format_vuln_item(item))
         if idx < len(items):
