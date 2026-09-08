@@ -51,9 +51,11 @@ def extract_meta_and_framework(html_text: str) -> Tuple[str, str, str]:
              re.search(r'<meta[^>]+content=["\']([^"\']*)["\'][^>]+name=["\']description["\']', html_text, re.I)
     desc = re.sub(r'\s+', ' ', m_desc.group(1)).strip() if m_desc else ""
 
-    framework = "Vue (SPA #app)" if ("<div id=app>" in html_text or '<div id="app">' in html_text) else (
-        "React (#root)" if 'id="root"' in html_text else (
-            "Next.js" if "__NEXT_DATA__" in html_text else "Vanilla / Unknown"
+    framework = "WordPress" if ("wp-content" in html_text or "wp-includes" in html_text) else (
+        "Vue (SPA #app)" if ("<div id=app>" in html_text or '<div id="app">' in html_text) else (
+            "React (#root)" if 'id="root"' in html_text else (
+                "Next.js" if "__NEXT_DATA__" in html_text else "Vanilla / Unknown"
+            )
         )
     )
     return title, desc, framework
@@ -109,7 +111,7 @@ def inspect_js_bundles(url: str, html_text: str, ctx: ssl.SSLContext, timeout: i
 
     bundles, all_pkgs, all_blockers, all_warnings = [], set(), set(), set()
     for u in targets:
-        fname = u.split("/")[-1].split("?")[0]
+        fname = u.split("/")[-1].split("?")[0] or (u.split("?")[-1].split("=")[0] if "?" in u else "script.js")
         try:
             req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36"})
             with urllib.request.urlopen(req, timeout=timeout, context=ctx) as jr:
