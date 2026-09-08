@@ -133,7 +133,7 @@ def run_gate1(title_or_assertion: str) -> Dict[str, Any]:
     if found_buzz:
         reasons.append(f"包含空洞字眼或陸味詞 [{', '.join(found_buzz)}]")
         circuit_broken = True
-    has_metric = bool(re.search(r"\d+|%|倍|ms|秒|分|小時|日|月|萬|億|SLA|KPI|P99|P95|ROI", text, re.I))
+    has_metric = bool(re.search(r"(?:\d+(?:\.\d+)?\s*(?:%|倍|ms|秒|分|小時|日|天|月|年|萬|億)|SLA|KPI|P99|P95|ROI)", text, re.I))
     has_action = bool(re.search(r"修復|遷移|重構|隔離|部署|替換|上線|降低|減少|縮短|提升|限制|攔截|阻斷|消除|清理|收斂|整併|監控", text))
     if not has_metric and not has_action and not circuit_broken:
         reasons.append("缺乏工程動作（修復/遷移/重構/降低）或量化指標（數據/時間/%），缺乏晨會直白度。")

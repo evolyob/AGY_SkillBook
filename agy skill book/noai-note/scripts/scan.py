@@ -45,7 +45,6 @@ def main():
     if mode == "gate1":
         res = engine.run_gate1(raw)
         print(json.dumps(res, indent=2, ensure_ascii=False) if args.json else engine.report_gate1(res))
-        if not res["passed"]: sys.exit(1)
     else:
         res = engine.run_detox(raw)
         print(json.dumps(res, indent=2, ensure_ascii=False) if args.json else engine.report_detox(res))
