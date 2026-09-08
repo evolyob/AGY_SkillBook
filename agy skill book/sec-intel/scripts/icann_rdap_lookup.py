@@ -54,7 +54,7 @@ def fetch_rapiddns_fallback(target: str, timeout: int = 6) -> Optional[Dict[str,
 
 
 def get_apex_domain(domain: str) -> str:
-    """Extract registered apex domain (e.g. www.pxpayplus.com -> pxpayplus.com)."""
+    """Extract registered apex domain (e.g. www.example.com -> example.com)."""
     parts = domain.strip().split('.')
     if len(parts) > 2:
         if len(parts) >= 3 and parts[-2].lower() in ('com', 'co', 'net', 'org', 'edu', 'gov', 'idv'):
