@@ -114,6 +114,13 @@ def report_detox(res: Dict[str, Any]) -> str:
 
 # --- 2. Gate 1 Standup Test Engine ---
 
+TECHNICAL_WHITELISTS = (
+    r"(?:CSS(?:\s*網格)?|網格|PCB|硬體|管線|版面)\s*佈局",
+    r"(?:特徵|向量|資料庫)\s*維度",
+    r"打造\s*[\w\-/]*\s*(?:CI/CD|流水線|系統|平台|架構)",
+)
+
+
 def run_gate1(title_or_assertion: str) -> Dict[str, Any]:
     text = title_or_assertion.strip()
     circuit_broken, reasons = False, []
@@ -128,13 +135,31 @@ def run_gate1(title_or_assertion: str) -> Dict[str, Any]:
         if re.search(pattern, text):
             reasons.append(f"發現{desc}")
             circuit_broken = True
+
+    # 1. 術語白名單過濾（避免誤殺正常工程詞）
+    cleaned = text
+    for wl in TECHNICAL_WHITELISTS:
+        cleaned = re.sub(wl, "", cleaned, flags=re.I)
+
     banned = ["賦能", "閉環", "打法", "抓手", "痛點", "打造", "心智", "壁壘", "佈局", "維度", "賦能體系", "守住底線", "深耕細作"]
-    found_buzz = [b for b in banned if b in text]
+    found_buzz = [b for b in banned if b in cleaned]
     if found_buzz:
         reasons.append(f"包含空洞字眼或陸味詞 [{', '.join(found_buzz)}]")
         circuit_broken = True
-    has_metric = bool(re.search(r"(?:\d+(?:\.\d+)?\s*(?:%|倍|ms|秒|分|小時|日|天|月|年|萬|億)|SLA|KPI|P99|P95|ROI)", text, re.I))
-    has_action = bool(re.search(r"修復|遷移|重構|隔離|部署|替換|上線|降低|減少|縮短|提升|限制|攔截|阻斷|消除|清理|收斂|整併|監控", text))
+
+    # 2. 指標檢驗：排除 2026年 等日曆年份假指標
+    has_metric = bool(re.search(
+        r"(?<!\d)(?!(?:19|20)\d{2}\s*年(?:度)?)\d+(?:\.\d+)?\s*(?:%|倍|ms|秒|分|小時|日|天|月|年|萬|億)|SLA|KPI|P99|P95|QPS|ROI",
+        text, re.I
+    ))
+
+    # 3. 動作檢驗：擴充主管決策與管理動詞
+    has_action = bool(re.search(
+        r"修復|遷移|重構|隔離|部署|替換|上線|降低|減少|縮短|提升|限制|攔截|阻斷|消除|清理|收斂|整併|監控|"
+        r"核准|裁決|簽署|驗收|採購|預算|合規|交付",
+        text
+    ))
+
     if not has_metric and not has_action and not circuit_broken:
         reasons.append("缺乏工程動作（修復/遷移/重構/降低）或量化指標（數據/時間/%），缺乏晨會直白度。")
     passed = not circuit_broken and (has_metric or has_action)
@@ -151,5 +176,6 @@ def report_gate1(res: Dict[str, Any]) -> str:
             lines.append(f"- [!] {r}")
         lines.append("\n**改寫建議**：請捨棄宣傳式形容詞，直述「做了什麼動作」、「解決什麼阻礙」或「達到什麼具體數據指標」。\n")
     return "\n".join(lines)
+
 
 
