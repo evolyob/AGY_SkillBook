@@ -1,6 +1,0 @@
-```
-nikto -host <rhostip> -port <rport>
-nikto -h <target>:<port> //找目錄
-nikto -host <rhostip> -c /dvwa
-
-```
