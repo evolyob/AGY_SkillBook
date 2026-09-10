@@ -1,139 +1,103 @@
-# Skill Quality & Remediation Action Runbook
+# Universal Skill & Code Remediation Runbook
 
-> **執行方針**：本手冊為 `audit.py` 報警後的「直接動作指南（Action Runbook）」。只給具體執行動作（Action）與可直接複製的代碼範本，不講冗長理論。
-
----
-
-## §1. 依賴黑戶（`undeclared external dependency`）
-
-| 診斷條件 | 直接執行動作 (Direct Action) |
-| :--- | :--- |
-| **A. 這是本技能的核心腳本（真有用到）** | **動作**：直接在 `SKILL.md` 的 Frontmatter 補齊宣告：<br>```yaml<br>dependencies:<br>  - 套件名稱<br>``` |
-| **B. 這是無關/遺留代碼（如 PPT 裡的 Word 腳本）** | **動作**：**直接刪除該檔案**（例如直接刪除 `docx.py`），切勿浪費時間重構無關代碼。 |
-| **C. 本地自建的子套件模組誤判** | **動作**：改為顯式相對引用 `from .helpers import ...` 或於目錄補齊 `__init__.py`。 |
+> **Policy**: This runbook provides universal remediation procedures for alerts triggered by `audit.py` (Python / spec audit) and `audit_frontend.py` (frontend / asset audit). Centered on "minimal dependencies, native-first, and uncompromising security guardrails," it governs full-stack applications and tooling scripts.
 
 ---
 
-## §2. 行數超標（`Lines > dynamic limit`）
+## Universal Remediation Ladder
 
-| 診斷條件 | 直接執行動作 (Direct Action) |
-| :--- | :--- |
-| **A. 與本技能無關的外來龐大檔案** | **動作**：**直接整檔刪除**（例如直接拔除未使用的 800 行外部 XSD 驗證器目錄）。 |
-| **B. 核心業務腳本，且方法共用相同 Import** | **動作**：**🚫 嚴禁拆檔（切檔必虧）**。<br>將 10 個重複方法收斂為「1 個 Spec 規格字典 + 1 個通用迴圈函式」，立即蒸發 100 行。 |
-| **C. 輕量前置檢驗（純 stdlib）與重型生成引擎** | **動作**：**✅ 允許拆檔**。<br>將 CLI 參數校驗（無三方庫）獨立成檔，換取 Cold Start 啟動加速。 |
+When an audit alert fires, evaluate solutions top-to-bottom and stop at the first matching tier:
+1. **Delete (YAGNI)**: Eliminate dead code, unused flags, and single-caller wrapper functions directly.
+2. **Root-Cause Governance**: Defend inside the root shared function. Never copy-paste ad-hoc patches across call sites.
+3. **Platform / Stdlib First**: Prefer Python standard library modules and native Web / browser APIs over third-party packages.
+4. **Guard Clause**: Invert conditions to return early, flatten indentation levels, and avoid unnecessary helper abstractions.
+5. **Preserve Security Controls**: Never simplify away input validation, error handling that prevents data loss, or XSS/injection sanitization.
 
 ---
 
-## §3. 廢棄庫死庫（`Zero-EOL: removed stdlib module`）
+## 1. Universal Security & Path Guardrails
 
-* **動作**：依下表直接替換 Import，嚴禁額外安裝第三方廢棄包：
-  * `import cgi` $\implies$ 改用 `import urllib.parse`
-  * `import pipes` $\implies$ 改用 `import shlex`
-  * `import distutils` $\implies$ 改用 `import setuptools` 或標準庫 `sys`
+### 1. Hardcoded Absolute Paths (`Hardcoded absolute user path`)
+* **Remediation**: Remove hardcoded user paths (`/Users/...` or `/home/...`). Resolve paths dynamically or relatively.
+  * **Python**: `Path.home() / "project"` or `Path(__file__).resolve().parent`
+  * **JS/TS**: `path.resolve(__dirname, ...)` or environment variables `process.env.DATA_DIR`
+
+### 2. Dangerous Dynamic Execution (`eval` / `exec` / `os.system` / `new Function`)
+* **Remediation**: Never execute unvalidated dynamic strings.
+  * **Python**: Replace `os.system` with `subprocess.run([...])`; replace `eval` with `ast.literal_eval`.
+  * **JS/TS**: Prohibit `eval()` / `new Function()`. Parse structured strings with `JSON.parse()`.
+
+### 3. Plaintext Secrets & Private IPs (`Plaintext secret` / `Internal private IP`)
+* **Remediation**: Extract secrets into environment variables. Inject internal IPs via configuration files or parameters.
+
+---
+
+## 2. Modernization & Anti-Legacy Standards
+
+### 1. Python Removed Standard Libraries (`Zero-EOL: removed stdlib module`)
+* **Remediation**: Align with PEP 594 using modern standard library alternatives (Python 3.13+):
+  * `cgi` -> `urllib.parse`
+  * `pipes` -> `shlex`
+  * `distutils` -> `setuptools` or `sys`
+
+### 2. Frontend Deprecated Syntax & DOM Operations (`Legacy syntax`)
+* **Remediation**: Upgrade to modern Web standards:
+  * `var` -> Use block-scoped `const` or `let`
+  * `XMLHttpRequest` -> Use native `fetch()`
+  * `document.write()` -> Use modern DOM manipulation APIs (e.g., `element.append()`)
+
+---
+
+## 3. Dependency & Asset Budgets
+
+### 1. Undeclared Dependencies & Package Bloat (`undeclared dependency`)
+* **Remediation**: Prioritize built-in platform capabilities to eliminate unnecessary dependencies:
+  * **Python**: `requests` -> `urllib.request`; `pyyaml` -> `json`; `bs4` -> `html.parser`
+  * **Frontend**: Date picker / color picker -> Native `<input type="date">`; simple animations -> Native CSS
+
+### 2. Line Limits & Asset Budgets (`Lines > limit` / `Asset budget > 100KB`)
+* **Remediation**:
+  * **Backend line overflow**: Prune single-caller wrappers; consolidate repetitive branches into "1 spec dictionary + 1 loop".
+  * **Frontend asset overflow (>100KB)**: Enable code splitting; remove heavy third-party libraries (e.g., replace lodash with native Array methods).
+
+### 3. Excessive Nesting Depth (`nested if-block depth > 2`)
+* **Remediation**: Invert conditions and return early (Guard Clause) at the start of functions to flatten indentation.
 
 ```text
-# ❌ Anti-Pattern
-import cgi, pipes
+[Anti-Pattern]: Depth > 2
+if (data && data.isValid()) {
+    if (data.hasPermission()) {
+        return data.execute();
+    }
+}
 ```
 ```python
-# ✅ Remediation
-import urllib.parse, shlex
+# [Remediation]: Guard Clause
+if not data or not data.is_valid() or not data.has_permission():
+    return None
+return data.execute()
 ```
 
 ---
 
-## §4. 執行安全（`os.system` / `eval` / `exec`）
+## 4. Stack-Specific Hardening
 
-* **動作 1（`os.system`）**：直接改用結構化列表引數：
-```text
-# ❌ Anti-Pattern
-import os; os.system(f"git status {target}")
-```
-```python
-# ✅ Remediation
-import subprocess
-subprocess.run(["git", "status", target], check=True, capture_output=True, text=True)
-```
+### 1. Python AST Hardening (`audit.py`)
+* **Mutable Default Arguments**: Replace `def f(x=[])` with `def f(x=None): x = [] if x is None else x`.
+* **Bare Except Handlers**: Prohibit `except: pass`. Use pre-condition checks (`if path.exists():`) or catch explicit exception classes.
+* **Text Encoding**: Always specify explicit encoding for `open()` (e.g., `encoding="utf-8"`, or `"utf-8-sig"` if BOM is present).
 
-* **動作 2（`eval` / `exec`）**：直接改用安全語法解析：
-```text
-# ❌ Anti-Pattern
-val = eval(user_str)
-```
-```python
-# ✅ Remediation
-import ast
-val = ast.literal_eval(user_str)
+### 2. Frontend Rich-Text XSS Defense (`audit_frontend.py`)
+* **Remediation**: When assigning to `innerHTML`, `v-html`, or `dangerouslySetInnerHTML`, always sanitize through DOMPurify:
+```javascript
+// [Anti-Pattern]: Direct unsanitized HTML injection
+el.innerHTML = userContent;
+
+// [Remediation]: Sanitized via DOMPurify
+el.innerHTML = DOMPurify.sanitize(userContent);
 ```
 
----
-
-## §5. 檔案 I/O 編碼安全（`Unencoded open()`）
-
-* **動作**：全檔搜尋 `open(` 並顯式補上 `encoding="utf-8"`（若含 BOM 則用 `"utf-8-sig"`）：
-
-```text
-# ❌ Anti-Pattern
-with open("config.json", "r") as f: data = f.read()
-```
-```python
-# ✅ Remediation
-with open("config.json", "r", encoding="utf-8") as f: data = f.read()
-```
-
----
-
-## §6. 巢狀結構過深（`nested if-block depth > 2`）
-
-* **動作**：直接在函式開頭**反轉條件提早 return**（Guard Clause），將縮排往左推平：
-
-```text
-# ❌ Anti-Pattern (Depth > 2)
-def process(data):
-    if data:
-        if data.is_valid():
-            if data.has_permission():
-                return data.execute()
-```
-```python
-# ✅ Remediation (Flatten via Guard Clause)
-def process(data):
-    if not data or not data.is_valid() or not data.has_permission():
-        return None
-    return data.execute()
-```
-
----
-
-## §7. 斷言與例外治理（`assert` / `bare except:`）
-
-* **動作 1（正式環境 `assert`）**：改為標準例外拋出（避免被 `python -O` 消除）：
-```text
-# ❌ Anti-Pattern
-assert user_id > 0, "Invalid ID"
-```
-```python
-# ✅ Remediation
-if user_id <= 0:
-    raise ValueError(f"Invalid user_id: {user_id}")
-```
-
-* **動作 2（裸寫 `except:`）**：明確指定捕捉 `Exception`：
-```text
-# ❌ Anti-Pattern
-try: do_something()
-except: pass
-```
-```python
-# ✅ Remediation
-try: do_something()
-except Exception as err: pass
-```
-
----
-
-## §8. 大型靜態資源（`Heavy static asset > 10KB`）
-
-* **動作**：
-  1. **禁止**在 Markdown 規格書中引用或印出全文（避免塞爆 LLM 上下文）。
-  2. 保持為獨立磁碟檔案，由 Python 腳本於後端按需讀取與切片過濾。
+### 3. Prompt Data Bloat & Decoupling (`Heavy static asset`)
+* **Remediation**: Never inline large lookup tables into prompt or markdown files. Keep data on disk and implement backend fallback resolution so callers only pass intent:
+  * **Backend Code**: Read via `Path(__file__).parent / "data.json"`; gracefully fallback to a safe default if unmatched.
+  * **Prompt Boundary**: Keep documentation declarative; callers pass high-level values without reciting the entire catalog.

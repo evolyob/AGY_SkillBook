@@ -176,6 +176,17 @@ def audit_path(target):
     t = Path(target)
     if t.is_file() and t.suffix.lower() in FRONTEND_EXTS:
         import audit_frontend; return audit_frontend.audit_target(str(t))
+    if t.is_file() and t.suffix in [".json", ".xml", ".yaml", ".csv", ".txt"]:
+        try:
+            raw = t.read_text(encoding="utf-8-sig")
+            if t.suffix == ".json":
+                import json; json.loads(raw)
+            elif t.suffix == ".xml":
+                import xml.etree.ElementTree as ET; ET.fromstring(raw)
+            print(f"[✓] PASS {t.name} (Valid syntax & UTF-8 encoding)")
+        except Exception as err:
+            print(f"[✗] FAIL {t.name}\n  └── [BLOCKER] Data Syntax/Encoding Error: {err}")
+        return
     if t.is_file():
         skill_md = t if t.name == "SKILL.md" else (t.parent / "SKILL.md" if (t.parent / "SKILL.md").exists() else t.parent.parent / "SKILL.md")
         stxt = skill_md.read_text(encoding="utf-8-sig", errors="ignore") if skill_md.exists() else ""
@@ -189,9 +200,18 @@ def audit_path(target):
         stxt = skill_md.read_text(encoding="utf-8-sig", errors="ignore") if skill_md.exists() else ""
         lmods = {p.stem for p in t.glob("**/*.py")} | {p.name for p in t.glob("**/*") if p.is_dir()}
         for f in sorted(t.glob("**/*")):
-            if f.is_file() and f.suffix in [".json", ".yaml", ".csv", ".txt", ".xml"] and f.stat().st_size > 10240:
-                sz_kb = f.stat().st_size / 1024
-                print(f"[!] WARN {f.name} ({sz_kb:.1f}KB > 10KB)\n  └── [ADVISORY] Heavy static asset (>10KB)")
+            if f.is_file() and f.suffix in [".json", ".xml", ".yaml", ".csv", ".txt"]:
+                try:
+                    raw = f.read_text(encoding="utf-8-sig")
+                    if f.suffix == ".json":
+                        import json; json.loads(raw)
+                    elif f.suffix == ".xml":
+                        import xml.etree.ElementTree as ET; ET.fromstring(raw)
+                except Exception as err:
+                    print(f"[✗] FAIL {f.name}\n  └── [BLOCKER] Data Syntax/Encoding Error: {err}")
+                if f.stat().st_size > 102400:
+                    sz_kb = f.stat().st_size / 1024
+                    print(f"[!] WARN {f.name} ({sz_kb:.1f}KB > 100KB)\n  └── [ADVISORY] Large static asset (>100KB)")
             elif f.is_file() and f.suffix.lower() in FRONTEND_EXTS:
                 import audit_frontend; audit_frontend.audit_target(str(f))
             elif f.is_file() and f.suffix in [".py", ".md"]:
