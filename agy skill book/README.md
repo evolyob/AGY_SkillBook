@@ -1,47 +1,33 @@
-# Start setting AGY Skill Book 
-### ~/GEMINI.md
-```bash!
-.gemini/GEMINI.md 
-│
-├── 1. Role Persona
-│   ├── 核心定位：資深科技與治理顧問 (Technology & Governance Consultant)
-│   ├── 解題目標：解決複雜技術與營運挑戰
-│   └── 輸出原則：精簡分析 + 安全實用建議 + 可執行步驟（兼顧風險與限制）
-│
-├── 2. Thinking Workflow 
-│   ├── [1] 單一事實來源 (Single Source of Truth)
-│   ├── [2] 上下文承接與聚焦 (Build on Prior Context)
-│   └── [3] 精準澄清機制 (Clarification)
-│
-├── 3. Writing Style & Refinement 
-│   ├── 句構與節奏：混合長短句，維持動態節奏
-│   └── 思考隱蔽性：分析過程與疑問僅限內部思考，不顯露於回答中
-│
-└── 4. Guardrail
-    └── 絕對禁止：主動生成/執行「刪除動作」、「特權提升」或「讀取敏感金鑰」
-```
-### ~/../config.json
-```json
-┌─────────────────────────────┐
-  [ Layer 1] (Security Layer)
-  指令攔截、敏感檔鎖定、 正則封鎖   
-└──────────────┬──────────────┘
-               ▼
-┌─────────────────────────────┐
- [ Layer 2 ] (Automation & Direction) 
-  讀取白名單、  產物歸檔
-└──────────────┬──────────────┘
-               ▼
-┌─────────────────────────────┐
-[ Layer 3]  (Context Optimization)
-  載入過濾
-└─────────────────────────────┘
-```
-### ~/../core.md
-```bash!
-[對話開始] ──> 1. Load (翻開舊筆記) ──> 讀取 GEMINI.md (我是誰) & core.md (重要目錄)
-                                              │
-[對話進行中] ─> 2. Save (做新筆記)  ──> 解開 Bug 或發現偏好時，寫入 topics/*.md 
-                                              │
-[遇到難題] ──> 3. Recall (尋找舊紀錄) ─> 去 core.md 找線索，再翻閱專屬筆記
-```
+# Antigravity (AGY) Skill Book
+
+A collection of production-ready agentic skills, document layout engines, and governance configurations for Google Antigravity (AGY).
+
+---
+
+## 1. Skills Catalog & Capabilities Matrix
+
+The following skills are available in this directory:
+
+| Skill | Category | Primary Mission & Scope | Core Tools & Technologies |
+| :--- | :--- | :--- | :--- |
+| **[`audit-skill`](audit-skill/)** | Governance & Quality | 12-Gate automated AST static code and skill auditor (<20ms). Enforces coding standards, dynamic line budgets, and security guardrails. | Python AST, Regex, Static Analysis |
+| **[`exec-docx`](exec-docx/)** | Document Engineering | High-fidelity Word (.docx) generation, structured tables, and ISO/IEC 29500 OpenXML redlining validation. | `python-docx`, ISO XSD Validators |
+| **[`exec-xlsx`](exec-xlsx/)** | Spreadsheet Engineering | Enterprise Excel (.xlsx/.csv) layout engine with Noto Sans TC typography, KPI cards, CJK auto-width, lossless `<extLst>` XML patching, and headless formula recalculation. | `openpyxl`, `xml_patcher`, LibreOffice (`soffice`) |
+| **[`pptx`](pptx/)** | Presentation Engineering | Declarative layout engine for modern slide decks with dynamic grid solvers, WCAG auto-contrast, and polymorphic card slots. | `python-pptx`, `resvg-py`, `Pillow` |
+| **[`pdf`](pdf/)** | Document Engineering | High-precision PDF document creation, Platypus flowable layouts, UI dashboards, OCR scanning, and 5-Gate schema verification. | `reportlab`, `pdfplumber`, `pypdf` |
+| **[`noai-note`](noai-note/)** | Executive Communication | Two-phase executive assistant for meeting notes, executive briefs, proof-led presentation outlines, and 1-pager visual blueprints. | Markdown, Shift-Left Anti-AI Heuristics |
+| **[`sec-intel`](sec-intel/)** | Security & Threat Intel | Authoritative, evidence-based intelligence lookup for IPs, ASNs, Domains, and CVEs via ICANN RDAP, real DNS resolution, and dual-engine EUVD/OSV. | ICANN RDAP, `dnspython`, EUVD, OSV |
+| **[`deep-grill`](deep-grill/)** | Strategic Decision-Making | Socratic interview protocol designed to challenge proposed plans, designs, and architectures to surface hidden risks and assumptions one question at a time. | Socratic Interview Heuristics |
+| **[`deep-mod`](deep-mod/)** | Research & Synthesis | Universal 4-stage interactive deep research pipeline: requirement clarification, systematic data collection, evidence-based fact-checking, and cross-department synthesis. | Structured Multi-Agent Protocols |
+
+---
+
+## 2. Reference Architectures & Examples (`examples/`)
+
+The [`examples/`](../examples/) directory provides reference implementations and foundational infrastructure templates:
+
+| Component | Path | Description |
+| :--- | :--- | :--- |
+| **Coding Standards** | [`examples/coding-standards.md`](../examples/coding-standards.md) | The production architectural governance guide and AST static audit specifications (Return Early, Keyword-only arguments, Spec-First boundaries, Defensive bounds, Functional cores, and Small diffs). |
+| **Automation & Quality Hooks** | [`examples/hooks/`](../examples/hooks/) | Automated lifecycle event handlers and guardrails:<ul><li>`hooks.json`: Lifecycle hook configurations (`pre_tool_call`, `post_tool_call`, `on_user_message`).</li><li>`anti_blind_mutation.sh`: Prevents destructive, unvalidated code edits.</li><li>`post_tool_quality_guard.py`: Post-tool execution verification and quality filter.</li></ul> |
+| **Persistent Memory Framework** | [`examples/memory/`](../examples/memory/) | Structured 3-tier long-term memory system (Load -> Save -> Recall):<ul><li>`core.md`: Master index and routing table for persistent memory.</li><li>`topics/agent_behavior.md`: Agent persona, communication style, and boundary directives.</li><li>`topics/engineering_and_delivery_standards.md`: Delivery routing, file conventions, and verification standards.</li></ul> |
