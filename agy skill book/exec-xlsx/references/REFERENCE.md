@@ -4,9 +4,9 @@
 
 | Tool / Module | Responsibility & Scope | Implementation Source |
 |---|---|---|
-| **`XLSXLayoutEngine`** | Generate new enterprise workbooks with `Noto Sans TC`, KPI blocks, structured zebra tables, and `themes.json`. | [`scripts/xlsx_engine.py`](file:///home/jz/.gemini/config/skills/exec-xlsx/scripts/xlsx_engine.py) |
-| **`XLSX_XMLPatcher`** | Lossless in-place XML patching for files with `<extLst>/<x14:dataValidations>`, macros, or cascading dropdowns. | [`scripts/xml_patcher.py`](file:///home/jz/.gemini/config/skills/exec-xlsx/scripts/xml_patcher.py) |
-| **`XLSXSchemaValidator`** | Post-generation OpenXML schema conformance, namespace integrity, and multiline `wrapText` verification. | [`scripts/office/validate.py`](file:///home/jz/.gemini/config/skills/exec-xlsx/scripts/office/validate.py) |
+| **`XLSXLayoutEngine`** | Generate new enterprise workbooks with `Noto Sans TC`, KPI blocks, structured zebra tables, and `themes.json`. | `scripts/xlsx_engine.py` |
+| **`XLSX_XMLPatcher`** | Lossless in-place XML patching for files with `<extLst>/<x14:dataValidations>`, macros, or cascading dropdowns. | `scripts/xml_patcher.py` |
+| **`XLSXSchemaValidator`** | Post-generation OpenXML schema conformance, namespace integrity, and multiline `wrapText` verification. | `scripts/office/validate.py` |
 | **`openpyxl`** | Basic cell reading, simple updates, and standard formulas where no `<extLst>` exists. | Python `openpyxl` package |
 | **`pandas`** | High-volume tabular ingestion, bulk ETL, and fast data export. | `pandas.read_excel` / `to_excel` |
 

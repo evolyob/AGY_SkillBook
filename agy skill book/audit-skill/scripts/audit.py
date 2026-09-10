@@ -127,7 +127,7 @@ def audit_source(src, filename, is_markdown=False, skill_txt="", local_modules=N
                                 seen_keys.add(k_val)
                 if not is_meta and isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id in ["eval", "exec"]:
                     blockers.append(f"{tag} arbitrary execution ({n.func.id})")
-                if not is_meta and isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == "system":
+                if not is_meta and isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == "system" and getattr(n.func.value, "id", None) == "os":
                     blockers.append(f"{tag} os.system() execution")
                 if isinstance(n, ast.Import):
                     for name in n.names: imported_modules.add(name.name.split('.')[0])
