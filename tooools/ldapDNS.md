@@ -1,6 +1,0 @@
-#### LDAP
-
-```bash
-ldapsearch -H ldap://<ip>
-ldapwhoami
-```
