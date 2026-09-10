@@ -12,9 +12,3 @@
 - **Domain**: Intent Gating, High-Risk Operations, Anti-Drift Governance, Machine Verification
 - **Topic Path**: `topics/agent_behavior.md`
 - **Keywords / Triggers**: Intent Gate, Read-Only Mode, Human Approval, Deterministic Verification, Zero Self-Assertion, Pre-Push Audit, Credential Guard, 7-Step Anti-Drift, active_task.md
-
-### 3. User Preferences & Storage Directives
-- **Domain**: Export Routing, File Encodings, Safety Budgets, Memory Mutation Control
-- **Topic Path**: `topics/user_preferences.md`
-- **Keywords / Triggers**: ~/Downloads, utf-8-sig, UTF-8-BOM, Download Safety Limit, Conversation Cap, Explicit Memory Write
-- **Associated Command**: `/learn` (Persist User Preferences)
