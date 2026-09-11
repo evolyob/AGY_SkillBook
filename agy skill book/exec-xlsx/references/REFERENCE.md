@@ -1,14 +1,12 @@
 # XLSX Technical Reference & Architecture Guide
 
-## 1. Engine & Tooling Responsibility Matrix
+## 1. Tri-Pillar Responsibility Matrix
 
-| Tool / Module | Responsibility & Scope | Implementation Source |
-|---|---|---|
-| **`XLSXLayoutEngine`** | Generate new enterprise workbooks with `Noto Sans TC`, KPI blocks, structured zebra tables, and `themes.json`. | `scripts/xlsx_engine.py` |
-| **`XLSX_XMLPatcher`** | Lossless in-place XML patching for files with `<extLst>/<x14:dataValidations>`, macros, or cascading dropdowns. | `scripts/xml_patcher.py` |
-| **`XLSXSchemaValidator`** | Post-generation OpenXML schema conformance, namespace integrity, and multiline `wrapText` verification. | `scripts/office/validate.py` |
-| **`openpyxl`** | Basic cell reading, simple updates, and standard formulas where no `<extLst>` exists. | Python `openpyxl` package |
-| **`pandas`** | High-volume tabular ingestion, bulk ETL, and fast data export. | `pandas.read_excel` / `to_excel` |
+| Track | Module | Scope & Invariants | Implementation |
+|---|---|---|---|
+| **1. Creation** | `XLSXLayoutEngine` | Create brand new workbooks with `Noto Sans TC`, KPI blocks, zebra tables, and `themes.json`. Guarded against overwriting `<extLst>` files. | `scripts/xlsx_engine.py` |
+| **2. Mutation** | `XLSX_XMLPatcher` | Lossless in-place surgical cell & range patching. Preserves `<extLst>`, cascading dropdowns, formulas, macros, and styles byte-for-byte. Zero external dependencies. | `scripts/xml_patcher.py` |
+| **3. Evaluation** | `recalc.py` + `validate.py` | Offline formula recalculation via LibreOffice headless, error diagnosis (`#VALUE!`, `#REF!`, `#N/A`), and OpenXML schema verification. | `scripts/recalc.py` & `scripts/office/validate.py` |
 
 ---
 
@@ -34,11 +32,10 @@
 
 ---
 
-## 4. High-Fidelity XML Patcher (`xml_patcher.py`) & OpenXML Integrity
+## 4. Universal Mutation Engine (`xml_patcher.py`) & Subtraction Rules
 
-- **Never Use `xml.etree.ElementTree.tostring()` for Full XLSX Parts**: Re-serializing via ElementTree scrambles namespace prefixes (e.g. creating `xmlns:ns0=...` or altering `xmlns:x14` / `xmlns:xm`), drops `mc:Ignorable` namespaces, and triggers Excel schema corruption error `HRESULT 0x808c0002`.
-- **Pure String/Regex Patching**: Always use `XLSX_XMLPatcher` or lossless string transformations to preserve original XML namespace declarations, tag ordering, and `<extLst>/<x14:dataValidations>`.
-- **Multi-line Text & WrapText Rules**:
-  1. Any cell with `\n` or multiple spaces MUST have `<t xml:space="preserve">`.
-  2. The cell style (`cellXfs` in `styles.xml`) MUST include `<alignment vertical="center" wrapText="1"/>` with `applyAlignment="1"`.
-  3. Row heights (`ht`) should be scaled proportionally to the line count with `customHeight="1"`.
+- **Zero One-Off Scripts**: Use `XLSX_XMLPatcher.update_cells()` or CLI `python3 xml_patcher.py <file.xlsx> --sheet <sheet> --updates '{"A1": "val"}'`. Never write scratch zip/regex scripts in `/tmp`.
+- **Pure Function Core**: `patch_sheet_xml(xml_content, cell_updates)` handles string mutation in-memory, auto-escaping XML entities, and preserving cell styles (`s="xxx"`).
+- **Never Re-Serialize Full XML with ElementTree**: Python ElementTree rewrites namespace prefixes (converting `x14ac`/`xr` to `ns0`/`ns1`), destroying Office 2010+ extensions.
+- **Anti-Monotony Rule**: When batch populating categories or threat profiles, avoid uniform fallbacks. Use declarative rule tables and round-robin modulo distribution to prevent identical value streaks ($\ge 4$).
+

@@ -1,12 +1,13 @@
 """
 XLSX Layout Engine (Modern Enterprise Edition)
-Implements clean spreadsheet styling with Noto Sans TC, brand palettes,
-KPI stat blocks, structured Zebra tables, group header rows, accounting formats,
-and CJK auto-width calculation.
+Implements clean enterprise spreadsheet styling with Noto Sans TC,
+brand palettes, KPI stat blocks, structured Zebra tables, in-cell visual
+progress bars [████░░░░], WCAG contrast colors, and CJK auto-width.
 """
 
 import os
 import json
+import zipfile
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional, Any
 
@@ -16,15 +17,8 @@ from openpyxl.utils import get_column_letter
 
 
 def _clean_hex(hex_str: str) -> str:
-    """Returns 6-char upper hex string without leading '#'."""
     clean = hex_str.lstrip("#").upper()
     return "".join(c * 2 for c in clean) if len(clean) == 3 else clean
-
-
-def _load_theme_config() -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, str]]:
-    theme_file = Path(__file__).parent / "themes.json"
-    raw = json.loads(theme_file.read_text(encoding="utf-8")) if theme_file.exists() else {}
-    return raw.get("fonts", {}), raw.get("themes", {}), raw.get("global_colors", {})
 
 
 def _contrast_color(bg_hex: str, dark_hex: str = "#334155", light_hex: str = "#F8FAFC", *, threshold: float = 0.65) -> str:
@@ -34,8 +28,15 @@ def _contrast_color(bg_hex: str, dark_hex: str = "#334155", light_hex: str = "#F
     return _clean_hex(dark_hex if lum > threshold else light_hex)
 
 
+def _load_theme_config() -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, str]]:
+    theme_file = Path(__file__).parent / "themes.json"
+    if not theme_file.exists():
+        return {}, {}, {}
+    raw = json.loads(theme_file.read_text(encoding="utf-8"))
+    return raw.get("fonts", {}), raw.get("themes", {}), raw.get("global_colors", {})
+
+
 def _format_stat_val(v: Any, *, prefix: str = "", suffix: str = "") -> str:
-    """Universal numeric and KPI formatter: supports arbitrary currencies, units, and scales."""
     if isinstance(v, dict):
         prefix, suffix = v.get("prefix", prefix), v.get("suffix", suffix)
         v = v.get("val", v.get("value", ""))
@@ -43,11 +44,41 @@ def _format_stat_val(v: Any, *, prefix: str = "", suffix: str = "") -> str:
     return f"{prefix}{val_str}{suffix}"
 
 
+PIE_GLYPHS = ("○", "◔", "◑", "◕", "●")
+
+
+def _render_visual_atom(cell, val: dict, *, font_name: str, accent_hex: str, alert_hex: str) -> None:
+    """Renders visual in-cell chart atoms: bar/progress [████░░░░] and pie chart [○◔◑◕●] with WCAG threshold colors."""
+    is_pie = "pie" in val
+    key = "pie" if is_pie else ("progress" if "progress" in val else "bar")
+    p = max(0, min(100, int(val.get(key, 0))))
+    if is_pie:
+        idx = min(4, max(0, int(round(p / 25))))
+        cell.value = f"{PIE_GLYPHS[idx]} {p}%"
+    else:
+        filled = int(round(p / 10))
+        cell.value = f"[{chr(9608) * filled}{chr(9617) * (10 - filled)}] {p}%"
+    color = "059669" if p >= 80 else (_clean_hex(accent_hex) if p >= 50 else _clean_hex(alert_hex))
+    cell.font = Font(name=font_name, size=9.5, bold=True, color=color)
+    cell.alignment = Alignment(horizontal="center", vertical="center")
+
+
+def _has_ext_validations(path: str) -> bool:
+    try:
+        with zipfile.ZipFile(path, "r") as z:
+            return any(
+                n.startswith("xl/worksheets/sheet") and "<extLst>" in z.read(n).decode("utf-8", "ignore")
+                for n in z.namelist()
+            )
+    except (zipfile.BadZipFile, OSError):
+        return False
+
+
 FONTS, THEMES, GLOBAL_COLORS = _load_theme_config()
 
 
 class XLSXLayoutEngine:
-    """Modern Enterprise XLSX Layout Engine with Noto Sans TC typography."""
+    """Modern Enterprise XLSX Creation Engine with Noto Sans TC typography."""
 
     def __init__(self, theme: str = "light", font: str = "Noto Sans TC"):
         theme_map = {"white": "light", "corporate_light": "light", "black": "dark", "warm_yellow": "yellow"}
@@ -61,13 +92,11 @@ class XLSXLayoutEngine:
         self.wb.active.title = "Summary"
 
     def get_sheet(self, sheet_name: str):
-        """Retrieves an existing sheet or creates a new one with gridlines enabled."""
         ws = self.wb[sheet_name] if sheet_name in self.wb.sheetnames else self.wb.create_sheet(title=sheet_name)
         ws.views.sheetView[0].showGridLines = True
         return ws
 
     def add_title(self, sheet_name: str, title: str, *, subtitle: Optional[str] = None, category: Optional[str] = None, start_row: int = 2, start_col: int = 2) -> int:
-        """Renders an executive title block at top-left of the worksheet."""
         ws, row = self.get_sheet(sheet_name), start_row
         if category:
             c = ws.cell(row=row, column=start_col, value=category.upper())
@@ -83,7 +112,6 @@ class XLSXLayoutEngine:
         return row
 
     def add_kpi_cards(self, sheet_name: str, kpis: List[Dict[str, Any]], *, start_row: int = 5, start_col: int = 2) -> int:
-        """Renders horizontal KPI stat summary boxes with themed accent border and change badges."""
         ws = self.get_sheet(sheet_name)
         thin_side = Side(border_style="thin", color=_clean_hex(GLOBAL_COLORS.get("border", "#CBD5E1")))
         card_fill = PatternFill(fill_type="solid", start_color=_clean_hex(GLOBAL_COLORS.get("zebra_fill", "#F8FAFC")), end_color=_clean_hex(GLOBAL_COLORS.get("zebra_fill", "#F8FAFC")))
@@ -111,16 +139,14 @@ class XLSXLayoutEngine:
         return start_row + 4
 
     def write_table(self, sheet_name: str, headers: List[str], rows: List[List[Any]], *, start_row: int = 9, start_col: int = 2, col_formats: Optional[List[str]] = None, zebra: bool = True, total_row: bool = False):
-        """Renders a structured table with themed header, group rows, rich atoms, and accounting borders."""
         ws, n_cols = self.get_sheet(sheet_name), len(headers)
         hdr_hex = _clean_hex(self.t.get("s", GLOBAL_COLORS.get("header_fill", "#2B5C8F")))
         hdr_fill = PatternFill(fill_type="solid", start_color=hdr_hex, end_color=hdr_hex)
-        hdr_font = Font(name=self.font, size=10, bold=True, color="FFFFFF")
+        hdr_font = Font(name=self.font, size=10, bold=True, color=_contrast_color(hdr_hex, dark_hex="#0B0F19", light_hex="#FFFFFF"))
         thin_side = Side(border_style="thin", color=_clean_hex(GLOBAL_COLORS.get("border", "#CBD5E1")))
         cell_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
 
-        zebra_hex = _clean_hex(GLOBAL_COLORS.get("zebra_fill", "#F8FAFC"))
-        zebra_fill = PatternFill(fill_type="solid", start_color=zebra_hex, end_color=zebra_hex)
+        zebra_fill = PatternFill(fill_type="solid", start_color=_clean_hex(GLOBAL_COLORS.get("zebra_fill", "#F8FAFC")), end_color=_clean_hex(GLOBAL_COLORS.get("zebra_fill", "#F8FAFC")))
         white_fill = PatternFill(fill_type="solid", start_color="FFFFFF", end_color="FFFFFF")
 
         for j, h in enumerate(headers):
@@ -134,9 +160,10 @@ class XLSXLayoutEngine:
             is_last = (i == len(rows) - 1) and total_row
             if len(row_data) == 1:
                 ws.merge_cells(start_row=curr_row, start_column=start_col, end_row=curr_row, end_column=start_col + n_cols - 1)
-                grp_fill = PatternFill(fill_type="solid", start_color=_clean_hex(self.t.get("card_bg", "#E6F2F5")), end_color=_clean_hex(self.t.get("card_bg", "#E6F2F5")))
+                grp_hex = _clean_hex(self.t.get("card_bg", "#E6F2F5"))
+                grp_fill = PatternFill(fill_type="solid", start_color=grp_hex, end_color=grp_hex)
                 c_grp = ws.cell(row=curr_row, column=start_col, value=f"▶ {row_data[0]}")
-                c_grp.font = Font(name=self.font, size=10, bold=True, color=_clean_hex(self.t.get("p", "#007A92")))
+                c_grp.font = Font(name=self.font, size=10, bold=True, color=_contrast_color(grp_hex, dark_hex=self.t.get("p", "#007A92"), light_hex="#FFFFFF"))
                 c_grp.alignment = Alignment(horizontal="left", vertical="center", indent=1)
                 for c_i in range(start_col, start_col + n_cols):
                     ws.cell(row=curr_row, column=c_i).fill, ws.cell(row=curr_row, column=c_i).border = grp_fill, cell_border
@@ -152,32 +179,28 @@ class XLSXLayoutEngine:
                 else:
                     cell.border = cell_border
 
-                if isinstance(val, dict) and "progress" in val:
-                    p = max(0, min(100, int(val["progress"])))
-                    filled = int(round(p / 10))
-                    cell.value = f"[{chr(9608) * filled}{chr(9617) * (10 - filled)}] {p}%"
-                    bar_hex = "059669" if p >= 80 else (_clean_hex(self.t.get("a", "EC6A00")) if p >= 50 else _clean_hex(self.t.get("alert", "E95119")))
-                    cell.font = Font(name=self.font, size=9.5, bold=True, color=bar_hex)
-                    cell.alignment = Alignment(horizontal="center", vertical="center")
-                else:
-                    cell.value = val
-                    cell.font = Font(name=self.font, size=10, bold=is_last or (j == 0), color=_clean_hex(self.t.get("txt", "#0B0F19")))
-                    is_num = isinstance(val, (int, float)) or (isinstance(val, str) and val.startswith("="))
-                    cell.alignment = Alignment(horizontal="right" if is_num else "left", vertical="center")
-                    if col_formats and j < len(col_formats) and col_formats[j]:
-                        cell.number_format = col_formats[j]
+                if isinstance(val, dict) and any(k in val for k in ("progress", "bar", "pie")):
+                    _render_visual_atom(cell, val, font_name=self.font, accent_hex=self.t.get("a", "EC6A00"), alert_hex=self.t.get("alert", "E95119"))
+                    continue
+
+                cell.value = val
+                cell.font = Font(name=self.font, size=10, bold=is_last or (j == 0), color=_clean_hex(self.t.get("txt", "#0B0F19")))
+                is_num = isinstance(val, (int, float)) or (isinstance(val, str) and val.startswith("="))
+                cell.alignment = Alignment(horizontal="right" if is_num else "left", vertical="center")
+                if col_formats and j < len(col_formats) and col_formats[j]:
+                    cell.number_format = col_formats[j]
             ws.row_dimensions[curr_row].height = 20
 
     def apply_auto_width(self, sheet_name: str, *, min_width: int = 12, padding: int = 4):
-        """Auto-adjusts column widths with CJK character width compensation."""
         ws = self.get_sheet(sheet_name)
         for col in ws.columns:
             max_len = max((sum(2.0 if ord(ch) > 127 else 1.0 for ch in str(cell.value)) for cell in col if cell.value is not None), default=0)
             ws.column_dimensions[get_column_letter(col[0].column)].width = max(max_len + padding, min_width)
 
-    def save(self, output_path: str) -> str:
-        """Saves the workbook to the specified output path."""
+    def save(self, output_path: str, *, force: bool = False) -> str:
         path = os.path.expanduser(output_path)
+        if not force and os.path.exists(path) and _has_ext_validations(path):
+            raise ValueError(f"[Boundary Guard] Target '{path}' contains <extLst> validations. Use xml_patcher.py instead.")
         out_dir = os.path.dirname(path)
         if out_dir:
             os.makedirs(out_dir, exist_ok=True)

@@ -1,45 +1,100 @@
 """
-Universal XML Patcher for Excel (.xlsx)
-Preserves Office 2010+ Extended Data Validations (<extLst>/<x14:dataValidations>),
-macros, charts, and delicate layouts that openpyxl strips upon saving.
-Zero external dependencies (Python stdlib only: zipfile, xml.etree, re).
+Universal OpenXML Patcher for Excel (.xlsx) - Lean Edition
+Decoupled Mutation Engine: lossless in-place cell & range patching,
+preserving Office 2010+ extended validations (<extLst>/<x14:dataValidations>),
+macros, formulas, and delicate styles byte-for-byte.
+Zero external dependencies (Python stdlib only).
 """
 
-import zipfile
-import re
 import os
+import re
+import sys
+import html
+import json
 import shutil
-import xml.etree.ElementTree as ET
-from typing import Dict, List, Callable, Optional
+import zipfile
+from pathlib import Path
+from typing import Dict, Any, Optional, Callable
+
+
+def _render_cell_xml(ref: str, val: Any, style_attr: str) -> str:
+    if val is None or val == "":
+        return f'<c r="{ref}"{style_attr}/>'
+    if isinstance(val, (int, float)):
+        return f'<c r="{ref}"{style_attr}><v>{val}</v></c>'
+    escaped = html.escape(str(val))
+    xml_space = ' xml:space="preserve"' if ("\n" in str(val) or "  " in str(val)) else ""
+    return f'<c r="{ref}"{style_attr} t="inlineStr"><is><t{xml_space}>{escaped}</t></is></c>'
+
+
+def patch_sheet_xml(xml_content: str, cell_updates: Dict[str, Any]) -> str:
+    """Pure transformation: in-place updates or inserts cells in sheet XML with style preservation."""
+    updated = xml_content
+    for ref, item in cell_updates.items():
+        if not re.match(r"^[A-Z]+\d+$", ref.upper()):
+            continue
+        row_str = re.search(r"\d+", ref).group(0)
+        val = item.get("value") if isinstance(item, dict) else item
+        custom_style = item.get("style") if isinstance(item, dict) else None
+
+        cell_pattern = rf'<c r="{ref}"([^>]*)>(.*?)</c>|<c r="{ref}"([^>]*)/>'
+        m_cell = re.search(cell_pattern, updated)
+        if m_cell:
+            attrs = (m_cell.group(1) or m_cell.group(3) or "").strip()
+            s_match = re.search(r's="(\d+)"', attrs)
+            active_s = custom_style if custom_style is not None else (s_match.group(1) if s_match else None)
+            s_attr = f' s="{active_s}"' if active_s is not None else ""
+            updated = re.sub(cell_pattern, _render_cell_xml(ref, val, s_attr), updated, count=1)
+            continue
+
+        s_attr = f' s="{custom_style}"' if custom_style is not None else ""
+        new_tag = _render_cell_xml(ref, val, s_attr)
+        row_pat = rf'(<row r="{row_str}"[^>]*>)(.*?)(</row>)'
+        m_row = re.search(row_pat, updated)
+        if m_row:
+            updated = updated[:m_row.end(1)] + new_tag + updated[m_row.end(1):]
+        else:
+            updated = updated.replace("</sheetData>", f'<row r="{row_str}">{new_tag}</row></sheetData>', 1)
+
+    return updated
 
 
 class XLSX_XMLPatcher:
-    """High-fidelity OpenXML patcher for .xlsx files."""
+    """Lossless OpenXML Patcher for existing Excel workbooks."""
 
     def __init__(self, xlsx_path: str):
         self.xlsx_path = os.path.expanduser(xlsx_path)
         if not os.path.exists(self.xlsx_path):
             raise FileNotFoundError(f"XLSX file not found: {self.xlsx_path}")
 
-    def list_parts(self) -> List[str]:
-        """Lists all internal XML parts inside the .xlsx ZIP container."""
+    def has_extended_validations(self) -> bool:
+        """Guard check: returns True if workbook contains Office 2010+ <extLst> data validations."""
         with zipfile.ZipFile(self.xlsx_path, "r") as z:
-            return z.namelist()
+            return any(
+                n.startswith("xl/worksheets/sheet") and "<extLst>" in z.read(n).decode("utf-8", "ignore")
+                for n in z.namelist()
+            )
 
-    def get_part_content(self, part_path: str) -> str:
-        """Reads and decodes the UTF-8 XML content of a specific part."""
+    def resolve_sheet_part(self, sheet: str) -> str:
+        """Resolves sheet tab name or relative XML path to full zip part path (e.g. 'xl/worksheets/sheet1.xml')."""
+        if sheet.startswith("xl/") or sheet.endswith(".xml"):
+            return sheet if sheet.startswith("xl/") else f"xl/worksheets/{sheet}"
         with zipfile.ZipFile(self.xlsx_path, "r") as z:
-            return z.read(part_path).decode("utf-8")
+            wb_xml = z.read("xl/workbook.xml").decode("utf-8")
+            m = re.search(rf'<sheet[^>]+name="{re.escape(sheet)}"[^>]+r:id="([^"]+)"', wb_xml) or re.search(rf'r:id="([^"]+)"[^>]+name="{re.escape(sheet)}"', wb_xml)
+            if not m:
+                raise KeyError(f"Sheet '{sheet}' not found in workbook.")
+            rels_xml = z.read("xl/_rels/workbook.xml.rels").decode("utf-8")
+            m_rel = re.search(rf'<Relationship[^>]+Id="{m.group(1)}"[^>]*>', rels_xml)
+            if m_rel:
+                m_t = re.search(r'Target="([^"]+)"', m_rel.group(0))
+                target = m_t.group(1).lstrip("/") if m_t else f"worksheets/{sheet}.xml"
+            else:
+                target = f"worksheets/{sheet}.xml"
+            return target if target.startswith("xl/") else f"xl/{target}"
 
-    def patch_parts(
-        self,
-        part_transforms: Dict[str, Callable[[str], str]],
-        output_path: Optional[str] = None
-    ) -> str:
-        """
-        Applies transformation functions to specified XML parts while keeping
-        all other parts 100% byte-for-byte identical.
-        """
+    def patch_parts(self, part_transforms: Dict[str, Callable[[str], str]], *, output_path: Optional[str] = None) -> str:
+        """Applies pure XML transformations to specified parts while keeping everything else byte-for-byte."""
         out_target = os.path.expanduser(output_path) if output_path else self.xlsx_path
         tmp_target = out_target + ".tmp_patch"
 
@@ -47,112 +102,59 @@ class XLSX_XMLPatcher:
             with zipfile.ZipFile(tmp_target, "w", zipfile.ZIP_DEFLATED) as zout:
                 for item in zin.infolist():
                     if item.filename in part_transforms:
-                        orig_content = zin.read(item.filename).decode("utf-8")
-                        transform_fn = part_transforms[item.filename]
-                        modified_content = transform_fn(orig_content)
-                        if item.filename.endswith((".xml", ".rels")):
-                            try:
-                                ET.fromstring(modified_content.encode("utf-8"))
-                            except ET.ParseError as pe:
-                                raise ValueError(f"[XML Patcher Corrupted] Patching {item.filename} resulted in invalid XML: {pe}") from pe
-                        zout.writestr(item, modified_content.encode("utf-8"))
+                        orig = zin.read(item.filename).decode("utf-8")
+                        zout.writestr(item, part_transforms[item.filename](orig).encode("utf-8"))
                     else:
                         zout.writestr(item, zin.read(item.filename))
 
         shutil.move(tmp_target, out_target)
         return out_target
 
-    def update_range_references(
-        self,
-        sheet_part: str,
-        ref_replacements: Dict[str, str],
-        output_path: Optional[str] = None
-    ) -> str:
-        """
-        Updates cell range references (e.g. '參數表!$F$2:$F$16' -> '參數表!$F$2:$F$19')
-        without breaking <extLst> or formula tags.
-        """
+    def update_cells(self, sheet: str, cell_updates: Dict[str, Any], *, output_path: Optional[str] = None) -> str:
+        """In-place updates specified cells in a worksheet without altering namespaces, formulas, or <extLst>."""
+        sheet_part = self.resolve_sheet_part(sheet)
+        return self.patch_parts({sheet_part: lambda content: patch_sheet_xml(content, cell_updates)}, output_path=output_path)
+
+    def update_range_references(self, sheet: str, ref_replacements: Dict[str, str], *, output_path: Optional[str] = None) -> str:
+        """Updates cell range formulas (e.g. '$F$1:$K$1' -> '$F$1:$O$1') losslessly."""
+        sheet_part = self.resolve_sheet_part(sheet)
         def transform(xml_content: str) -> str:
-            updated = xml_content
-            for old_ref, new_ref in ref_replacements.items():
-                updated = updated.replace(old_ref, new_ref)
-            return updated
+            res = xml_content
+            for old_r, new_r in ref_replacements.items():
+                res = res.replace(old_r, new_r)
+            return res
+        return self.patch_parts({sheet_part: transform}, output_path=output_path)
 
-        return self.patch_parts({sheet_part: transform}, output_path)
 
-    def enable_wrap_text(
-        self,
-        style_part: str = "xl/styles.xml",
-        xf_index: int = 3,
-        output_path: Optional[str] = None
-    ) -> str:
-        """
-        Enables wrapText and vertical center alignment for a specified cellXf style
-        using lossless string replacement without altering OpenXML namespaces.
-        """
-        def transform(xml_content: str) -> str:
-            # Match cellXfs block
-            m = re.search(r'<cellXfs count="(\d+)">', xml_content)
-            if not m:
-                return xml_content
-            
-            if len(xfs) <= xf_index:
-                return xml_content
-            target_xf = xfs[xf_index]
-            if 'wrapText="1"' in target_xf:
-                return xml_content
-            if '<alignment' in target_xf:
-                new_xf = re.sub(r'<alignment ([^>]*)/>', r'<alignment \1 wrapText="1"/>', target_xf)
-            else:
-                new_xf = target_xf.replace('/>', ' applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>')
-            return xml_content.replace(target_xf, new_xf, 1)
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: python3 xml_patcher.py <file.xlsx> [--sheet <name_or_part>] (--updates <json_str> | --updates-file <json_file>)")
+        sys.exit(1)
 
-        return self.patch_parts({style_part: transform}, output_path)
+    xlsx_file = sys.argv[1]
+    sheet = "xl/worksheets/sheet1.xml"
+    updates: Dict[str, Any] = {}
 
-    def append_inline_cells(
-        self,
-        sheet_part: str,
-        rows_data: Dict[int, Dict[str, str]],
-        row_heights: Optional[Dict[int, float]] = None,
-        col_styles: Optional[Dict[str, str]] = None,
-        new_dimension: Optional[str] = None,
-        output_path: Optional[str] = None
-    ) -> str:
-        """
-        Appends or injects inlineStr cells into <sheetData> cleanly and updates <dimension>.
-        Supports xml:space="preserve", HTML escaping, row heights, and custom column styles.
-        rows_data schema: {row_num: {col_letter: text_value}}
-        """
-        import html
+    idx = 2
+    while idx < len(sys.argv):
+        arg = sys.argv[idx]
+        if arg in ("--sheet", "-s") and idx + 1 < len(sys.argv):
+            sheet = sys.argv[idx + 1]
+            idx += 2
+        elif arg in ("--updates", "-u") and idx + 1 < len(sys.argv):
+            updates.update(json.loads(sys.argv[idx + 1]))
+            idx += 2
+        elif arg in ("--updates-file", "-f") and idx + 1 < len(sys.argv):
+            updates.update(json.loads(Path(sys.argv[idx + 1]).read_text(encoding="utf-8")))
+            idx += 2
+        else:
+            idx += 1
 
-        def transform(xml_content: str) -> str:
-            content = xml_content
-            if new_dimension:
-                content = re.sub(r'<dimension ref="[^"]*"/>', f'<dimension ref="{new_dimension}"/>', content)
+    patcher = XLSX_XMLPatcher(xlsx_file)
+    resolved_part = patcher.resolve_sheet_part(sheet)
+    patcher.update_cells(resolved_part, updates)
+    print(f"Successfully patched {len(updates)} cells in {xlsx_file} [{resolved_part}].")
 
-            rows_xml = []
-            for r_num in sorted(rows_data.keys()):
-                cols = rows_data[r_num]
-                ht_attr = f' ht="{row_heights[r_num]}" customHeight="1"' if (row_heights and r_num in row_heights) else ''
-                cell_strs = []
-                for col_letter, val in cols.items():
-                    s_attr = f' s="{col_styles[col_letter]}"' if (col_styles and col_letter in col_styles) else ''
-                    if val is None or val == '':
-                        cell_strs.append(f'<c r="{col_letter}{r_num}"{s_attr}/>')
-                    elif isinstance(val, (int, float)):
-                        cell_strs.append(f'<c r="{col_letter}{r_num}"{s_attr}><v>{val}</v></c>')
-                    elif '\n' in str(val) or '  ' in str(val):
-                        val_str = html.escape(str(val))
-                        cell_strs.append(f'<c r="{col_letter}{r_num}"{s_attr} t="inlineStr"><is><t xml:space="preserve">{val_str}</t></is></c>')
-                    else:
-                        val_str = html.escape(str(val))
-                        cell_strs.append(f'<c r="{col_letter}{r_num}"{s_attr} t="inlineStr"><is><t>{val_str}</t></is></c>')
-                cells_joined = "".join(cell_strs)
-                rows_xml.append(f'<row r="{r_num}" spans="1:{len(cols)}"{ht_attr}>{cells_joined}</row>')
 
-            joined_rows = "".join(rows_xml)
-            content = content.replace("</sheetData>", f"{joined_rows}</sheetData>")
-            return content
-
-        return self.patch_parts({sheet_part: transform}, output_path)
-
+if __name__ == "__main__":
+    main()
