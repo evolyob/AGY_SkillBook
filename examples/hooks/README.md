@@ -41,7 +41,6 @@ graph LR
 examples/hooks/
 ├── hooks.json                     # Global Hooks routing configuration (PreToolUse & PostToolUse rules)
 ├── anti_blind_mutation.py         # Anti-blind mutation circuit breaker (Python 3, Vibe Safe)
-├── anti_blind_mutation.sh         # Backward-compatibility wrapper delegating to python
 ├── post_tool_quality_guard.py     # Static quality scanner and advisory guard (Python 3)
 ├── secret_leak_guard.py           # PreToolUse secret leak interceptor (Python 3, regex & entropy safe)
 └── README.md                      # Architecture overview and deployment guide
@@ -57,11 +56,11 @@ examples/hooks/
 mkdir -p ~/.gemini/hooks ~/.gemini/config
 
 # Copy scripts and configuration
-cp anti_blind_mutation.py anti_blind_mutation.sh post_tool_quality_guard.py secret_leak_guard.py ~/.gemini/hooks/
+cp anti_blind_mutation.py post_tool_quality_guard.py secret_leak_guard.py ~/.gemini/hooks/
 cp hooks.json ~/.gemini/config/hooks.json
 
 # Grant execution permissions
-chmod +x ~/.gemini/hooks/anti_blind_mutation.sh ~/.gemini/hooks/*.py
+chmod +x ~/.gemini/hooks/*.py
 ```
 
 ### Step 2: Verification
