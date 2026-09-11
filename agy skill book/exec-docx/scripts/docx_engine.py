@@ -14,7 +14,7 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import parse_xml
-from docx.oxml.ns import nsdecls
+from docx.oxml.ns import nsdecls, qn
 
 WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 _ALIGN_MAP = {"left": WD_ALIGN_PARAGRAPH.LEFT, "center": WD_ALIGN_PARAGRAPH.CENTER, "right": WD_ALIGN_PARAGRAPH.RIGHT, "justify": WD_ALIGN_PARAGRAPH.JUSTIFY}
@@ -153,7 +153,9 @@ class DOCXLayoutEngine:
         if align is not None: p.alignment = _ALIGN_MAP.get(align, align) if isinstance(align, str) else align
         if text:
             r = p.add_run(_clean_text(text))
-            r.font.size, r.font.bold, r.font.italic, r.font.name = Pt(sz), bold, italic, font_name or self.font
+            f_name = font_name or self.font
+            r.font.size, r.font.bold, r.font.italic, r.font.name = Pt(sz), bold, italic, f_name
+            r._r.get_or_add_rPr().rFonts.set(qn("w:eastAsia"), f_name)
             if col is not None: r.font.color.rgb = _hex_to_rgb(col) if isinstance(col, str) else col
         return p
 

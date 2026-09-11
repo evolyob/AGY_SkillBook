@@ -9,6 +9,7 @@ import zipfile
 import re
 import os
 import shutil
+import xml.etree.ElementTree as ET
 from typing import Dict, List, Callable, Optional
 
 
@@ -49,6 +50,11 @@ class XLSX_XMLPatcher:
                         orig_content = zin.read(item.filename).decode("utf-8")
                         transform_fn = part_transforms[item.filename]
                         modified_content = transform_fn(orig_content)
+                        if item.filename.endswith((".xml", ".rels")):
+                            try:
+                                ET.fromstring(modified_content.encode("utf-8"))
+                            except ET.ParseError as pe:
+                                raise ValueError(f"[XML Patcher Corrupted] Patching {item.filename} resulted in invalid XML: {pe}") from pe
                         zout.writestr(item, modified_content.encode("utf-8"))
                     else:
                         zout.writestr(item, zin.read(item.filename))

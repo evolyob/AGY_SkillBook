@@ -66,6 +66,8 @@ def run_detox(text: str, lang: str = "auto") -> Dict[str, Any]:
                     })
         for p in rules.get("patterns", []):
             m = len(re.findall(p["regex"], text))
+            if p.get("label", "").startswith("破折號") and m <= 1 and len(text) > 80:
+                continue
             if m > 0:
                 findings["formulaic_patterns"].append({"label": p["label"], "count": m, "advice": p["advice"], "examples": extract_context(text, p["regex"], limit=2)})
         for b in rules.get("buzz", []):
@@ -123,12 +125,17 @@ TECHNICAL_WHITELISTS = (
 
 def run_gate1(title_or_assertion: str) -> Dict[str, Any]:
     text = title_or_assertion.strip()
-    circuit_broken, reasons = False, []
+    reasons = []
+    circuit_broken = False
+    dashes = len(re.findall(r"—{1,2}|――", text))
+    if dashes >= 2:
+        reasons.append("發現過度使用破折號（≥2 組，易流於公關套路炫技）")
+        circuit_broken = True
+
     pr_patterns = [
         (r"以.+搭配.+落實", "對稱式公關口號（以...搭配...落實...）"),
         (r"透過.+旨在.+進而", "公關遞進套話（透過...旨在...進而...）"),
         (r"全面(提升|打造|推動|深化|落實|賦能)", "空洞公關動詞（全面...）"),
-        (r"—{1,2}|――", "無預算破折號（——）"),
         (r"[？?]|這意味著什麼", "自問自答反問句"),
     ]
     for pattern, desc in pr_patterns:
@@ -141,7 +148,7 @@ def run_gate1(title_or_assertion: str) -> Dict[str, Any]:
     for wl in TECHNICAL_WHITELISTS:
         cleaned = re.sub(wl, "", cleaned, flags=re.I)
 
-    banned = ["賦能", "閉環", "打法", "抓手", "痛點", "打造", "心智", "壁壘", "佈局", "維度", "賦能體系", "守住底線", "深耕細作"]
+    banned = ["賦能", "閉環", "打法", "抓手", "痛點", "打造", "心智", "壁壘", "佈局", "維度", "守住底線", "深耕細作", "底層邏輯", "組合拳"]
     found_buzz = [b for b in banned if b in cleaned]
     if found_buzz:
         reasons.append(f"包含空洞字眼或陸味詞 [{', '.join(found_buzz)}]")
@@ -153,10 +160,11 @@ def run_gate1(title_or_assertion: str) -> Dict[str, Any]:
         text, re.I
     ))
 
-    # 3. 動作檢驗：擴充主管決策與管理動詞
+    # 3. 動作檢驗：擴充研發、主管決策與架構動詞
     has_action = bool(re.search(
         r"修復|遷移|重構|隔離|部署|替換|上線|降低|減少|縮短|提升|限制|攔截|阻斷|消除|清理|收斂|整併|監控|"
-        r"核准|裁決|簽署|驗收|採購|預算|合規|交付",
+        r"核准|裁決|簽署|驗收|採購|預算|合規|交付|盤點|審查|定案|修訂|終止|展延|撥款|調配|發布|"
+        r"取消|改由|導入|轉移|重寫|剔除|升級|解耦|重組|實作|整合|對齊|抽換|切換|啟用|停用|優化|快取|調校|歸檔|備份",
         text
     ))
 

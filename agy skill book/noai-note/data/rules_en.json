@@ -7,16 +7,10 @@
       "advice": "Replace with a full stop, comma, colon or parentheses."
     },
     {
-      "label": "negative parallelism (not just X but Y)",
-      "regex": "\\bnot (just|only|merely|simply)\\b[^.;!?]{0,60}\\bbut\\b",
+      "label": "negative contrast setups (not just X but Y / It is not X. It is Y)",
+      "regex": "\\bnot (just|only|merely|simply)\\b[^.;!?]{0,60}\\bbut\\b|\\b(is|was|are|were) not [^.;!?]{2,50}[.;] +(It|They|That|This) (is|was|are|were)\\b",
       "budget": 0.3,
       "advice": "State the positive claim directly and drop the setup clause."
-    },
-    {
-      "label": "antithesis (It is not X. It is Y)",
-      "regex": "\\b(is|was|are|were) not [^.;!?]{2,50}[.;] +(It|They|That|This) (is|was|are|were)\\b",
-      "budget": 0.0,
-      "advice": "Humans rarely speak in constant opposites. Make the claim once."
     },
     {
       "label": "formal connectives (Furthermore/Moreover/Additionally)",
@@ -31,28 +25,34 @@
       "advice": "Cut. If the paragraph is a summary the reader can tell."
     },
     {
-      "label": "LLM vocabulary (delve/leverage/robust/underscore)",
-      "regex": "\\bdelv\\w+|\\bleverag\\w+|\\brobust\\b|underscor\\w+|\\bharness\\w*\\b",
+      "label": "LLM corporate verbs (delve/leverage/foster/navigate/streamline)",
+      "regex": "\\b(delv\\w+|leverag\\w+|underscor\\w+|harness\\w*|foster\\w*|streamlin\\w+|navigat\\w+|utiliz\\w+|facilitat\\w+|empower\\w*)\\b",
       "budget": 0.3,
-      "advice": "Swap for plain words: dig into, use, strong, show, use."
+      "advice": "Replace corporate/academic AI verbs with plain English: use, help, dig into, show, guide."
     },
     {
-      "label": "puffery (pivotal/crucial/vital/testament/remarkable)",
-      "regex": "\\b(pivotal|crucial|vital|remarkable|profound|invaluable)\\b|testament to",
-      "budget": 0.5,
-      "advice": "Usually deletable. If the point matters, the evidence shows it."
+      "label": "puffery & overused adjectives (robust/pivotal/testament/multifaceted)",
+      "regex": "\\b(robust|seamless|multifaceted|pivotal|crucial|vital|paramount|remarkable|profound|invaluable)\\b|\\btestament to\\b|\\bbeacon of\\b",
+      "budget": 0.4,
+      "advice": "Exaggerated AI praise words. Cut or replace with concrete facts, metrics, or simpler words."
     },
     {
       "label": "abstract nouns (landscape/realm/tapestry/journey)",
-      "regex": "\\b(landscape|realm|tapestry|journey|ecosystem)\\b",
+      "regex": "\\b(landscapes?|realms?|tapestr\\w+|journeys?|ecosystems?)\\b",
       "budget": 0.4,
-      "advice": "Name the actual thing instead."
+      "advice": "Name the actual thing instead of relying on cliché metaphors."
+    },
+    {
+      "label": "canned opening (In today's fast-paced world)",
+      "regex": "\\b[Ii]n (today'?s?|this|an?)\\s+(?:(?:fast-paced|rapidly changing|interconnected|dynamic|digital|modern)\\s+)+(world|era|landscape|age)\\b",
+      "budget": 0.2,
+      "advice": "Cliché opening with zero information. Cut straight to the actual point."
     },
     {
       "label": "hedge preamble (It is important to note)",
-      "regex": "[Ii]t (is|should be) (important|worth) (to note|noting|mentioning)",
+      "regex": "[Ii]t('s| is| should be) ((important|worth|crucial|vital|essential) (to note|noting|mentioning|remembering|keeping in mind)|(worth noting|worth mentioning|noted that|mentioned that))",
       "budget": 0.0,
-      "advice": "Delete the preamble and keep the point."
+      "advice": "Delete the preamble and state the claim directly."
     },
     {
       "label": "rule of three in a sentence (A, B and C)",
@@ -64,26 +64,14 @@
   "model_specific": {
     "Claude": [
       {
-        "label": "genuine / genuinely",
-        "regex": "\\bgenuine(ly)?\\b",
+        "label": "sincerity tells (genuine/honest)",
+        "regex": "\\b(genuine(ly)?|honest(ly)?)\\b",
         "budget": 0.3,
-        "advice": "Claude writes this ~10x more than other models. Cut or use 'real'."
+        "advice": "Claude sincerity cluster (~10x human frequency). Cut or replace with 'real'."
       },
       {
-        "label": "honest / honestly",
-        "regex": "\\bhonest(ly)?\\b",
-        "budget": 0.3,
-        "advice": "Same sincerity cluster. Usually deletable."
-      },
-      {
-        "label": "it is worth noting",
-        "regex": "worth noting",
-        "budget": 0.0,
-        "advice": "People rarely announce that something is worth noticing."
-      },
-      {
-        "label": "nuanced / multifaceted / non-trivial",
-        "regex": "\\bnuanced\\b|\\bmultifaceted\\b|non-trivial",
+        "label": "nuanced / non-trivial",
+        "regex": "\\bnuanced\\b|\\bnon-trivial\\b",
         "budget": 0.2,
         "advice": "Plain-word replacements."
       },
@@ -97,7 +85,7 @@
         "label": "let me unpack / key distinction",
         "regex": "\\bunpack\\b|key distinction|several considerations",
         "budget": 0.0,
-        "advice": "Cut."
+        "advice": "Cut meta-commentary."
       },
       {
         "label": "rhetorical questions",
@@ -121,9 +109,9 @@
       },
       {
         "label": "power verbs (supercharge/unleash/dive in)",
-        "regex": "supercharg\\w+|unleash\\w*|\\bdive in\\b|game.chang\\w+",
+        "regex": "\\b(supercharg\\w+|unleash\\w*|dive in|game[- ]chang\\w+)\\b",
         "budget": 0.0,
-        "advice": "Cut entirely."
+        "advice": "Cut marketing hype verbs entirely."
       }
     ],
     "Gemini": [
@@ -138,6 +126,20 @@
         "regex": "\\b(We must|To understand why)\\b",
         "budget": 0.3,
         "advice": "Softens to plain statements."
+      }
+    ],
+    "DeepSeek": [
+      {
+        "label": "formulaic transitions (First and foremost / Last but not least)",
+        "regex": "\\b(First and foremost|Last but not least|It is evident that)\\b",
+        "budget": 0.2,
+        "advice": "DeepSeek/LLM formulaic transitional phrases. Replace with direct statements."
+      },
+      {
+        "label": "sweeping false range (from X to Y, from A to B)",
+        "regex": "\\bfrom\\s+[^,.;]{2,25}\\s+to\\s+[^,.;]{2,25},\\s*(and\\s*)?from\\b",
+        "budget": 0.2,
+        "advice": "Double pseudo-range setup. Specific examples are much clearer."
       }
     ]
   },

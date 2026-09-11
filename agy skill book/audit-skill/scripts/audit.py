@@ -20,9 +20,13 @@ def audit_source(src, filename, is_markdown=False, skill_txt="", local_modules=N
     local_mods = local_modules or set()
 
     # 1. Text & Security Guardrails
+    for idx, line in enumerate(src.splitlines(), start=1):
+        if line.strip().startswith("#") or any(k in line for k in ("re.search", "re.compile", "Zero-Leakage", "r'/", 'r"/')):
+            continue
+        if re.search(r"/(Users|home)/[a-zA-Z0-9_-]+/", line):
+            blockers.append(f"Line {idx}: Hardcoded absolute user path (~/ or $HOME required)")
+            break
     if not is_meta:
-        if ("/Us" + "ers/") in src or ("/ho" + "me/") in src:
-            blockers.append("Hardcoded absolute user path (~/ or $HOME required)")
         for s in SECRETS:
             if re.search(s, src): blockers.append("Plaintext secret/API key")
         for p in PRIVS:
