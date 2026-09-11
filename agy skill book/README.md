@@ -17,6 +17,7 @@ The following skills are available in this directory:
 | **[`pdf`](pdf/)** | Document Engineering | High-precision PDF document creation, Platypus flowable layouts, UI dashboards, OCR scanning, and 5-Gate schema verification. | `reportlab`, `pdfplumber`, `pypdf` |
 | **[`noai-note`](noai-note/)** | Executive Communication | Two-phase executive assistant for meeting notes, executive briefs, proof-led presentation outlines, and 1-pager visual blueprints. | Markdown, Shift-Left Anti-AI Heuristics |
 | **[`sec-intel`](sec-intel/)** | Security & Threat Intel | Authoritative, evidence-based intelligence lookup for IPs, ASNs, Domains, and CVEs via ICANN RDAP, real DNS resolution, and dual-engine EUVD/OSV. | ICANN RDAP, `dnspython`, EUVD, OSV |
+| **[`asset-risk`](asset-risk/)** | Security & Risk Assessment | Intelligently categorize information assets and select diverse, causally linked threats and vulnerabilities without repetitive monotony. | Python Stdlib, Anti-Monotony Round-Robin |
 | **[`deep-grill`](deep-grill/)** | Strategic Decision-Making | Socratic interview protocol designed to challenge proposed plans, designs, and architectures to surface hidden risks and assumptions one question at a time. | Socratic Interview Heuristics |
 | **[`deep-mod`](deep-mod/)** | Research & Synthesis | Universal 4-stage interactive deep research pipeline: requirement clarification, systematic data collection, evidence-based fact-checking, and cross-department synthesis. | Structured Multi-Agent Protocols |
 
