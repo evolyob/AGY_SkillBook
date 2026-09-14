@@ -4,7 +4,7 @@
 > **Execution Order**: Phase 0 (Contract Gate) >> Phase 1 (Design) >> Phase 2 (Coding) >> Phase 3 (Delivery). Governed by `agent_behavior.md`.
 
 ## 0. The 4-Item Spec Contract & System Baselines (`spec.md`)
-- **Mandate**: Every non-trivial task MUST freeze a lightweight 4-item specification (`spec.md`) as the single source of truth before code synthesis, anchored to active runtimes and security baselines:
+- **Mandate**: Tasks involving architectural trade-offs, new modules, or ambiguous requirements MUST freeze a lightweight 4-item specification (`spec.md`) as the single source of truth before code synthesis, anchored to active runtimes and security baselines:
   1. **Goal & Non-Goals**: Concrete, verifiable deliverable vs explicit perimeter of what will NOT be built or modified.
   2. **Allowed Paths (Whitelist Perimeter)**: Explicit file paths permitted to be created or mutated. Modifications outside this perimeter are strictly prohibited.
   3. **Declared Dependencies & Zero-EOL Runtime**: Anchor to active LTS runtimes (Python >= 3.13, Node.js >= 24 LTS, Go >= 1.26; dynamically verify via `endoflife.date`). Explicit list of permitted third-party packages (or stdlib only).
