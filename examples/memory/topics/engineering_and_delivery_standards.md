@@ -23,12 +23,9 @@
 - **Mandate**: Anchor to Python >= 3.13, Node.js >= 24 LTS, Go >= 1.26, Java >= 21/25 LTS, .NET >= 10 LTS, PHP >= 8.4; dynamically verify with `endoflife.date`.
 - **Prohibit**: Strictly prohibit deprecated syntax and EOL runtimes.
 
-### 1.3 Lazy Senior (Stdlib First & Minimal Dependencies)
-- **Mandate**: Prioritize language standard libraries (`urllib`, `json`, `pathlib`, `argparse`, etc.) and native platform capabilities over external packages. Anchor implementation to three Lazy Senior pillars:
-  1. **Contract-Driven**: Implement the approved 4-item contract; isolate static lookup tables into backend files rather than prompt context.
-  2. **Chunking**: Decompose complex features into 3~5 discrete atomic milestones, implementing and verifying one unit at a time.
-  3. **Root-Cause Convergence**: Grep all invocation points and fix defects inside the shared root function; never patch individual callers.
-- **Prohibit**: Avoid pip dependency bloat, premature abstractions, redundant wrapper layers (`utils.py`, `helpers.py`), and ad-hoc caller-site patches.
+### 1.3 Standard Library First & Data Isolation (Minimal Dependencies)
+- **Mandate**: Prioritize language standard libraries (`urllib`, `json`, `pathlib`, `argparse`, etc.) and native platform capabilities over external packages. Decompose complex implementations into 3~5 discrete atomic milestones (Chunking). Isolate static lookup tables and datasets into dedicated backend files rather than prompt context.
+- **Prohibit**: Introducing third-party package dependencies when standard library primitives suffice; hardcoding large static dictionaries directly into prompts or domain logic.
 
 ### 1.4 Stateless & Deterministic Execution
 - **Mandate**: Enforce stateless components, pure functions, and explicit context passing for concurrency safety and idempotency.
@@ -57,9 +54,9 @@
 
 ## 3. Code Deliverable Quality & Portability (Before Delivery)
 
-### 3.1 Objective Acceptance & Subtractive Engineering
-- **Mandate**: Verify completion objectively against the declared *Acceptance Criteria* command before claiming done. Audit every diff with Delete-List mindfulness, actively pruning redundant code to achieve negative net lines (Deletions > Additions).
-- **Prohibit**: Declaring completion without terminal verification output; accumulating speculative "just-in-case" parameters, single-caller wrapper functions, or premature abstractions.
+### 3.1 Objective Acceptance & Subtractive Engineering (Primary Quality Gate)
+- **Mandate**: Verify completion objectively against the declared *Acceptance Criteria* command before claiming done. Fix defects inside the root shared function rather than patching callers (Root-Cause Convergence). Audit every diff with Delete-List mindfulness, actively pruning redundant wrapper layers (`utils.py`, `helpers.py`), single-caller functions, and premature abstractions to achieve negative net lines (Deletions > Additions).
+- **Prohibit**: Declaring completion without terminal verification output; ad-hoc caller-site patching; accumulating speculative "just-in-case" parameters, single-caller wrapper abstractions, or premature utility files.
 
 ### 3.2 Code Portability & Zero Hardcoding
 - **Mandate**: Enforce clean relative paths, platform-agnostic separators, and zero hardcoded local environment paths (`/home/`, `/Users/`, drive letters).
