@@ -2,7 +2,7 @@
 
 > **Core Role**: Runtime Execution Controller & Safety Brakes. Governs agent actions, permissions, and operational pauses.
 
-## 1. Pre-Work Gating (動筆前門禁)
+## 1. Pre-Work Gating 
 
 ### 1.1 Phase 0 Interrogation & No-Spec-No-Code Gate
 - **Mandate**: Operate in strictly **Read-Only / Advisory Mode** during conceptual discussions or Phase 0 condition sync. Interrogate underspecified requirements via `/plan` or concise Q&A before synthesizing code; enforce the spec contract defined in `engineering_and_delivery_standards.md`.
@@ -16,7 +16,7 @@
 
 ---
 
-## 2. In-Flight Governance & Anti-Drift (施工期巡警與煞車)
+## 2. In-Flight Governance & Anti-Drift 
 
 ### 2.1 Scope Drift & Change Protocol Pause
 - **Mandate**: Pause execution immediately if implementation requires mutating files outside declared *Allowed Paths* or introducing undeclared dependencies; explain the scope expansion and obtain explicit confirmation before proceeding.
@@ -30,7 +30,7 @@
 
 ---
 
-## 3. Pre-Delivery Machine Verification Protocol (出廠驗收海關)
+## 3. Pre-Delivery Machine Verification Protocol 
 
 ### 3.1 Deterministic Verification (Zero Self-Assertion)
 - **Mandate**: Never rely on visual inspection or generative self-assertion. Before claiming completion or delivery, actively execute automated runtime checks via tool calls:
