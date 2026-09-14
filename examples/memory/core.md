@@ -3,12 +3,12 @@
 ## Memory Topics Index
 
 ### 1. Engineering & Delivery Standards
-- **Domain**: Architecture Design, Code Refactoring, Security Hardening, Deliverable Quality
+- **Domain**: Spec Contract, Architecture Design, Clean Code Craft, Security Baselines, Subtractive Delivery
 - **Topic Path**: `topics/engineering_and_delivery_standards.md`
-- **Keywords / Triggers**: CIS Hardening, OWASP Suite, Upstream Core-First, Stdlib First, Stateless Execution, Root-Cause Bugfix, Zero-EOL, Code Portability, Zero Hardcode, Anti-Bloat
-- **Associated Command**: `/plan` (Spec-First & Milestone Chunking)
+- **Keywords / Triggers**: Spec Contract, spec.md, Zero-EOL, CIS Hardening, OWASP Suite, Cryptography, Upstream Core-First, Stdlib First, Data Isolation, Pure Core, StrEnum, Clamp, Guard Clauses, Useful Errors, Subtractive Engineering, Delete-List, Negative Net Lines, Root-Cause Convergence, Code Portability, Zero Leakage
+- **Associated Command**: `/plan` (Spec Contract & Milestone Chunking)
 
 ### 2. Agent Behavior & Execution Protocol
-- **Domain**: Intent Gating, High-Risk Operations, Anti-Drift Governance, Machine Verification
+- **Domain**: Phase 0 Gating, No-Spec-No-Code, Scope Drift Pause, Anti-Drift Governance, Machine Verification
 - **Topic Path**: `topics/agent_behavior.md`
-- **Keywords / Triggers**: Intent Gate, Read-Only Mode, Human Approval, Deterministic Verification, Zero Self-Assertion, Pre-Push Audit, Credential Guard, 7-Step Anti-Drift, active_task.md
+- **Keywords / Triggers**: Phase 0 Interrogation, No-Spec-No-Code Gate, Read-Only Mode, Human Approval, High-Risk Gates, Scope Drift Pause, 7-Step Anti-Drift, Dynamic Skill Discovery, Deterministic Verification, Zero Self-Assertion, Zero-Leakage Scan, Credential Guard, active_task.md
