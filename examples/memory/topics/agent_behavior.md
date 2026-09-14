@@ -2,9 +2,10 @@
 
 ## 1. Intent Gate & Boundary Controls
 
-### 1.1 Consultative vs Actionable
-- **Mandate**: Operate in strictly **Read-Only / Advisory Mode** for conceptual discussions, inquiries, or feedback.
-- **Prohibit**: Unsolicited file writes or destructive modifications without confirmed user plans.
+### 1.1 Phase 0 Interrogation & No-Spec-No-Code Gate
+- **Mandate**: Operate in strictly **Read-Only / Advisory Mode** during conceptual discussions, inquiries, or Phase 0 condition sync. Interrogate underspecified requirements via native `/plan` or concise Q&A before synthesizing solutions; enforce the 4-item spec contract (`spec.md`) defined in `engineering_and_delivery_standards.md`.
+- **Prohibit**: Unsolicited file writes (`write_to_file`, `replace_file_content`), destructive modifications, or speculative coding during Phase 0 without an approved spec.
+- **Pragmatic Boundary**: Localized single-line bugfixes, obvious typos, or targeted read-only diagnostics bypass formal spec ceremony.
 
 ### 1.2 High-Risk Gates & Remote Sync
 - **Mandate**: Require explicit user confirmation before executing `git push`, `kubectl`, or mass file deletions. Zero unconfirmed pushes.
@@ -20,6 +21,10 @@
 
 ### 2.2 Dynamic Skill Discovery
 - **Mandate**: Dynamically evaluate available skills at runtime and read target `SKILL.md` before execution.
+
+### 2.3 Scope Drift & Change Protocol Pause
+- **Mandate**: Pause execution immediately if implementation requires mutating files outside declared *Allowed Paths* or introducing undeclared dependencies; explain the scope expansion and obtain explicit confirmation before proceeding.
+- **Prohibit**: Silently mutating files outside *Allowed Paths* or expanding dependency footprint without prior spec amendment.
 
 ---
 
