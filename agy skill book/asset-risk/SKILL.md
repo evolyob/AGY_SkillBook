@@ -21,10 +21,11 @@ Intelligently categorize information assets and select fitting, causally-paired 
 ## Execution Workflow
 
 1. **Input Inspection**: Read asset items, categories, and types.
-2. **Deterministic Matching**: Call `matcher.py` with asset rows.
+2. **Deterministic Matching**: Call `matcher.py` with asset rows. Items with unclear semantics are safely skipped (`status='unresolved'`) to prevent data contamination.
 3. **Anti-Monotony Safeguard**: Ensure consecutive rows of identical types rotate through distinct valid pairs.
-4. **Handoff**: Pipe JSON output to user or `exec-xlsx/scripts/xml_patcher.py` for template insertion.
+4. **Handoff & User Clarification**: Write matched pairs via `xml_patcher.py`; prompt the user at the end to clarify any skipped unresolved assets.
 
 ## References
 - [`ASSET_CATALOG.md`](references/ASSET_CATALOG.md): Taxonomy, causality principles, and anti-monotony rules.
+- [`ASSET_RISK_TEMPLATE.md`](references/ASSET_RISK_TEMPLATE.md): Canonical 10-column Markdown template and field schema.
 - [`VALUATION_GUIDE.md`](references/VALUATION_GUIDE.md): CIA 5/3/1 criteria and 1~125 risk calculation reference.

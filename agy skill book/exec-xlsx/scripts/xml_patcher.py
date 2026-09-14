@@ -37,14 +37,15 @@ def patch_sheet_xml(xml_content: str, cell_updates: Dict[str, Any]) -> str:
         val = item.get("value") if isinstance(item, dict) else item
         custom_style = item.get("style") if isinstance(item, dict) else None
 
-        cell_pattern = rf'<c r="{ref}"([^>]*)>(.*?)</c>|<c r="{ref}"([^>]*)/>'
+        cell_pattern = rf'<c r="{ref}"([^>]*?)\s*/>|<c r="{ref}"([^>]*?)>(.*?)</c>'
         m_cell = re.search(cell_pattern, updated)
         if m_cell:
-            attrs = (m_cell.group(1) or m_cell.group(3) or "").strip()
+            attrs = (m_cell.group(1) or m_cell.group(2) or "").strip()
             s_match = re.search(r's="(\d+)"', attrs)
             active_s = custom_style if custom_style is not None else (s_match.group(1) if s_match else None)
             s_attr = f' s="{active_s}"' if active_s is not None else ""
-            updated = re.sub(cell_pattern, _render_cell_xml(ref, val, s_attr), updated, count=1)
+            new_cell = _render_cell_xml(ref, val, s_attr)
+            updated = updated[:m_cell.start()] + new_cell + updated[m_cell.end():]
             continue
 
         s_attr = f' s="{custom_style}"' if custom_style is not None else ""
