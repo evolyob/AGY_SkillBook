@@ -1,5 +1,7 @@
 {
-  "generic_patterns": [
+  "forbidden": {},
+  "contextual": {},
+  "patterns": [
     {
       "label": "em dash",
       "regex": "\\u2014",
@@ -59,94 +61,105 @@
       "regex": "\\b\\w{4,}, \\w{4,} and \\w{4,}\\b",
       "budget": 3.0,
       "advice": "Check each one: is it a real list, or three items invented for rhythm?"
+    },
+    {
+      "label": "obsolete attachment cliché (Enclosed please find)",
+      "regex": "\\b[Ee]nclosed (herewith )?please find\\b",
+      "budget": 0.0,
+      "advice": "Obsolete bureaucratic cliché. Use 'Attached is...' or 'I enclose...' instead."
+    },
+    {
+      "label": "bureaucratic throttle (Please be advised that)",
+      "regex": "\\b[Pp]lease be advised (that)?\\b",
+      "budget": 0.0,
+      "advice": "Archaic government boilerplate. Cut preamble and state the fact directly, or use 'Please note that...'."
+    },
+    {
+      "label": "archaic receipt cliché (in receipt of)",
+      "regex": "\\b(are|am|is) in receipt of\\b",
+      "budget": 0.0,
+      "advice": "19th-century commercialese. Replace with 'Thank you for your letter/document' or 'We received'."
+    },
+    {
+      "label": "stilted commercialese (as per your request)",
+      "regex": "\\b[Aa]s per (your|the) (request|instruction)\\b",
+      "budget": 0.0,
+      "advice": "Stilted bureaucratic phrase. Use 'As requested' or 'As you requested' instead."
+    },
+    {
+      "label": "sincerity tells (genuine/honest) [Claude]",
+      "regex": "\\b(genuine(ly)?|honest(ly)?)\\b",
+      "budget": 0.3,
+      "advice": "Claude sincerity cluster (~10x human frequency). Cut or replace with 'real'."
+    },
+    {
+      "label": "nuanced / non-trivial [Claude]",
+      "regex": "\\bnuanced\\b|\\bnon-trivial\\b",
+      "budget": 0.2,
+      "advice": "Plain-word replacements."
+    },
+    {
+      "label": "straightforward [Claude]",
+      "regex": "\\bstraightforward\\b",
+      "budget": 0.2,
+      "advice": "Use 'simple' or cut."
+    },
+    {
+      "label": "let me unpack / key distinction [Claude]",
+      "regex": "\\bunpack\\b|key distinction|several considerations",
+      "budget": 0.0,
+      "advice": "Cut meta-commentary."
+    },
+    {
+      "label": "rhetorical questions [Claude]",
+      "regex": "\\?",
+      "budget": 0.5,
+      "advice": "Claude asks ~3.9 per 1,000 words. In a report, convert to statements.",
+      "min_count": 2
+    },
+    {
+      "label": "because-chaining [ChatGPT]",
+      "regex": "\\bbecause\\b",
+      "budget": 5.0,
+      "advice": "ChatGPT hooks clauses with 'because' at ~6.5 per 1,000 words.",
+      "min_count": 3
+    },
+    {
+      "label": "simile scaffolding (as if) [ChatGPT]",
+      "regex": "\\bas if\\b",
+      "budget": 1.5,
+      "advice": "Mostly a fiction tell.",
+      "min_count": 2
+    },
+    {
+      "label": "power verbs (supercharge/unleash/dive in) [ChatGPT]",
+      "regex": "\\b(supercharg\\w+|unleash\\w*|dive in|game[- ]chang\\w+)\\b",
+      "budget": 0.0,
+      "advice": "Cut marketing hype verbs entirely."
+    },
+    {
+      "label": "intensifiers (incredibly/highly/massive/vital) [Gemini]",
+      "regex": "\\b(incredibly|highly|massive|vitally)\\b",
+      "budget": 0.8,
+      "advice": "Gemini leads on booster words at ~6.1 per 1,000."
+    },
+    {
+      "label": "uncontracted formality (it is / we must / do not) [Gemini]",
+      "regex": "\\b(We must|To understand why)\\b",
+      "budget": 0.3,
+      "advice": "Softens to plain statements."
+    },
+    {
+      "label": "formulaic transitions (First and foremost / Last but not least) [DeepSeek]",
+      "regex": "\\b(First and foremost|Last but not least|It is evident that)\\b",
+      "budget": 0.2,
+      "advice": "DeepSeek/LLM formulaic transitional phrases. Replace with direct statements."
+    },
+    {
+      "label": "sweeping false range (from X to Y, from A to B) [DeepSeek]",
+      "regex": "\\bfrom\\s+[^,.;]{2,25}\\s+to\\s+[^,.;]{2,25},\\s*(and\\s*)?from\\b",
+      "budget": 0.2,
+      "advice": "Double pseudo-range setup. Specific examples are much clearer."
     }
-  ],
-  "model_specific": {
-    "Claude": [
-      {
-        "label": "sincerity tells (genuine/honest)",
-        "regex": "\\b(genuine(ly)?|honest(ly)?)\\b",
-        "budget": 0.3,
-        "advice": "Claude sincerity cluster (~10x human frequency). Cut or replace with 'real'."
-      },
-      {
-        "label": "nuanced / non-trivial",
-        "regex": "\\bnuanced\\b|\\bnon-trivial\\b",
-        "budget": 0.2,
-        "advice": "Plain-word replacements."
-      },
-      {
-        "label": "straightforward",
-        "regex": "\\bstraightforward\\b",
-        "budget": 0.2,
-        "advice": "Use 'simple' or cut."
-      },
-      {
-        "label": "let me unpack / key distinction",
-        "regex": "\\bunpack\\b|key distinction|several considerations",
-        "budget": 0.0,
-        "advice": "Cut meta-commentary."
-      },
-      {
-        "label": "rhetorical questions",
-        "regex": "\\?",
-        "budget": 0.5,
-        "advice": "Claude asks ~3.9 per 1,000 words. In a report, convert to statements."
-      }
-    ],
-    "ChatGPT": [
-      {
-        "label": "because-chaining",
-        "regex": "\\bbecause\\b",
-        "budget": 5.0,
-        "advice": "ChatGPT hooks clauses with 'because' at ~6.5 per 1,000 words."
-      },
-      {
-        "label": "simile scaffolding (as if)",
-        "regex": "\\bas if\\b",
-        "budget": 1.5,
-        "advice": "Mostly a fiction tell."
-      },
-      {
-        "label": "power verbs (supercharge/unleash/dive in)",
-        "regex": "\\b(supercharg\\w+|unleash\\w*|dive in|game[- ]chang\\w+)\\b",
-        "budget": 0.0,
-        "advice": "Cut marketing hype verbs entirely."
-      }
-    ],
-    "Gemini": [
-      {
-        "label": "intensifiers (incredibly/highly/massive/vital)",
-        "regex": "\\b(incredibly|highly|massive|vitally)\\b",
-        "budget": 0.8,
-        "advice": "Gemini leads on booster words at ~6.1 per 1,000."
-      },
-      {
-        "label": "uncontracted formality (it is / we must / do not)",
-        "regex": "\\b(We must|To understand why)\\b",
-        "budget": 0.3,
-        "advice": "Softens to plain statements."
-      }
-    ],
-    "DeepSeek": [
-      {
-        "label": "formulaic transitions (First and foremost / Last but not least)",
-        "regex": "\\b(First and foremost|Last but not least|It is evident that)\\b",
-        "budget": 0.2,
-        "advice": "DeepSeek/LLM formulaic transitional phrases. Replace with direct statements."
-      },
-      {
-        "label": "sweeping false range (from X to Y, from A to B)",
-        "regex": "\\bfrom\\s+[^,.;]{2,25}\\s+to\\s+[^,.;]{2,25},\\s*(and\\s*)?from\\b",
-        "budget": 0.2,
-        "advice": "Double pseudo-range setup. Specific examples are much clearer."
-      }
-    ]
-  },
-  "hedges_regex": "\\b(arguably|somewhat|relatively|fairly|reasonably|tends? to|usually|typically|often|generally|largely|mostly|roughly|approximately|perhaps|possibly|seems?|appears?|suggests?|might|could|may)\\b",
-  "font_standards": {
-    "recommended_western_fonts": ["Calibri", "Arial", "Aptos", "Times New Roman"],
-    "recommended_code_fonts": ["Consolas", "Courier New"],
-    "standard_body_pt": 11
-  }
+  ]
 }
