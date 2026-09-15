@@ -4,6 +4,13 @@
 * **Script Role (`drill_generator.py`)**: Lightweight skeleton and field binder. Extracts canonical keywords (`{name}`, `{category}`, `{type}`, `{threat}`, `{vuln}`) from `parameters.json`.
 * **AI Agent Role**: Consumes extracted keywords and primary IT classification (Software, Data, Hardware) to dynamically formulate realistic, technically rigorous scenario narratives and 8-step incident response procedures per the requirements below. Never output rigid static templates.
 
+### Dual Input Routing
+
+| Mode | Objective | Trigger / Input | Pipeline & Deliverables |
+| :--- | :--- | :--- | :--- |
+| **Path A (Internal Asset)** | Statutory DR drills & compliance audits | Asset inventory row, system name, `id` | **`name` (or `id`) ➔ `category` & `type` ➔ `threat` & `vulnerability` ➔ Full Delivery (Block A + Block B)** |
+| **Path B (External Intel)** | Incident impact alignment & root-cause mapping | Security news, vulnerability alerts, incident reports | **Semantic Extraction (`name`) ➔ `category` & `type` ➔ `threat` & `vulnerability` (Deep Causal Mapping)** |
+
 ---
 
 ## 2. Block A Specifications (Planning Fields)

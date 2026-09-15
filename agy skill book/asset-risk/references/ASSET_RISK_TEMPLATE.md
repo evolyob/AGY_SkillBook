@@ -22,25 +22,12 @@ Canonical 10-column data contract for information asset inventory, CIA valuation
 | **9** | **威脅項目1** | System | String | `threat` (`id`) |
 | **10**| **弱點項目1** | System | String | `vulnerability` |
 
----
-
-## 2. CIA Valuation Criteria Reference
-
 > [!NOTE]
-> Detailed valuation rules and criteria are defined in [`VALUATION_GUIDE.md`](VALUATION_GUIDE.md). Scores must be judged and assigned by authorized asset owners (5 = High, 3 = Medium, 1 = Low).
-
-### Quick Rating Matrix
-
-| Asset Category | Rating Dimension | Level 5 (High) | Level 3 (Medium) | Level 1 (Low) |
-| :--- | :--- | :--- | :--- | :--- |
-| **Hardware** | **Availability (A)** | Tolerable outage $\le$ 4 hours | Tolerable outage 4h to 1 business day | Tolerable outage $>$ 1 business day |
-| **Software** | **Confidentiality (C)**<br>**Integrity (I)**<br>**Availability (A)** | Critical IP / legal fines / shutdown<br>Tolerable outage $\le$ 4 hours | Internal use / reporting delays<br>Tolerable outage 4h to 1 business day | Freeware / minor anomaly<br>Tolerable outage $>$ 1 business day |
-| **Data & Document** | **Confidentiality (C)**<br>**Integrity (I)**<br>**Availability (A)** | Confidential (PII, financials, contracts)<br>Immediate business halt on absence | Internal only (NDA required)<br>Operational delay but temporary fallback | Public information<br>Non-time-sensitive |
-| **Personnel** | **Confidentiality (C)**<br>**Availability (A)** | Master secret keys access<br>Single point of failure (no backup) | Internal data access<br>Designated deputy with lead time | Public data access only<br>Standard role with high redundancy |
+> Detailed CIA valuation rules (Columns 6-8) and risk calculation formulas are defined in [`VALUATION_GUIDE.md`](VALUATION_GUIDE.md). Scores are assigned by authorized asset owners.
 
 ---
 
-## 3. Standard Dropdown Taxonomy (5 Categories & 32 Types)
+## 2. Standard Dropdown Taxonomy (5 Categories & 32 Types)
 
 | `category` | `default_type` | `type` (32 Standard Taxonomy) |
 | :--- | :--- | :--- |
@@ -52,7 +39,7 @@ Canonical 10-column data contract for information asset inventory, CIA valuation
 
 ---
 
-## 4. Blank Markdown Template (Ready to Fill)
+## 3. Blank Markdown Template (Ready to Fill)
 
 ```markdown
 | 類別 | 類型 | 資訊資產項目 | 部門 | 保管人 | C | I | A | 威脅項目1 | 弱點項目1 |
