@@ -40,8 +40,11 @@ def main():
         if not file_path.exists():
             sys.exit(f"Error: File not found: {args.file}")
         raw_input = file_path.read_text(encoding="utf-8", errors="replace")
-    else:
+    elif not sys.stdin.isatty():
         raw_input = sys.stdin.read()
+    else:
+        p.print_help()
+        sys.exit(1)
 
     if not raw_input.strip():
         sys.exit(0)
