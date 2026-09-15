@@ -1,6 +1,6 @@
 {
-  "version": "0.4.0",
-  "description": "ISMS Parameter Table v0.4.0 (Decoupled Tree: 5 Categories, 32 Types, 60 Golden Canonical Pairs with Carrier-Differentiated 8/9-Tag Semantic Anchors and Zero Cross-Category Collisions)",
+  "version": "0.4.1",
+  "description": "ISMS Parameter Table v0.4.1 (Decoupled Tree: 5 Categories, 32 Types, 60 Golden Canonical Pairs with Carrier-Differentiated Tags and Target Roles)",
   "categories": {
     "硬體": {
       "default_type": "個人電腦",

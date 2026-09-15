@@ -8,7 +8,7 @@ import sys
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from matcher import load_parameters, select_pair, _infer_category_and_type
+from matcher import load_parameters, select_pair
 
 
 class TestMatcherInference(unittest.TestCase):
