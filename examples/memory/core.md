@@ -1,10 +1,19 @@
 # Core Memory & Template Index
 
-> **Directive**: Keep core memory under 35 lines. Load templates on-demand when creating or modifying skills/code. Never dump unprompted.
+> **Directive**: Keep core memory under 35 lines. Load governance topic and templates on-demand. Never dump unprompted.
 
 ---
 
-## 1. Reference Templates (`templates/` - Scaffolds & Implementation Laws)
+## 1. System Governance Topic (`topics/` - Security Baselines & Runtime Guardrails)
+
+### 1. Engineering & System Governance
+- **Domain**: Cryptography Baselines (AES-GCM/Ed25519/TLS 1.3), OWASP/CIS, Zero-EOL (Python/Node/Go), Credential Guard, 0-Retry Auth, 7-Step Pause, Pre-Delivery Verification
+- **Path**: `topics/system_governance.md`
+- **Keywords / Triggers**: OWASP, CIS, Cryptography, AES-GCM, TLS 1.3, Zero-EOL, Credential Guard, Anti-Drift, Zero-Leakage, Pre-Delivery Verification
+
+---
+
+## 2. Reference Templates (`templates/` - Implementation Contracts & Scaffolds)
 
 ### 1. Specification Contract (No-Spec-No-Code)
 - **Path**: `templates/spec_template.md`
@@ -21,12 +30,6 @@
 ### 4. Vibe Skill Lifecycle & Evolution Guide
 - **Path**: `templates/vibe_skill_lifecycle.md`
 - **Role**: Standard 4-step build flow, 5 evolution traps rejection, and 8-point pre-delivery cheatsheet.
-
----
-
-## 2. Operational Safety Brakes
-- **High-Risk Confirmation**: Must obtain explicit confirmation before executing destructive commands or unreviewed `git push`.
-- **7-Step Debug Pause**: Halt execution after 7 consecutive tool errors to summarize eliminated hypotheses and refocus on root cause.
 
 ---
 

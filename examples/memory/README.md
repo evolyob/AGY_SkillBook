@@ -1,23 +1,29 @@
 # Antigravity Production Templates & Memory Architecture
 
-This directory provides production-grade templates and scaffolds for building deterministic, context-efficient skills and tools in Google Antigravity.
+This directory provides production-grade templates and governance scaffolds for building deterministic, context-efficient skills and tools in Google Antigravity.
 
 ---
 
-## 1. Core Philosophy: Intuitive, Non-Abstract & Clear Division of Labor
+## 1. Core Architecture: System Governance & Concrete Templates
 
-Internal specifications and templates are written directly for the AI agent to execute. They prioritize high-signal constraints over abstract dogma:
+The memory architecture separates system security baselines from implementation scaffolds:
 
-1. **Clear Division of Responsibilities**:
-   - **Deterministic Computation (Python stdlib)**: Handles 100% of arithmetic, data filtering, keyword indexing, and schema validation. Never offload computation or heavy lookup to LLM deduction.
-   - **Cognitive Orchestration (LLM)**: Focuses strictly on intent routing, candidate selection, user clarification, and presentation formatting.
-   - **Boundary Enforcement (Spec Contract)**: Freezes Non-Goals, Allowed Paths, and Verification Commands before touching code.
-2. **Zero Overhead & Zero Hallucination**:
-   - Templates provide concrete copy-paste skeletons, eliminating vague philosophical essays and token-wasting meta-theories.
+1. **System Governance Topic (`topics/system_governance.md`)**:
+   - Single authoritative standard for security (OWASP, AES-GCM/Ed25519/TLS 1.3), Zero-EOL runtimes, credential protection, 0-retry auth protocol, 7-step anti-drift pause, and pre-delivery zero-leakage machine verification.
+2. **Implementation Templates Suite (`templates/*.md`)**:
+   - High-signal scaffolds for building code, schemas, and skills with clear division of labor (Python computes, LLM formats, Spec enforces boundaries).
 
 ---
 
-## 2. Template Suite Overview (`templates/`)
+## 2. Component Directory & Responsibilities
+
+### Global System Governance (`topics/`)
+
+| Topic | File | Core Responsibility & Boundary |
+|---|---|---|
+| **System Governance** | [`topics/system_governance.md`](topics/system_governance.md) | **Security & Runtime Guardrails**: OWASP/CIS standards, proven cryptography (AES-GCM, Ed25519, TLS 1.3), Zero-EOL runtimes (Python/Node/Go), credential file blacklist (`.ssh`, `.env`), 0-retry auth pause, 7-step debug pause, and pre-delivery machine verification. |
+
+### Reference Templates (`templates/`)
 
 | Template / Contract | File | Core Responsibility & Boundary |
 |---|---|---|
@@ -33,7 +39,9 @@ Internal specifications and templates are written directly for the AI agent to e
 ```text
 examples/memory/
 ├── README.md               # Architecture overview and usage guide
-├── core.md                 # Lean template index & user preferences sample (< 30 lines)
+├── core.md                 # Lean index & user preferences sample (< 35 lines)
+├── topics/                 # Authoritative system governance & security
+│   └── system_governance.md # Security baselines, runtime EOL, & agent execution brakes
 └── templates/              # Concrete implementation scaffolds & contracts
     ├── spec_template.md    # 4+1 item specification contract boilerplate
     ├── senior_coding_laws.md # Clean code 5-step engineering radar
@@ -47,13 +55,16 @@ examples/memory/
 
 ### Step 1: Create Memory Directories
 ```bash
-mkdir -p ~/../memory/templates
+mkdir -p ~/../memory/topics ~/../memory/templates
 ```
 
 ### Step 2: Deploy Scaffolds
 ```bash
 # Copy core index sample
 cp examples/memory/core.md ~/../memory/core.md
+
+# Copy system governance topic
+cp examples/memory/topics/system_governance.md ~/../memory/topics/
 
 # Copy production templates
 cp examples/memory/templates/*.md ~/../memory/templates/
@@ -63,5 +74,5 @@ cp examples/memory/templates/*.md ~/../memory/templates/
 ```markdown
 Persistent Memory Management:
   - Scope: Use `~/../memory/core.md` as index; workspace data MUST remain in `<workspace>/.memory/project.md`.
-  - Load/Save: Read `core.md` at conversation start. Load templates ONLY when building or refactoring skills.
+  - Load/Save: Read `core.md` at conversation start. Load governance topic and templates on-demand.
 ```
