@@ -41,6 +41,20 @@
       }
     ]
   },
+  "noai-gate": {
+    "PreToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.gemini/hooks/noai_gate.py",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  },
   "post-tool-quality-guard": {
     "PostToolUse": [
       {

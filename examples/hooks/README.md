@@ -24,13 +24,14 @@ graph LR
 
 ---
 
-## 2. Core Guardrail Suite (4 Production Guards)
+## 2. Core Guardrail Suite (5 Production Guards)
 
 | Guardrail Name | Trigger Point | Target Tools (`matcher`) | Action | Security Objective & Logic |
 |---|---|---|---|---|
 | **`system-survival-guard`** | `PreToolUse` | `run_command` | `force_ask` | **Destructive Command Intercept**: Catches `rm -rf`, `drop database`, `kubectl delete`, etc., requiring explicit manual confirmation. |
 | **`secret-leak-guard`** | `PreToolUse` | `write_to_file`<br>`replace_file_content` | `deny` | **Hardcoded Secrets Blocker**: Intercepts plaintext OpenAI API keys (`sk-`), GitHub Tokens (`ghp_`), AWS Access Keys (`AKIA`), and RSA private keys. |
-| **`anti-blind-mutation-guard`** | `PreToolUse` | `write_to_file`<br>`replace_file_content` | `force_ask` | **Anti-Blind Mutation Circuit Breaker**: Analyzes conversation history; when the user questions an approach, reports a defect, or requests discussion, stops the agent from guessing code mutations and requires upfront alignment. |
+| **`anti-blind-mutation-guard`** | `PreToolUse` | `write_to_file`<br>`replace_file_content` | `deny` | **Anti-Blind Mutation Circuit Breaker**: Analyzes conversation history; when the user questions an approach, reports a defect, or requests discussion, stops the agent from guessing code mutations and requires upfront alignment. |
+| **`noai-gate`** | `PreToolUse` | `write_to_file`<br>`replace_file_content` | `deny` | **Anti-AI & Syntax Gate (Shift-Left)**: Intercepts high-frequency AI buzzwords, mainland tech terms, and formulaic AI syntax patterns on documents before writing to disk (24ms latency, zero disk pollution). |
 | **`post-tool-quality-guard`** | `PostToolUse` | `write_to_file`<br>`replace_file_content` | Advisory / Warning | **Static Quality & Syntax Guard**: <br>1. Scans for hardcoded local user paths (`/home/` or `/Users/`).<br>2. Emits advisory warning for unquoted node labels in Mermaid 11.x diagrams (avoids silent disk mutation drift).<br>3. Verifies Markdown code fence closure balance. |
 
 ---
@@ -41,6 +42,8 @@ graph LR
 examples/hooks/
 ├── hooks.json                     # Global Hooks routing configuration (PreToolUse & PostToolUse rules)
 ├── anti_blind_mutation.py         # Anti-blind mutation circuit breaker (Python 3, Vibe Safe)
+├── noai_gate.py                   # PreToolUse anti-AI & syntax gate (Python 3, stdlib only)
+├── rules_gate.json                # Lightweight anti-AI buzzword and formulaic pattern dictionary
 ├── post_tool_quality_guard.py     # Static quality scanner and advisory guard (Python 3)
 ├── secret_leak_guard.py           # PreToolUse secret leak interceptor (Python 3, regex & entropy safe)
 └── README.md                      # Architecture overview and deployment guide
