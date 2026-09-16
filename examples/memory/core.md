@@ -1,6 +1,6 @@
 # Core Memory & Template Index
 
-> **Directive**: Keep core memory under 25 lines. Load templates on-demand when creating or modifying skills/code. Never dump unprompted.
+> **Directive**: Keep core memory under 35 lines. Load templates on-demand when creating or modifying skills/code. Never dump unprompted.
 
 ---
 
@@ -24,7 +24,13 @@
 
 ---
 
-## 2. Minimal User Preference Boilerplate (Example)
+## 2. Operational Safety Brakes
+- **High-Risk Confirmation**: Must obtain explicit confirmation before executing destructive commands or unreviewed `git push`.
+- **7-Step Debug Pause**: Halt execution after 7 consecutive tool errors to summarize eliminated hypotheses and refocus on root cause.
+
+---
+
+## 3. Minimal User Preference Boilerplate (Example)
 - **Export Path**: `~/Downloads` for all deliverables (.docx, .xlsx, .pptx, .pdf).
 - **Encoding**: `utf-8-sig` (UTF-8 with BOM) for cross-platform compatibility.
 - **Guardrail**: Write to persistent memory only upon explicit user command.
