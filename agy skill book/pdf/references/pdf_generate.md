@@ -17,10 +17,14 @@ Loaded centrally from `scripts/themes.json`. Printable canvas width: `total=540p
 
 ---
 
-## 2. Dual-Grid Architecture & High-Density Band Catalog
+## 2. Dynamic Capacity & Golden Quad-Core Archetypes
 
-- **A4 Height Formula**: `A4 Capacity = Page 1 (Top 6 + Mid 34+) + (N - 1) × Page 2+ (Full 40+ Lines)`
-- **Line Budget Rule**: Page 1 provides 34+ lines of usable content space after the top header (6 lines) [Total 40+ lines], while Page 2+ provides a full 40+ lines per page. Strictly enforce Dual-Grid layouts (`100% Full-Width` or `50/50 Symmetrical Split`). Every band follows `Band = Band Title + Function`:
+- **Dynamic Capacity Principle**: A4 1-Pager strictly follows `Header + 3~4 Functional Bands` (Dual-Grid layouts: `100% Full-Width` or `50/50 Symmetrical Split`). Every band follows `Band = Band Title + Function`:
+- **Golden Quad-Core Archetypes**:
+  1. **`Quadrant Matrix (2x2)`**: 四象限決策矩陣 (`build_split_row` × 2, P0~P3 資源分配)
+  2. **`Multimodal Grid`**: 非對稱多模態混排 (`weights=[0.65, 0.35]`, 主架構表 + 雙層 KPI 堆疊)
+  3. **`SOP Pipeline`**: 橫向四階段流程 (`build_pipeline_flow`, 步驟與 `▶` 導航)
+  4. **`Editorial Timeline`**: 時間軸與里程碑檢核 (`build_checklist_grid`)
 
 | Primitive | API Function | Line Cost | Grid Pattern | Use Case & Role |
 | :--- | :--- | :---: | :---: | :--- |
@@ -75,8 +79,8 @@ builder.generate_infographic_1pager('output.pdf', story)
 ---
 
 ## 4. Quality Verification SOP
-Always run automated 5-Gate verification:
+Always run automated 6-Gate verification:
 ```bash
 python3 scripts/verifier.py <output.pdf>
-# Must output: [Verification PASSED] 5/5 Gates OK
+# Must output: [Verification PASSED] 6/6 Gates OK (Includes Gate 6 AI Detox)
 ```

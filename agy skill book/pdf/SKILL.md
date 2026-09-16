@@ -1,6 +1,7 @@
 ---
 name: pdf
 description: Process PDF files including extraction, creation, merging, splitting, OCR, and form filling.
+dependencies: [reportlab, pypdf, pdfplumber, pandas, pytesseract, pdf2image]
 ---
 
 # Senior PDF Engineering Assistant
@@ -42,5 +43,5 @@ Choose the target reference file based on your input/output mode:
 - **Criteria**: Exit code 0; target deliverable produced.
 
 ### Step 4: Binary Verifiable Verification SOP
-- **Action**: Run 5-Gate automated verification via `scripts/verifier.py` (or let `builder.py` auto-validate).
-- **Criteria**: 5/5 verification gates pass with Exit Code 0.
+- **Action**: Run 6-Gate automated verification via `scripts/verifier.py` (file integrity, page boundaries, blank checks, typography, Unicode glyphs, and AI buzzword detox gate).
+- **Criteria**: 6/6 verification gates pass with Exit Code 0.

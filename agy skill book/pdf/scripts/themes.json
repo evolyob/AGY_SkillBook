@@ -20,6 +20,20 @@
       "fallback": "MSung-Light"
     }
   },
+  "geometry": {
+    "card_radius": 4.0,
+    "pill_radius": 0.50,
+    "card_border_width": 0.75,
+    "card_padding": 4.5,
+    "grid_gap": 10.0,
+    "page_printable_width": 540.0,
+    "pipeline_height": 50.0,
+    "action_board_height": 70.0,
+    "kpi_row_height": 52.0,
+    "chart_width": 240.0,
+    "chart_height": 115.0,
+    "description": "Global SSOT geometry parameters: 4.0pt for modern Bento micro-rounded cards, 0.50 for full pill capsules."
+  },
   "symbols": {
     "allowed": [
       "✓",
@@ -34,7 +48,7 @@
       "▶"
     ],
     "emojis_allowed": false,
-    "description": "Standard BMP symbols are fully supported; 4-byte SMP emojis are prohibited."
+    "description": "Strictly only use standard BMP symbols; 4-byte SMP emojis are prohibited."
   },
   "accent_catalog": {
     "magenta": "#FF0080",
@@ -49,66 +63,100 @@
     "gray": "#7E8287"
   },
   "themes": {
-    "light": {
-      "p": "#2B5C8F",
-      "s": "#007A92",
-      "a": "#EC6A00",
-      "hl": "#F5E050",
-      "alert": "#E95119",
-      "magenta": "#FF0080",
-      "electric_cyan": "#00F0FF",
-      "purple": "#7C3AED",
-      "bg": "#FFFFFF",
-      "card_bg": "#F8FAFC",
-      "txt": "#0B0F19"
+    "yellow": {
+      "colors": {
+        "bg": "#F5E050",
+        "bg_alt": "#FFF8D1",
+        "card": "#FFFFFF",
+        "card_alt": "#FFF8D1",
+        "border": "#2B5C8F",
+        "border_light": "#7E8287",
+        "text_primary": "#0B0F19",
+        "text_muted": "#2B5C8F",
+        "text_sub": "#7E8287",
+        "cyan": "#007A92",
+        "emerald": "#10B981",
+        "purple": "#7C3AED",
+        "amber": "#EC6A00",
+        "pink": "#E95119",
+        "magenta": "#FF0080",
+        "electric_cyan": "#00F0FF"
+      },
+      "accents": [
+        "#2B5C8F",
+        "#EC6A00",
+        "#007A92",
+        "#E95119",
+        "#FF0080",
+        "#00F0FF",
+        "#7C3AED",
+        "#7E8287"
+      ]
     },
     "dark": {
-      "p": "#F5E050",
-      "s": "#00F0FF",
-      "a": "#FF0080",
-      "hl": "#7C3AED",
-      "alert": "#E95119",
-      "magenta": "#FF0080",
-      "electric_cyan": "#00F0FF",
-      "purple": "#7C3AED",
-      "bg": "#0B0F19",
-      "card_bg": "#1E293B",
-      "txt": "#FFFFFF"
+      "colors": {
+        "bg": "#0B0F19",
+        "bg_alt": "#18181A",
+        "card": "#1E293B",
+        "card_alt": "#2E2E2E",
+        "border": "#7E8287",
+        "border_light": "#475569",
+        "text_primary": "#FFFFFF",
+        "text_muted": "#7E8287",
+        "text_sub": "#CBD5E1",
+        "cyan": "#00F0FF",
+        "emerald": "#10B981",
+        "purple": "#7C3AED",
+        "amber": "#F5E050",
+        "pink": "#FF0080",
+        "magenta": "#FF0080",
+        "electric_cyan": "#00F0FF"
+      },
+      "accents": [
+        "#F5E050",
+        "#00F0FF",
+        "#FF0080",
+        "#7C3AED",
+        "#EC6A00",
+        "#007A92",
+        "#E95119",
+        "#2B5C8F"
+      ]
     },
-    "yellow": {
-      "p": "#2B5C8F",
-      "s": "#007A92",
-      "a": "#EC6A00",
-      "hl": "#E95119",
-      "alert": "#E95119",
-      "magenta": "#FF0080",
-      "electric_cyan": "#00F0FF",
-      "purple": "#7C3AED",
-      "bg": "#F5E050",
-      "card_bg": "#FFFFFF",
-      "txt": "#0B0F19"
+    "light": {
+      "colors": {
+        "bg": "#FFFFFF",
+        "bg_alt": "#F8FAFC",
+        "card": "#F1F5F9",
+        "card_alt": "#ECECEC",
+        "border": "#CBD5E1",
+        "border_light": "#E2E8F0",
+        "text_primary": "#0B0F19",
+        "text_muted": "#7E8287",
+        "text_sub": "#2B5C8F",
+        "cyan": "#007A92",
+        "emerald": "#10B981",
+        "purple": "#7C3AED",
+        "amber": "#EC6A00",
+        "pink": "#FF0080",
+        "magenta": "#FF0080",
+        "electric_cyan": "#00F0FF"
+      },
+      "accents": [
+        "#2B5C8F",
+        "#007A92",
+        "#7C3AED",
+        "#FF0080",
+        "#EC6A00",
+        "#E95119",
+        "#00F0FF",
+        "#7E8287"
+      ]
     }
   },
   "global_colors": {
-    "heading": "#0B0F19",
-    "subtitle": "#7E8287",
-    "card_bg": "#FFFFFF",
-    "border": "#7E8287",
-    "divider": "#CBD5E1",
     "contrast_dark": "#334155",
-    "contrast_light": "#E2E8F0",
+    "contrast_light": "#F8FAFC",
     "luminance_threshold": 0.65
-  },
-  "layout": {
-    "page_printable_width": 540.0,
-    "grid_gap": 12.0,
-    "card_padding": 6.0,
-    "card_radius": 4.0,
-    "card_border_width": 0.75,
-    "pipeline_height": 54.0,
-    "action_board_height": 75.0,
-    "kpi_row_height": 56.0,
-    "chart_width": 240.0,
-    "chart_height": 120.0
   }
 }

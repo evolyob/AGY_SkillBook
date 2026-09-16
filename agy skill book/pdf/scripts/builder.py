@@ -34,33 +34,76 @@ def load_theme_config() -> Dict[str, Any]:
              Path.home() / ".gemini/skills/pdf/scripts/themes.json"]:
         if p and p.exists():
             with open(p, "r", encoding="utf-8") as f: return json.load(f)
-    return {"fonts": {}, "themes": {}, "global_colors": {}, "layout": {}}
+    return {"fonts": {}, "themes": {}, "global_colors": {}, "geometry": {}}
+
+def load_detox_rules() -> Dict[str, Any]:
+    for p in [Path(__file__).parent / "rules_gate.json" if "__file__" in globals() else None,
+             Path.home() / ".gemini/hooks/rules_gate.json"]:
+        if p and p.exists():
+            try:
+                with open(p, "r", encoding="utf-8") as f: return json.load(f)
+            except Exception: pass
+    return {}
 
 _CFG = load_theme_config()
+_DETOX_RULES = load_detox_rules()
 _THEMES, _GC = _CFG.get("themes", {}), _CFG.get("global_colors", {})
-_LAY = _CFG.get("layout", {"page_printable_width": 540.0, "grid_gap": 12.0, "card_padding": 6.0, "card_radius": 4.0, "card_border_width": 0.75, "pipeline_height": 54.0, "action_board_height": 75.0, "kpi_row_height": 56.0, "chart_width": 240.0, "chart_height": 120.0})
+_GEO = _CFG.get("geometry", {
+    "page_printable_width": 540.0,
+    "grid_gap": 10.0,
+    "card_padding": 4.5,
+    "card_radius": 4.0,
+    "pill_radius": 0.50,
+    "card_border_width": 0.75,
+    "pipeline_height": 50.0,
+    "action_board_height": 70.0,
+    "kpi_row_height": 52.0,
+    "chart_width": 240.0,
+    "chart_height": 115.0,
+})
 _current_theme = contextvars.ContextVar("current_theme", default="light")
 
 def get_theme_palette(theme_name: Optional[str] = None) -> Dict[str, Any]:
     th = _THEMES.get(theme_name or _current_theme.get(), _THEMES.get("light", {}))
+    cd = th.get("colors", {})
     acc = _CFG.get("accent_catalog", {})
-    p = colors.HexColor(th.get("p", acc.get("denim", "#2B5C8F")))
-    s = colors.HexColor(th.get("s", acc.get("teal", "#007A92")))
-    a = colors.HexColor(th.get("a", acc.get("orange", "#EC6A00")))
-    hl = colors.HexColor(th.get("hl", acc.get("yellow", "#F5E050")))
-    alert = colors.HexColor(th.get("alert", acc.get("red_orange", "#E95119")))
-    emerald = colors.HexColor(acc.get("emerald", "#10B981"))
+    
+    p = colors.HexColor(cd.get("cyan", acc.get("teal", "#007A92")))
+    s = colors.HexColor(cd.get("text_sub", acc.get("denim", "#2B5C8F")))
+    a = colors.HexColor(cd.get("amber", acc.get("orange", "#EC6A00")))
+    hl = colors.HexColor(cd.get("pink", acc.get("magenta", "#FF0080")))
+    alert = colors.HexColor(cd.get("pink", acc.get("red_orange", "#E95119")))
+    emerald = colors.HexColor(cd.get("emerald", acc.get("emerald", "#10B981")))
+    
+    txt = colors.HexColor(cd.get("text_primary", "#0B0F19"))
+    muted = colors.HexColor(cd.get("text_muted", "#7E8287"))
+    border = colors.HexColor(cd.get("border", "#CBD5E1"))
+    bg = colors.HexColor(cd.get("bg", "#FFFFFF"))
+    card = colors.HexColor(cd.get("card", "#F8FAFC"))
     
     return {
         "primary": p, "secondary": s, "accent": a, "highlight": hl, "alert": alert, "emerald": emerald,
-        "dark": colors.HexColor(th.get("txt", _GC.get("heading", "#0B0F19"))),
-        "muted": colors.HexColor(_GC.get("subtitle", "#7E8287")),
-        "border": colors.HexColor(th.get("border", _GC.get("border", "#CBD5E1"))),
-        "bg": colors.HexColor(_GC.get("bg_canvas", "#FFFFFF")),
-        "card": colors.HexColor(th.get("card_bg", _GC.get("bg_surface", "#F8FAFC"))),
+        "dark": txt, "text_primary": txt,
+        "muted": muted, "text_muted": muted,
+        "border": border, "bg": bg, "card": card,
         "pink_bg": colors.HexColor("#FEF2F2"), "green_bg": colors.HexColor("#ECFDF5"),
         "yellow": colors.HexColor("#FEF08A"), "chart_palette": [p, s, a, hl, alert, emerald]
     }
+
+def resolve_color(c: Any, default: Optional[colors.Color] = None) -> colors.Color:
+    """Polymorphic Color Resolver: Supports ReportLab Color, Hex strings (#RRGGBB), and theme token names."""
+    if isinstance(c, colors.Color):
+        return c
+    if isinstance(c, str):
+        if c.startswith("#"):
+            return colors.HexColor(c)
+        pal = get_theme_palette()
+        if c in pal and isinstance(pal[c], colors.Color):
+            return pal[c]
+        acc = _CFG.get("accent_catalog", {})
+        if c in acc:
+            return colors.HexColor(acc[c])
+    return default or get_theme_palette()["primary"]
 
 def get_cjk_font() -> str:
     for f_cfg in _CFG.get("fonts", {}).values():
@@ -89,8 +132,20 @@ BASE_FONT_SZ = 10.5
 
 def clean_text(s: Any) -> str:
     if s is None: return ""
-    s = re.sub(r'[𐀀-]', '', str(s))
-    parts = re.split(r'(</?(?:b|i|u|font|br|super|sub|strike)(?:\s+[^>]*)?>)', s, flags=re.IGNORECASE)
+    text_str = str(s)
+    tech_terms = _DETOX_RULES.get("tech_terms_zh", {})
+    for src, target in tech_terms.items():
+        if src in text_str: text_str = text_str.replace(src, target)
+    buzz_map = {
+        "賦能": "強化", "閉環": "完整循環", "落地": "推行", "抓手": "著力點",
+        "助力": "協助", "打法": "策略", "底層邏輯": "核心原理", "顆粒度": "精細度",
+        "復盤": "檢討", "深耕細作": "扎實經營", "體感": "直觀感受", "打造": "建置",
+        "雙刃劍": "雙面刃", "組合拳": "多元措施", "頂層設計": "整體規劃", "對標": "借鑑"
+    }
+    for w, subst in buzz_map.items():
+        if w in text_str: text_str = text_str.replace(w, subst)
+    text_str = re.sub(r'[𐀀-]', '', text_str)
+    parts = re.split(r'(</?(?:b|i|u|font|br|super|sub|strike)(?:\s+[^>]*)?>)', text_str, flags=re.IGNORECASE)
     for i in range(0, len(parts), 2):
         parts[i] = re.sub(r'&(?!(?:amp|lt|gt|quot|apos|#\d+);)', '&amp;', parts[i]).replace('<', '&lt;').replace('>', '&gt;')
     return "".join(parts)
@@ -113,23 +168,25 @@ def _p(text: str, sz: float = BASE_FONT_SZ, col: Any = None, bold: bool = False,
     """SSOT Typography Atom: Strict >= 10.5pt rule & golden leading."""
     actual_sz = max(BASE_FONT_SZ, float(sz))
     pal = get_theme_palette()
-    c = col or pal["dark"]
+    c = resolve_color(col, pal["dark"]) if col else pal["dark"]
     st = ParagraphStyle(f"p_{actual_sz}_{bold}_{align}_{hash(c)}", fontName=CJK_FONT, fontSize=actual_sz, leading=lead or (actual_sz * 1.35), textColor=c, alignment=align)
     cleaned = clean_text(text)
     return Paragraph(f"<b>{cleaned}</b>" if bold and not str(cleaned).startswith("<b>") else str(cleaned), st)
 
-def build_card(content: Any, width: float, height: Optional[float] = None, bg: Optional[colors.Color] = None, border: Optional[colors.Color] = None, border_width: Optional[float] = None, radius: Optional[float] = None, pad: Optional[float] = None, valign: str = 'MIDDLE') -> Table:
+def build_card(content: Any, width: float, height: Optional[float] = None, bg: Optional[Union[colors.Color, str]] = None, border: Optional[Union[colors.Color, str]] = None, border_width: Optional[float] = None, radius: Optional[float] = None, pad: Optional[float] = None, valign: str = 'MIDDLE') -> Table:
     """SSOT Card Factory: Single point for all rounded container rendering."""
     pal = get_theme_palette()
-    bw = border_width if border_width is not None else _LAY.get("card_border_width", 0.75)
-    rad = radius if radius is not None else _LAY.get("card_radius", 4.0)
-    p = pad if pad is not None else _LAY.get("card_padding", 6.0)
+    bw = border_width if border_width is not None else _GEO.get("card_border_width", 0.75)
+    rad = radius if radius is not None else _GEO.get("card_radius", 4.0)
+    p = pad if pad is not None else _GEO.get("card_padding", 6.0)
+    bg_col = resolve_color(bg, pal["card"])
+    border_col = resolve_color(border, pal["border"])
     t = Table([[content if isinstance(content, list) else [content]]], colWidths=[width], rowHeights=[height] if height else None)
     t.hAlign = "LEFT"
-    t.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), bg or pal["card"]), ('BOX', (0,0), (-1,-1), bw, border or pal["border"]), ('ROUNDEDCORNERS', [rad, rad, rad, rad]), ('VALIGN', (0,0), (-1,-1), valign), ('TOPPADDING', (0,0), (-1,-1), p), ('BOTTOMPADDING', (0,0), (-1,-1), p), ('LEFTPADDING', (0,0), (-1,-1), p), ('RIGHTPADDING', (0,0), (-1,-1), p)]))
+    t.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), bg_col), ('BOX', (0,0), (-1,-1), bw, border_col), ('ROUNDEDCORNERS', [rad, rad, rad, rad]), ('VALIGN', (0,0), (-1,-1), valign), ('TOPPADDING', (0,0), (-1,-1), p), ('BOTTOMPADDING', (0,0), (-1,-1), p), ('LEFTPADDING', (0,0), (-1,-1), p), ('RIGHTPADDING', (0,0), (-1,-1), p)]))
     return t
 
-def build_split_row(cols_content: List[Any], weights: Optional[List[float]] = None, total: float = _LAY["page_printable_width"], gap: float = _LAY["grid_gap"], row_height: Optional[float] = None, valign: str = 'MIDDLE') -> Table:
+def build_split_row(cols_content: List[Any], weights: Optional[List[float]] = None, total: float = _GEO["page_printable_width"], gap: float = _GEO["grid_gap"], row_height: Optional[float] = None, valign: str = 'MIDDLE') -> Table:
     """SSOT Multi-Column Slot: Single point for horizontal layout and equal-height alignment."""
     n = len(cols_content)
     col_ws = calc_cols(total, weights or n, gap=gap)
@@ -146,45 +203,50 @@ def build_split_row(cols_content: List[Any], weights: Optional[List[float]] = No
 # LAYER 2: SEMANTIC FACADES (Zero Redundant Math)
 # ==============================================================================
 
-def build_pill_badge(text: str, bg: Optional[colors.Color] = None, fg: Optional[colors.Color] = None, font_size: float = 12.0, height: float = 22.0, total: float = _LAY["page_printable_width"]) -> Table:
+def build_pill_badge(text: str, bg: Optional[Union[colors.Color, str]] = None, fg: Optional[Union[colors.Color, str]] = None, font_size: float = 12.0, height: float = 22.0, total: float = _GEO["page_printable_width"]) -> Table:
     pal = get_theme_palette()
-    p = _p(f"<b>{text}</b>", sz=font_size, col=fg or colors.white, align=1)
-    w = min(total, max(140.0, len(text) * font_size * 1.2 + 20))
-    return build_card(p, width=w, height=height, bg=bg or pal["primary"], border_width=0, radius=height/2, pad=0)
+    fg_col = resolve_color(fg, colors.white)
+    bg_col = resolve_color(bg, pal["primary"])
+    p = _p(f"<b>{text}</b>", sz=font_size, col=fg_col, align=1)
+    w = min(total, max(120.0, sum(1.15 if ord(c) > 127 else 0.65 for c in str(text)) * font_size + 24.0))
+    return build_card(p, width=w, height=height, bg=bg_col, border_width=0, radius=height/2, pad=0)
 
-def build_pipeline_flow(steps: List[Dict[str, Any]], total: float = _LAY["page_printable_width"], uniform_height: float = _LAY["pipeline_height"]) -> Table:
+def build_pipeline_flow(steps: List[Dict[str, Any]], total: float = _GEO["page_printable_width"], uniform_height: float = _GEO["pipeline_height"], gap: float = _GEO["grid_gap"]) -> Table:
     pal = get_theme_palette()
     n = len(steps)
-    cell_w = (total - (n - 1) * 12) / n
+    col_ws = calc_cols(total, n, gap=gap)
     row_cells, row_w = [], []
     for i, st in enumerate(steps):
+        cell_w = col_ws[i]
         paras = [_p(f"<b>{st.get('step', f'0{i+1}')}</b>", sz=BASE_FONT_SZ, col=pal["primary"], align=1), Spacer(1, 1), _p(st.get("title", ""), sz=BASE_FONT_SZ, col=pal["dark"], align=1, lead=14.0)]
         if st.get("desc"): paras.append(_p(st["desc"], sz=BASE_FONT_SZ, col=pal["muted"], align=1, lead=13.5))
         row_cells.append(build_card(paras, width=cell_w, height=uniform_height, bg=pal["card"], border=pal["border"], pad=3))
         row_w.append(cell_w)
         if i < n - 1:
             row_cells.append(_p("▶", sz=BASE_FONT_SZ, col=pal["primary"], align=1))
-            row_w.append(12)
+            row_w.append(gap)
     t = Table([row_cells], colWidths=row_w)
     t.hAlign = "LEFT"
     t.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('RIGHTPADDING', (0,0), (-1,-1), 0)]))
     return t
 
-def build_action_board(as_is_dict: Dict[str, Any], to_be_dict: Dict[str, Any], total: float = _LAY["page_printable_width"], uniform_height: float = _LAY["action_board_height"]) -> Table:
+def build_action_board(as_is_dict: Dict[str, Any], to_be_dict: Dict[str, Any], total: float = _GEO["page_printable_width"], uniform_height: float = _GEO["action_board_height"], gap: float = _GEO["grid_gap"]) -> Table:
     pal = get_theme_palette()
-    half_w = (total - _LAY["grid_gap"]) / 2
+    col_ws = calc_cols(total, 2, gap=gap)
+    half_w = col_ws[0]
     def _box(d, is_pink):
         col, bg = (pal["alert"], pal["pink_bg"]) if is_pink else (pal["emerald"], pal["green_bg"])
         paras = [_p(f"{'✖' if is_pink else '✓'} {d.get('title', '')}", sz=12.0, col=col, bold=True), Spacer(1, 2)]
         for it in d.get("items", []): paras.append(_p(f"• {it}", sz=BASE_FONT_SZ, col=pal["dark"], lead=14.5))
         if "highlight" in d: paras.extend([Spacer(1, 1), _p(f"<b>{d['highlight']}</b>", sz=BASE_FONT_SZ, col=col, bold=True, lead=14.5)])
         return build_card(paras, width=half_w, height=uniform_height, bg=bg, border=col, border_width=1.2, pad=6)
-    return build_split_row([_box(as_is_dict, True), _box(to_be_dict, False)], weights=[0.5, 0.5], total=total, gap=_LAY["grid_gap"])
+    return build_split_row([_box(as_is_dict, True), _box(to_be_dict, False)], weights=[0.5, 0.5], total=total, gap=gap)
 
-def build_checklist_grid(items: List[Tuple[int, str, str]], total: float = _LAY["page_printable_width"], cols: int = 2) -> Table:
+def build_checklist_grid(items: List[Tuple[int, str, str]], total: float = _GEO["page_printable_width"], cols: int = 2, gap: float = _GEO["grid_gap"]) -> Table:
     pal = get_theme_palette()
+    col_ws = calc_cols(total, cols, gap=gap)
+    half_w = col_ws[0]
     half = (len(items) + 1) // cols
-    half_w = (total - _LAY["grid_gap"]) / 2
     def _col(chunk):
         rows = []
         for num, title, desc in chunk:
@@ -196,9 +258,9 @@ def build_checklist_grid(items: List[Tuple[int, str, str]], total: float = _LAY[
             if r_i % 2 == 1: t_styles.append(('BACKGROUND', (0, r_i), (-1, r_i), pal["card"]))
         t_sub.setStyle(TableStyle(t_styles))
         return t_sub
-    return build_split_row([_col(items[:half]), _col(items[half:])], weights=[0.5, 0.5], total=total, gap=_LAY["grid_gap"])
+    return build_split_row([_col(items[:half]), _col(items[half:])], weights=[0.5, 0.5], total=total, gap=gap)
 
-def build_product_hero_header(title: str, subtitle: str, desc: str, product_img_path: Optional[str] = None, specs: Optional[List[str]] = None, total: float = _LAY["page_printable_width"]) -> Table:
+def build_product_hero_header(title: str, subtitle: str, desc: str, product_img_path: Optional[str] = None, specs: Optional[List[str]] = None, total: float = _GEO["page_printable_width"], gap: float = 10.0) -> Table:
     pal = get_theme_palette()
     left = [_p(f"<b>{title}</b>", sz=20.0, col=pal["primary"], bold=True, lead=24.0), Spacer(1, 2), _p(f"<b>{subtitle}</b>", sz=12.5, col=pal["alert"], bold=True, lead=16.0), Spacer(1, 3), _p(desc, sz=BASE_FONT_SZ, col=pal["dark"], lead=15.0)]
     right = []
@@ -207,35 +269,38 @@ def build_product_hero_header(title: str, subtitle: str, desc: str, product_img_
         except Exception: pass
     if specs:
         for sp in specs: right.append(_p(f"• {sp}", sz=BASE_FONT_SZ, col=pal["muted"], lead=14.5))
-    return build_split_row([left, right], weights=[0.68, 0.32], total=total, gap=10)
+    return build_split_row([left, right], weights=[0.68, 0.32], total=total, gap=gap)
 
-def build_kpi_row(kpis: List[Dict[str, Any]], total: float = _LAY["page_printable_width"], uniform_height: float = _LAY["kpi_row_height"]) -> Table:
+def build_kpi_row(kpis: List[Dict[str, Any]], total: float = _GEO["page_printable_width"], uniform_height: float = _GEO["kpi_row_height"], gap: float = 8.0) -> Table:
     pal = get_theme_palette()
-    col_w = (total - (len(kpis) - 1) * 8) / len(kpis)
+    col_ws = calc_cols(total, len(kpis), gap=gap)
     cards = []
-    for k in kpis:
-        col = k.get("color") or pal["primary"]
-        paras = [_p(k.get("label", ""), sz=BASE_FONT_SZ, col=pal["muted"]), _p(f"<b>{k.get('val', '')}</b>" + (f" <font size=11.5 color='{col}'>({k['chg']})</font>" if k.get("chg") else ""), sz=16.0, col=col, bold=True)]
+    for idx, k in enumerate(kpis):
+        col = resolve_color(k.get("color"), pal["primary"])
+        col_hex = col.hexval() if hasattr(col, "hexval") else str(col)
+        chg_str = f" <font size=11.5 color='{col_hex}'>({k['chg']})</font>" if k.get("chg") else ""
+        paras = [_p(k.get("label", ""), sz=BASE_FONT_SZ, col=pal["muted"]), _p(f"<b>{k.get('val', '')}</b>{chg_str}", sz=16.0, col=col, bold=True)]
         if k.get("note"): paras.append(_p(k["note"], sz=BASE_FONT_SZ, col=pal["muted"]))
-        cards.append(build_card(paras, width=col_w, height=uniform_height, bg=pal["card"], border=col, border_width=1.0, pad=5))
-    return build_split_row(cards, total=total, gap=8)
+        cards.append(build_card(paras, width=col_ws[idx], height=uniform_height, bg=pal["card"], border=col, border_width=1.0, pad=5))
+    return build_split_row(cards, total=total, gap=gap)
 
-def build_card_grid(cards: List[Dict[str, Any]], cols: int = 3, total: float = _LAY["page_printable_width"], uniform_height: Optional[float] = None) -> Table:
+def build_card_grid(cards: List[Dict[str, Any]], cols: int = 3, total: float = _GEO["page_printable_width"], uniform_height: Optional[float] = None, gap: float = 10.0) -> Table:
     pal = get_theme_palette()
-    col_w = (total - (cols - 1) * 10) / cols
+    col_ws = calc_cols(total, cols, gap=gap)
     out_cards = []
-    for c in cards:
+    for idx, c in enumerate(cards):
         paras = []
         if c.get("badge"): paras.append(_p(f"<b>[{c['badge']}]</b>", sz=BASE_FONT_SZ, col=pal["primary"]))
         if c.get("title"): paras.append(_p(f"<b>{c['title']}</b>", sz=12.0, col=pal["dark"]))
         if c.get("body"):
             for b in (c["body"] if isinstance(c["body"], list) else [c["body"]]): paras.append(_p(f"• {b}", sz=BASE_FONT_SZ, col=pal["muted"]))
-        out_cards.append(build_card(paras, width=col_w, height=uniform_height, bg=pal["card"], border=pal["border"], pad=6))
-    return build_split_row(out_cards, total=total, gap=10)
+        w = col_ws[idx % len(col_ws)]
+        out_cards.append(build_card(paras, width=w, height=uniform_height, bg=pal["card"], border=pal["border"], pad=6))
+    return build_split_row(out_cards, total=total, gap=gap)
 
-def build_zebra_table(headers: List[str], rows: List[List[Any]], total: float = _LAY["page_printable_width"], col_widths: Optional[List[float]] = None) -> Table:
+def build_zebra_table(headers: List[str], rows: List[List[Any]], total: float = _GEO["page_printable_width"], col_widths: Optional[List[float]] = None) -> Table:
     pal = get_theme_palette()
-    c_ws = col_widths or [total / len(headers)] * len(headers)
+    c_ws = col_widths or calc_cols(total, len(headers), gap=0.0)
     data = [[_p(f"<b>{h}</b>", sz=BASE_FONT_SZ, col=colors.white, align=1) for h in headers]]
     for r in rows: data.append([_p(str(c), sz=BASE_FONT_SZ, col=pal["dark"]) for c in r])
     t = Table(data, colWidths=c_ws, repeatRows=1)
@@ -245,7 +310,7 @@ def build_zebra_table(headers: List[str], rows: List[List[Any]], total: float = 
     t.setStyle(TableStyle(t_styles))
     return t
 
-def build_pie_chart(data: List[float], labels: List[str], width: float = _LAY["chart_width"], height: float = _LAY["chart_height"]) -> Drawing:
+def build_pie_chart(data: List[float], labels: List[str], width: float = _GEO["chart_width"], height: float = _GEO["chart_height"]) -> Drawing:
     pal = get_theme_palette()
     palette = pal.get("chart_palette", [pal["primary"], pal["secondary"], pal["accent"], pal["emerald"], pal["alert"]])
     d, dia = Drawing(width, height), height - 10
@@ -265,7 +330,7 @@ def build_pie_chart(data: List[float], labels: List[str], width: float = _LAY["c
     d.add(leg)
     return d
 
-def build_bar_chart(data: Union[List[float], List[List[float]]], categories: List[str], width: float = _LAY["chart_width"], height: float = _LAY["chart_height"], is_vertical: bool = True) -> Drawing:
+def build_bar_chart(data: Union[List[float], List[List[float]]], categories: List[str], width: float = _GEO["chart_width"], height: float = _GEO["chart_height"], is_vertical: bool = True) -> Drawing:
     pal = get_theme_palette()
     palette = pal.get("chart_palette", [pal["primary"], pal["secondary"], pal["accent"]])
     d = Drawing(width, height)
@@ -285,7 +350,7 @@ def build_bar_chart(data: Union[List[float], List[List[float]]], categories: Lis
     d.add(bc)
     return d
 
-def build_document_header(title: str, subtitle: Optional[str] = None, meta: Optional[str] = None, total: float = _LAY["page_printable_width"]) -> List[Any]:
+def build_document_header(title: str, subtitle: Optional[str] = None, meta: Optional[str] = None, total: float = _GEO["page_printable_width"]) -> List[Any]:
     pal = get_theme_palette()
     paras = [_p(f"<b>{title}</b>", sz=22.0, col=pal["primary"], bold=True)]
     if subtitle: paras.extend([Spacer(1, 3), _p(f"<b>{subtitle}</b>", sz=12.5, col=pal["primary"])])
@@ -354,7 +419,7 @@ def generate_multipage_report(filename: str, title: str, subtitle: str = "", sto
 def generate_infographic_1pager(filename: str, story_elements: List[Any], theme: str = "light") -> str:
     token = _current_theme.set(theme)
     try:
-        doc = SimpleDocTemplate(filename, pagesize=A4, leftMargin=24, rightMargin=24, topMargin=24, bottomMargin=24)
+        doc = SimpleDocTemplate(filename, pagesize=A4, leftMargin=24, rightMargin=24, topMargin=20, bottomMargin=20)
         doc.build(_flatten(story_elements))
     finally: _current_theme.reset(token)
     return filename
