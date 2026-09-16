@@ -19,7 +19,7 @@ Every threat and vulnerability exists as an interrelated causal pair (`Threat ex
 - **Vulnerability**: An internal weakness, design flaw, or lack of control inherent to the asset (e.g., missing patches, weak passwords, unencrypted storage, lack of clean desk).
 - **Threat**: An external event or human action that exploits the vulnerability (e.g., ransomware execution, credential brute-forcing, eavesdropping, wire fraud).
 
-The parameter table (`parameters.json`) contains 82 validated causal pairs (Hardware: 15, Software: 21, Data: 18, Document: 14, Personnel: 14).
+The parameter table (`parameters.json`) contains 60 validated causal pairs (Hardware: 12, Software: 14, Data: 16, Document: 10, Personnel: 8).
 
 ## 4. Anti-Monotony Round-Robin Queue
 To prevent consecutive rows of identical asset types from receiving the same threat-vulnerability pair:

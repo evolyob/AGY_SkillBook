@@ -1,35 +1,53 @@
 ---
 name: asset-risk
-description: Intelligently categorize information assets and select diverse, causally linked threats and vulnerabilities without repetitive monotony.
+description: Categorize information assets, assign canonical threat-vulnerability pairs from parameters.json, generate 8-step DR drill plans, or align external threat intelligence.
 dependencies: []
 ---
 
-# Information Asset Risk Selection Companion (`asset-risk`)
+# Information Asset Risk & DR Drill Companion (`asset-risk`)
 
 ## Mission & Boundary
-Intelligently categorize information assets and select fitting, causally-paired threats and vulnerabilities without repetitive monotony.
-- **Core Capability**: Given an asset item name (and optional category/type), automatically infer its category and type, and select fitting, causally-paired threats and vulnerabilities with anti-monotony rotation.
-- **Zero Calculation Boundary**: Does NOT calculate numeric scores ($V, T, V_u, R$), predict risk tiers, or format Excel files. Excel native formulas handle math; human asset owners judge scores.
+Single Source of Truth for information asset risk categorization, canonical threat-vulnerability pairing, and 8-step disaster recovery drill plans driven by `parameters.json` (60 validated pairs).
+- **Zero Calculation Boundary**: Do NOT calculate numeric risk scores ($V \times T$). Excel native formulas handle math; human asset owners judge scores.
 
-## Progressive Routing Table
+---
 
-| Mode | Protocol / Command | Input | Output |
+## Routing & Core Commands
+
+| Feature | Trigger / Scenario | Concrete CLI Command | Primary Deliverable |
 | :--- | :--- | :--- | :--- |
-| **Single Probe** | `python3 <skill_dir>/scripts/matcher.py --cat <Cat> --type <Type> --name <Name>` | Single asset row | JSON matching pair |
-| **Batch Matching** | `python3 <skill_dir>/scripts/matcher.py --batch <file.json>` | Array of asset rows | JSON with anti-monotony rotation |
-| **Path A: DR Drill** | `python3 <skill_dir>/scripts/drill_generator.py` | Internal asset / `id` | Full Delivery (Block A + Block B) |
-| **Path B: Threat Intel** | Top-Down Progressive Convergence | Security news / alert URL | Deep Causal Threat & Vuln Mapping |
+| **1. Asset Matching** | Inventory rows, single system review | `python3 <skill_dir>/scripts/matcher.py --name "<Asset>"`<br>`python3 <skill_dir>/scripts/matcher.py --batch <file.json>` | Category, Type, Threat, Vuln, Pair ID (with rolling 5-history anti-monotony) |
+| **2. Threat Intel** | External CVE, breach news, incident report | Semantic entity extraction ➔ Query `matcher.py` against `parameters.json` | 3-part debrief: Incident summary, internal standard mapping, existing controls |
+| **3. DR Drill Plan** | Compliance audit, DR drill sheet, tabletop | `python3 <skill_dir>/scripts/drill_generator.py --name "<Asset>" --pair-id <ID> --format markdown` | Block A (Planning Table) + Block B (8-Step Execution Table) |
 
-## Execution Workflow
+---
 
-1. **Input Inspection**: Read asset items, categories, types, or external incident news/alerts.
-2. **Deterministic Matching**: Call `matcher.py`. Items with unclear semantics are safely skipped (`status='unresolved'`) to prevent data contamination.
-3. **Anti-Monotony & Governance**: Ensure consecutive rows of identical types rotate through distinct valid pairs without envelope tax.
-4. **Drill & Incident Analysis**: Route internal assets (Path A) or external news (Path B) per [`DRILL_SCENARIO_FRAMEWORK.md`](references/DRILL_SCENARIO_FRAMEWORK.md).
-5. **Handoff & User Clarification**: Write matched pairs via `xml_patcher.py`; prompt the user at the end to clarify any skipped unresolved assets.
+## Concrete Execution Protocols
+
+### 1. Asset Inventory Matching
+- **Single Asset**: Run `python3 <skill_dir>/scripts/matcher.py --name "<Asset Name>"`. The script automatically infers Category and Type using head-noun suffix weighting.
+- **Batch Processing**: Run `python3 <skill_dir>/scripts/matcher.py --batch <file.json>`. The script tracks recent threat history to prevent consecutive identical rows from receiving duplicate pairs.
+- **Ambiguity Handling**: If the asset name is too generic to determine a single category (`status="unresolved"`), prompt the user to specify the asset type instead of guessing.
+
+### 2. External Threat Intel Alignment
+When receiving external security news, vulnerability alerts, or incident reports:
+1. **Extract Core Target**: Identify the victim asset entity and normalize it to an internal IT keyword (e.g., "ESXi ransomware" ➔ "虛擬環境"; "CrowdStrike BSOD" ➔ "主機作業系統").
+2. **Lookup Canonical Pair**: Run `python3 <skill_dir>/scripts/matcher.py --name "<Keyword>"` to retrieve the standard Category, Type, Threat, Vulnerability, and Pair ID from `parameters.json`.
+3. **Format Debrief**:
+   - **Incident Summary**: 2–3 sentences detailing the attack vector, exploited flaw, and business impact.
+   - **Internal Mapping**: Exact `parameters.json` values (Category, Type, Threat, Vulnerability, Pair ID).
+   - **Defensive Posture & SOP**: Map mitigation actions to existing drill controls (Step 2 containment, Step 7 restore).
+
+### 3. 8-Step Disaster Recovery Drill Generation
+- Run `python3 <skill_dir>/scripts/drill_generator.py --name "<Asset Name>" --pair-id <Pair ID> --format markdown`.
+- Deliver both blocks directly in clean Markdown:
+  - **Block A (Planning)**: Drill theme, scope, trigger scenario exploiting Vulnerability, standard 8-step flow.
+  - **Block B (Execution)**: 8 standard procedures (收到通報 ➔ 緊急阻斷 ➔ 隔離保全 ➔ 受害清查 ➔ 事故判定 ➔ 通報主管機關 ➔ 修補還原 ➔ 驗證重啟). Keep `unit_role` and `duration` empty (`-`).
+
+---
 
 ## References
-- [`DRILL_SCENARIO_FRAMEWORK.md`](references/DRILL_SCENARIO_FRAMEWORK.md): Field-centric disaster recovery drill schema, statutory timelines, and execution step procedures.
-- [`ASSET_CATALOG.md`](references/ASSET_CATALOG.md): Taxonomy, causality principles, and anti-monotony rules.
-- [`ASSET_RISK_TEMPLATE.md`](references/ASSET_RISK_TEMPLATE.md): Canonical 10-column Markdown template and field schema.
-- [`VALUATION_GUIDE.md`](references/VALUATION_GUIDE.md): CIA 5/3/1 criteria and 1~125 risk calculation reference.
+- [`DRILL_SCENARIO_FRAMEWORK.md`](references/DRILL_SCENARIO_FRAMEWORK.md): 8-step procedure requirements, phase codes, and debrief template.
+- [`ASSET_CATALOG.md`](references/ASSET_CATALOG.md): 5 categories, taxonomy rules, and 60 validated causal pairs.
+- [`ASSET_RISK_TEMPLATE.md`](references/ASSET_RISK_TEMPLATE.md): Standard 10-column table schema.
+- [`VALUATION_GUIDE.md`](references/VALUATION_GUIDE.md): CIA rating matrix and risk calculation reference.
