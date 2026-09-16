@@ -7,26 +7,23 @@
 ## 1. The 4-Step Build Flow
 1. **Spec First (`spec_template.md`)**: Freeze Goal, Non-Goals, Allowed Paths, Dependencies, and Acceptance Criteria.
 2. **Data Structure (`SKILL_DATA_SPEC.md`)**: Flat list default (`Pattern A`), zero envelope wrapping (`item["field"]` direct). Build in-memory inverted index when items > 20 ($O(1)$ lookup).
-3. **Core Script (`senior_coding_laws.md`)**: Functional core in Python stdlib (`matcher.py`, `drill_generator.py`). Max `if` nesting $\le 2$. Python does 100% of calculations; LLM only formats.
-4. **Semantic Test Anchors (`tests/`)**: Lock ambiguous naming collisions and head-noun suffix rules with unit tests.
+3. **Core Script (`senior_coding_laws.md`)**: Functional core in Python stdlib (`scripts/<module>.py`). Max `if` nesting <= 2. Python does 100% of calculations; LLM only formats.
+4. **Semantic Test Anchors (`tests/`)**: Lock edge cases, ambiguous matches, and naming collisions with deterministic unit tests.
 
 ---
 
 ## 2. The 5 Evolution Traps to Reject (MUST NOT)
 1. **No Cognitive Dump**: Do NOT delete Python analyzer scripts to make the LLM deduce rules in thought. Keep computation in Python.
-2. **No Script Paradox**: Do NOT tell the LLM `Never output rigid templates` if the script outputs fixed templates. Script output IS the baseline.
+2. **No Script Paradox**: Do NOT tell the LLM "Never output rigid templates" if the script outputs fixed templates. Script output IS the baseline.
 3. **No Ghost Tools**: Every script named in `SKILL.md` MUST physically exist in `scripts/`. Never reference unbuilt scripts.
-4. **No Silent Ambiguity Break**: When input matches multiple categories equally, return `candidates: ["CategoryA", "CategoryB"]` so the LLM can ask the user. Never guess.
-5. **No Data Drift**: Documented numbers MUST match `parameters.json` exactly (e.g., 60 pairs = 60 pairs).
+4. **No Silent Ambiguity Break**: When input matches multiple categories equally, return `candidates: ["CategoryA", "CategoryB"]` so the LLM can clarify with the user. Never guess.
+5. **No Data Drift**: Documented counts, flags, and schema fields MUST match underlying data assets exactly.
 
 ---
 
-## 3. Surgical Combo Law (Continuous Pipeline)
-- **Input-Output Pipe**: Direct CLI output must be usable downstream without manual LLM assembly (e.g. `matcher.py --drill --format markdown`).
-- **Standardized Debrief**: External intel maps to 3 parts:
-  1. Summary (2-3 sentences).
-  2. Canonical mapping (`Category`, `Type`, `Threat`, `Vuln`, `Pair ID`).
-  3. Mitigation & SOP (links to standard drill steps).
+## 3. Composable CLI Design (One-Shot Pipelines)
+- **Downstream Ready**: CLI scripts should provide direct output flags (e.g. `--format markdown` or `--json`) so downstream agents receive ready-to-use payloads in a single execution without manual text assembly.
+- **Structured Payloads**: Always emit predictable, structured schemas matching the contract, never freeform conversational prose.
 
 ---
 

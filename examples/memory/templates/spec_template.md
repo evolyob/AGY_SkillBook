@@ -8,7 +8,7 @@
 ## 1. Goal & Non-Goals (Firewall Against Scope Creep)
 - **Goal**: [Concrete, measurable deliverable; the exact pain point being solved]
 - **Non-Goals (CRITICAL - What MUST NOT be done)**:
-  - PROHIBITED: [Explicitly excluded scope, e.g., do not calculate numeric risk formulas, do not reformat layout]
+  - PROHIBITED: [Explicitly excluded scope, e.g., do not calculate speculative formulas, do not reformat existing layouts, do not modify unrelated files]
   - PROHIBITED: [Any unapproved architectural refactoring or speculative features]
 
 ---
@@ -36,7 +36,7 @@ Modifications outside this perimeter are strictly prohibited:
 - **Expected Outcome**:
   - [x] All unit tests pass (`OK`).
   - [x] `/audit-skill` passes with 0 FAIL, 0 WARN.
-  - [x] Execution time < 0.2s.
+  - [x] Execution completes within expected performance threshold.
 
 ---
 

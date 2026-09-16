@@ -10,7 +10,7 @@
 | Storage Pattern | Role & Scope | Physical Structure | Runtime Index Mandate |
 | :--- | :--- | :--- | :--- |
 | **Pattern A: Flat List** | **DEFAULT**: Plug-and-play, lightweight skills | `[ { "id": "...", "tags": [...] } ]` | Ingest to `tag_index` ($O(1)$ if $N > 20$) |
-| **Pattern B: Grouped** | **EXCEPTION**: Deep taxonomies (e.g. ISMS assets) | `{ "categories": { "group": [ ... ] } }` | Extract items into `tag_index` on load |
+| **Pattern B: Grouped** | **EXCEPTION**: Hierarchical taxonomies (e.g. multi-tier catalogs) | `{ "categories": { "group": [ ... ] } }` | Extract items into `tag_index` on load |
 
 ---
 
@@ -32,13 +32,13 @@
 ```json
 {
   "categories": {
-    "hardware": [
+    "compute": [
       {
-        "id": "HW_001",
-        "type": "server",
-        "tags": ["backup_server", "bare_metal"],
-        "threat": "Host failure",
-        "remediation": "Redundant PSU"
+        "id": "COMP_001",
+        "type": "instance",
+        "tags": ["web_server", "linux"],
+        "description": "Primary application host",
+        "action": "Auto-restart on failure"
       }
     ]
   }
@@ -52,8 +52,11 @@
 For tiny datasets ($N \le 20$), linear scan is permitted. For $N > 20$, scripts **MUST** build an in-memory inverted index:
 
 ```python
-# Ingestion: Auto-build index when records > 20 (Flat or Grouped)
-records = data if isinstance(data, list) else [r for g in data.get("categories", {}).values() for r in (g.get("pairs", g) if isinstance(g, dict) else g)]
+# Ingestion: Auto-build index when records > 20 (Flat list or Grouped dictionary)
+records = data if isinstance(data, list) else [
+    item for group in data.get("categories", {}).values()
+    for item in (group if isinstance(group, list) else group.get("items", []))
+]
 tag_index = {}
 if len(records) > 20:
     for r in records:

@@ -1,7 +1,7 @@
 # Senior Clean Code & Vibe Craft Guide
 
 Practical engineering awareness standards for clean code architecture and resilient system implementation.
-**Core Philosophy**: Implements the approved `spec.md` contract established in `vibe_spec_governance` through a sequential 5-step engineering radar. Balance architectural hygiene with pragmatism.
+**Core Philosophy**: Implements the approved spec contract through a sequential 5-step engineering radar. Balance architectural hygiene with pragmatism.
 
 ---
 
@@ -12,7 +12,7 @@ Practical engineering awareness standards for clean code architecture and resili
   - MUST treat static JSON assets as SSOT lookup dictionaries; consume them via targeted key-indexing, structured mapping, or generator queries in Python 3, never by brute-force loops or whole-file prompt dumps.
 - **Prohibitions (MUST NOT)**:
   - MUST NOT leak raw SDK objects or unvalidated dictionaries into the domain core.
-  - MUST NOT permit semantic tag contamination (e.g. tagging hardware as paper) or silent unpopulated arrays in data assets.
+  - MUST NOT permit semantic tag contamination (e.g. assigning contradictory or nonsensical tags) or silent unpopulated arrays in data assets.
   - MUST NOT patch around malformed JSON with ad-hoc `if-else` ladders (Anti-Whack-A-Mole); enforce the dictionary contract at the root.
 - **Pragmatic Boundary**: Built-in standard library utilities and stable internal helpers do not require protocol abstraction layers.
 
