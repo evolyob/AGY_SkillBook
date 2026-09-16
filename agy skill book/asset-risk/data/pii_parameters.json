@@ -1,9 +1,12 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "PII 個資盤點參數表 (完全對齊 parameters.json 之 categories, types, tags 欄位名稱與分類體系)",
   "categories": {
     "軟體": {
       "data_format": "系統",
+      "col_h_format": "資料庫",
+      "default_storage": "儲存於資料庫／主機（電子）",
+      "default_disposal": "刪除",
       "default_type": "應用系統",
       "types": [
         "作業系統",
@@ -76,6 +79,9 @@
     },
     "資料": {
       "data_format": "電子檔",
+      "col_h_format": "電子檔",
+      "default_storage": "儲存於個人電腦（電子）",
+      "default_disposal": "刪除",
       "default_type": "管理文件",
       "types": [
         "網站公開資料",
@@ -151,6 +157,9 @@
     },
     "文件": {
       "data_format": "紙本資料",
+      "col_h_format": "紙本",
+      "default_storage": "存放於個人櫃／抽屜（紙本）",
+      "default_disposal": "碎紙",
       "default_type": "作業紀錄",
       "types": [
         "系統操作文件",
@@ -222,8 +231,6 @@
   "pii_field_categories": [
     {
       "group": "一般識別資料",
-      "impact_identifiability": 3,
-      "impact_sensitivity": 1,
       "is_special": false,
       "items": [
         "姓名",
@@ -241,8 +248,6 @@
     },
     {
       "group": "間接識別與活動資料",
-      "impact_identifiability": 2,
-      "impact_sensitivity": 2,
       "is_special": false,
       "items": [
         "員工編號",
@@ -259,10 +264,8 @@
     },
     {
       "group": "特種個人資料 (個資法第6條)",
-      "impact_identifiability": 3,
-      "impact_sensitivity": 3,
       "is_special": true,
-      "alert": "只要勾選此類，特種個資為『是』，敏感程度強制為 3 分(嚴重)",
+      "note": "只要包含此類項目，特種個資欄位為『是』",
       "items": [
         "病歷",
         "醫療紀錄",
