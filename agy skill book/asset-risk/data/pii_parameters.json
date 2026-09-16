@@ -1,5 +1,5 @@
 {
-  "version": "2.2.0",
+  "version": "0.2.0",
   "description": "PII 個資盤點參數表 (完全對齊 parameters.json 之 categories, types, tags 欄位名稱與分類體系)",
   "categories": {
     "軟體": {
