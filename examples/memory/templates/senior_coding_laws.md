@@ -5,7 +5,7 @@ Practical engineering awareness standards for clean code architecture and resili
 
 ---
 
-## 1. Step 1: Own the Boundary & Dict Lookups (邊界隔離與字典查表)
+## 1. Step 1: Own the Boundary & Dict Lookups
 - **Mandates (MUST)**:
   - MUST prioritize Python 3.13+ standard library (`pathlib`, `urllib`, `json`) over third-party dependencies declared in `spec.md`.
   - MUST isolate volatile third-party SDKs behind structural protocols (`typing.Protocol`) or adapters.
@@ -18,7 +18,7 @@ Practical engineering awareness standards for clean code architecture and resili
 
 ---
 
-## 2. Step 2: Pure Core & Constrained States (純核心分離與狀態建模)
+## 2. Step 2: Pure Core & Constrained States
 - **Mandates (MUST)**:
   - MUST structure decision-making as pure, deterministic functions (Functional Core) without side effects; confine file I/O, DB writes, and network calls to the outer service shell.
   - MUST use `enum.StrEnum` and Union types so invalid business states are unrepresentable.
@@ -30,7 +30,7 @@ Practical engineering awareness standards for clean code architecture and resili
 
 ---
 
-## 3. Step 3: Flattened Flow & Intent Naming (扁平控制流與語意命名)
+## 3. Step 3: Flattened Flow & Intent Naming
 - **Mandates (MUST)**:
   - MUST place Guard Clauses (`if not valid: return / raise`) at function tops to keep happy path linear at zero indentation; use `match ... case` for structural dispatching.
   - MUST name identifiers after concrete business domain entities (`pending_orders`, `sanitized_payload`).
@@ -42,7 +42,7 @@ Practical engineering awareness standards for clean code architecture and resili
 
 ---
 
-## 4. Step 4: Useful Errors & Observability (有用錯誤與診斷追蹤)
+## 4. Step 4: Useful Errors & Observability
 - **Mandates (MUST)**:
   - MUST provide actionable error messages containing operational context parameters (`order_id`, `file_path`, `retry_count`).
   - MUST use exception chaining (`raise DomainError(...) from err`) when re-raising lower-level exceptions to retain the full stack trace.
@@ -53,7 +53,7 @@ Practical engineering awareness standards for clean code architecture and resili
 
 ---
 
-## 5. Step 5: Contract Closure & Delete-List (合約驗收與剪枝交付)
+## 5. Step 5: Contract Closure & Delete-List
 - **Mandates (MUST)**:
   - MUST confine all file diffs strictly within the *Allowed Paths* approved in `spec.md`.
   - MUST verify task completion objectively against the declared *Acceptance Criteria* command before declaring done.

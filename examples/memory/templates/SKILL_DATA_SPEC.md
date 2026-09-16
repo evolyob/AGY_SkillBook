@@ -5,7 +5,7 @@
 
 ---
 
-## 1. Storage Patterns: Default vs. Exception (儲存結構：預設與例外)
+## 1. Storage Patterns: Default vs. Exception
 
 | Storage Pattern | Role & Scope | Physical Structure | Runtime Index Mandate |
 | :--- | :--- | :--- | :--- |

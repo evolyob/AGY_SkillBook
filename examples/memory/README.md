@@ -8,7 +8,7 @@ This directory provides production-grade templates and scaffolds for building de
 
 Internal specifications and templates are written directly for the AI agent to execute. They prioritize high-signal constraints over abstract dogma:
 
-1. **Clear Division of Responsibilities (分工明確)**:
+1. **Clear Division of Responsibilities**:
    - **Deterministic Computation (Python stdlib)**: Handles 100% of arithmetic, data filtering, keyword indexing, and schema validation. Never offload computation or heavy lookup to LLM deduction.
    - **Cognitive Orchestration (LLM)**: Focuses strictly on intent routing, candidate selection, user clarification, and presentation formatting.
    - **Boundary Enforcement (Spec Contract)**: Freezes Non-Goals, Allowed Paths, and Verification Commands before touching code.

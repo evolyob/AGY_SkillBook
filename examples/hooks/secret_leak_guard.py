@@ -79,7 +79,7 @@ def scan_content(content: str) -> dict | None:
                 if not is_false_positive(sec_name, token, line):
                     return {
                         "decision": "deny",
-                        "reason": f"【密鑰洩漏防護】檢測到第 {line_idx} 行含有未受保護的明文 {sec_name}！請改用環境變數管理，嚴禁寫入原始碼。"
+                        "reason": f"[Secret Leak Guard] Detected unprotected plaintext {sec_name} on line {line_idx}. Manage secrets via environment variables; never write them directly to source code."
                     }
     return None
 
