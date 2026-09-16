@@ -1,46 +1,30 @@
-# Antigravity Persistent Memory Architecture & Production Templates
+# Antigravity Production Templates & Memory Architecture
 
-This directory provides production-grade examples and best practices for the **Antigravity Two-Tier Persistent Memory Architecture (Core Index & On-Demand Topic Loading)**.
-
----
-
-## 1. What is Antigravity Two-Tier Memory?
-
-Antigravity uses a token-efficient, high-precision two-tier memory system to maintain project intelligence across long-running pair programming sessions without bloating the active prompt context:
-
-```mermaid
-graph TD
-    Boot["Agent Session Boot"] --> LoadCore["Load Core Index: ~/../memory/core.md (< 45 lines)"]
-    LoadCore --> Evaluate["Evaluate User Intent & Domain Keywords"]
-    Evaluate -->|"Match Topic 1"| LoadT1["On-Demand Load: topics/engineering_and_delivery_standards.md"]
-    Evaluate -->|"Match Topic 2"| LoadT2["On-Demand Load: topics/agent_behavior.md"]
-    Evaluate -->|"Match Scaffold"| LoadTemplate["Load Scaffold from templates/"]
-    Evaluate -->|"No Specific Trigger"| FastExecute["Execute with Zero Memory Context Bloat"]
-```
-
-* **Tier 1: Core Memory Index (`core.md`)**: A lightweight router (< 45 lines) loaded at session boot. Maps domain keywords and intent triggers to specialized topic files and reference templates.
-* **Tier 2: On-Demand Topic Files (`topics/*.md`)**: Deep-dive standards and behavioral SOPs loaded strictly when relevant keywords match. Adheres to Lazy Senior principles (Spec-First, Chunking, Single Source of Truth).
-* **Reference Templates (`templates/*.md`)**: High-signal, actionable boilerplates and implementation laws (Spec Contract, Skill Lifecycle, Clean Code, Data Structure).
+This directory provides production-grade templates and scaffolds for building deterministic, context-efficient skills and tools in Google Antigravity.
 
 ---
 
-## 2. Foundation Memory Suite (2 Universal Pillars & 4 Templates)
+## 1. Core Philosophy: Intuitive, Non-Abstract & Clear Division of Labor
 
-### Active Topics (`topics/`)
+Internal specifications and templates are written directly for the AI agent to execute. They prioritize high-signal constraints over abstract dogma:
 
-| Topic / Document | Primary Domain | Universal Command | Core Responsibility & Boundary |
-|---|---|:---:|---|
-| **`engineering_and_delivery_standards.md`** | **Code & Architecture Quality** | `/plan` | **Pure Code Standards**: Upstream core refactoring, Zero-EOL runtime lifecycles, stdlib-first minimal dependencies, stateless execution, modern cryptography (AES-GCM/TLS 1.3), and zero-leakage code portability. |
-| **`agent_behavior.md`** | **Agent Action & Safety Protocol** | `/plan` *(Intent Gate)* | **Agent Behavioral Guardrails**: Read-Only/Advisory mode for conceptual discussions, user confirmation for high-risk operations (`git push`, destructive actions), 7-step anti-drift brakes, and mandatory machine verification. |
+1. **Clear Division of Responsibilities (分工明確)**:
+   - **Deterministic Computation (Python stdlib)**: Handles 100% of arithmetic, data filtering, keyword indexing, and schema validation. Never offload computation or heavy lookup to LLM deduction.
+   - **Cognitive Orchestration (LLM)**: Focuses strictly on intent routing, candidate selection, user clarification, and presentation formatting.
+   - **Boundary Enforcement (Spec Contract)**: Freezes Non-Goals, Allowed Paths, and Verification Commands before touching code.
+2. **Zero Overhead & Zero Hallucination**:
+   - Templates provide concrete copy-paste skeletons, eliminating vague philosophical essays and token-wasting meta-theories.
 
-### Reference Templates (`templates/`)
+---
 
-| Template / Contract | Purpose & Focus |
-|---|---|
-| **`spec_template.md`** | **4+1 Item Spec Contract**: Goal/Non-Goals firewalls, Whitelist paths, Zero-EOL deps, Deterministic verification, and SKILL.md interface purity. |
-| **`vibe_skill_lifecycle.md`** | **Skill Evolution Guide**: 4-step build flow, 5 evolution traps rejection, surgical combo pipeline, and 8-point pre-delivery cheatsheet. |
-| **`senior_coding_laws.md`** | **Senior Clean Code Radar**: 5-step engineering hygiene (Boundary isolation, Functional core, Flattened flow $\le 2$, Useful errors, Strict anti-whack-a-mole). |
-| **`SKILL_DATA_SPEC.md`** | **Skill Data & Indexing Laws**: Pattern A flat list default vs Pattern B grouped taxonomy, thresholded in-memory inverted index ($N > 20$, $O(1)$ lookup), zero envelope tax. |
+## 2. Template Suite Overview (`templates/`)
+
+| Template / Contract | File | Core Responsibility & Boundary |
+|---|---|---|
+| **Specification Contract** | [`spec_template.md`](templates/spec_template.md) | **No-Spec-No-Code Gate**: Freezes Goal, Non-Goals (what MUST NOT be done), Allowed Paths whitelist, dependencies, and deterministic verification command. |
+| **Clean Code Radar** | [`senior_coding_laws.md`](templates/senior_coding_laws.md) | **5-Step Implementation Hygiene**: Boundary isolation, pure functional core, flattened flow (max `if` depth $\le 2$), useful error context, and subtractive delivery. |
+| **Skill Data Standards** | [`SKILL_DATA_SPEC.md`](templates/SKILL_DATA_SPEC.md) | **Data & Indexing Rules**: Pattern A (flat list) universal default, thresholded in-memory inverted index ($N > 20$, $O(1)$ lookup), zero envelope tax. |
+| **Skill Lifecycle Guide** | [`vibe_skill_lifecycle.md`](templates/vibe_skill_lifecycle.md) | **Evolution & Quality Guard**: 4-step build flow, 5 evolution traps rejection (no cognitive dumping, no ghost tools, no prompt-script contradictions), and 8-point pre-delivery cheatsheet. |
 
 ---
 
@@ -48,62 +32,36 @@ graph TD
 
 ```text
 examples/memory/
-├── core.md                                   # Global index & routing keywords (< 45 lines)
-├── README.md                                 # Architecture overview and deployment guide
-├── templates/                                # Concrete implementation scaffolds & contracts
-│   ├── spec_template.md                      # 4+1 item specification contract boilerplate
-│   ├── vibe_skill_lifecycle.md               # 4-step lifecycle, 5 traps, 8-point pre-delivery check
-│   ├── senior_coding_laws.md                 # Clean code 5-step engineering radar
-│   └── SKILL_DATA_SPEC.md                    # Pattern A flat vs Pattern B, inverted index contract
-└── topics/
-    ├── engineering_and_delivery_standards.md # Pure code architecture & delivery quality
-    └── agent_behavior.md                     # Agent interaction boundary & machine verification
+├── README.md               # Architecture overview and usage guide
+├── core.md                 # Lean template index & user preferences sample (< 30 lines)
+└── templates/              # Concrete implementation scaffolds & contracts
+    ├── spec_template.md    # 4+1 item specification contract boilerplate
+    ├── senior_coding_laws.md # Clean code 5-step engineering radar
+    ├── SKILL_DATA_SPEC.md  # Pattern A flat list vs Pattern B grouped taxonomy
+    └── vibe_skill_lifecycle.md # 4-step lifecycle, 5 traps, 8-point checklist
 ```
 
 ---
 
-## 4. Installation & Deployment
+## 4. Deployment to Local Environment
 
-### Step 1: Create Local Memory Directories
+### Step 1: Create Memory Directories
 ```bash
-mkdir -p ~/../memory/topics ~/../memory/templates
+mkdir -p ~/../memory/templates
 ```
 
-### Step 2: Deploy Template Files
+### Step 2: Deploy Scaffolds
 ```bash
-# Copy core index
+# Copy core index sample
 cp examples/memory/core.md ~/../memory/core.md
 
-# Copy universal topics
-cp examples/memory/topics/*.md ~/../memory/topics/
-
-# Copy reference templates
+# Copy production templates
 cp examples/memory/templates/*.md ~/../memory/templates/
 ```
 
-### Step 3: Link Memory in Global Rules (`RULE[user_global]`)
-Ensure your Antigravity global configuration or system constitution (`GEMINI.md` or config file) includes persistent memory indexing:
-
+### Step 3: Link in System Instructions (`RULE[user_global]`)
 ```markdown
 Persistent Memory Management:
   - Scope: Use `~/../memory/core.md` as index; workspace data MUST remain in `<workspace>/.memory/project.md`.
-  - Load/Save: Read `core.md` at conversation start. Load topic files ONLY when relevant. Save verified solutions only; never raw logs or secrets.
-  - Recall & Authority: GEMINI.md dictates behavior > Current repo dictates project state > Recalled memory. Explicit user corrections override old memory.
+  - Load/Save: Read `core.md` at conversation start. Load templates ONLY when building or refactoring skills.
 ```
-
----
-
-## 5. Extension Guide: Adding Custom Domain Topics
-
-When adding proprietary or project-specific topics (e.g., user preferences, threat intelligence feeds, CI/CD automation, cloud infrastructure):
-
-1. **Keep Topics Focused & Concise**:
-   - Each topic file should adhere to the AST threshold (< 200 lines, ideally < 60 lines).
-   - Focus on specifications, mandates, and prohibitions. Avoid dumping logs, tutorials, or secrets.
-2. **Register in `core.md`**:
-   Add a 3-line descriptor in `core.md` with:
-   - Domain category
-   - File path relative to `~/../memory/`
-   - Trigger keywords for semantic routing
-3. **Preserve Single Source of Truth (SSOT)**:
-   - Define each rule in exactly one place. If a rule governs agent action, place it in `agent_behavior.md`; if it governs code artifacts, place it in `engineering_and_delivery_standards.md`.
