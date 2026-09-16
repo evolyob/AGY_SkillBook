@@ -74,6 +74,6 @@ def find(token: str):
 ## 4. The 4 Pragmatic Laws
 
 1. **Pattern A Default (MUST)**: Always default to flat Pattern A unless deep hierarchical taxonomy is fundamentally required.
-2. **Zero Envelope Tax (IRON LAW)**: Never wrap attributes in nested `matcher: { tags: [...] }` or `payload: { ... }`.
+2. **Zero Envelope Tax (IRON LAW)**: Never wrap attributes in arbitrary nesting such as `metadata: { tags: [...] }` or `payload: { ... }`. Keep record attributes flat at the top level.
 3. **Thresholded Indexing (MUST)**: Build an in-memory inverted index whenever records exceed 20 items. Linear scan is permitted for $N \le 20$.
 4. **Key Invariance & Carrier Nouns (MUST)**: 100% identical keys across all array records. `tags` must be 3~6 concrete domain carrier nouns.
