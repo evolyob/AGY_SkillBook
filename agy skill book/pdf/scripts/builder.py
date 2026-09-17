@@ -66,29 +66,29 @@ _current_theme = contextvars.ContextVar("current_theme", default="light")
 
 def get_theme_palette(theme_name: Optional[str] = None) -> Dict[str, Any]:
     th = _THEMES.get(theme_name or _current_theme.get(), _THEMES.get("light", {}))
-    cd = th.get("colors", {})
+    cd = th.get("colors", th)
     acc = _CFG.get("accent_catalog", {})
     
-    p = colors.HexColor(cd.get("cyan", acc.get("teal", "#007A92")))
-    s = colors.HexColor(cd.get("text_sub", acc.get("denim", "#2B5C8F")))
-    a = colors.HexColor(cd.get("amber", acc.get("orange", "#EC6A00")))
-    hl = colors.HexColor(cd.get("pink", acc.get("magenta", "#FF0080")))
-    alert = colors.HexColor(cd.get("pink", acc.get("red_orange", "#E95119")))
-    emerald = colors.HexColor(cd.get("emerald", acc.get("emerald", "#10B981")))
+    p = colors.HexColor(cd.get("p", acc.get("denim", "#2B5C8F")))
+    s = colors.HexColor(cd.get("s", acc.get("teal", "#007A92")))
+    a = colors.HexColor(cd.get("a", acc.get("orange", "#EC6A00")))
+    hl = colors.HexColor(cd.get("hl", acc.get("yellow", "#F5E050")))
+    alert = colors.HexColor(cd.get("alert", acc.get("red_orange", "#E95119")))
+    ok = colors.HexColor(cd.get("ok", cd.get("emerald", acc.get("emerald", "#10B981"))))
     
-    txt = colors.HexColor(cd.get("text_primary", "#0B0F19"))
-    muted = colors.HexColor(cd.get("text_muted", "#7E8287"))
+    txt = colors.HexColor(cd.get("txt", cd.get("text_primary", "#0B0F19")))
+    muted = colors.HexColor(cd.get("muted", cd.get("text_muted", "#7E8287")))
     border = colors.HexColor(cd.get("border", "#CBD5E1"))
     bg = colors.HexColor(cd.get("bg", "#FFFFFF"))
-    card = colors.HexColor(cd.get("card", "#F8FAFC"))
+    card = colors.HexColor(cd.get("card_bg", cd.get("card", "#F8FAFC")))
     
     return {
-        "primary": p, "secondary": s, "accent": a, "highlight": hl, "alert": alert, "emerald": emerald,
+        "primary": p, "secondary": s, "accent": a, "highlight": hl, "alert": alert, "emerald": ok,
         "dark": txt, "text_primary": txt,
         "muted": muted, "text_muted": muted,
         "border": border, "bg": bg, "card": card,
         "pink_bg": colors.HexColor("#FEF2F2"), "green_bg": colors.HexColor("#ECFDF5"),
-        "yellow": colors.HexColor("#FEF08A"), "chart_palette": [p, s, a, hl, alert, emerald]
+        "yellow": colors.HexColor("#FEF08A"), "chart_palette": [p, s, a, hl, alert, ok]
     }
 
 def resolve_color(c: Any, default: Optional[colors.Color] = None) -> colors.Color:
