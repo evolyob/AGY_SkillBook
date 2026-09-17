@@ -7,14 +7,14 @@ Single Source of Truth (SSOT) for design tokens, dynamic geometry solver, declar
 ## 1. Themes & Surface Tokens (`engine.t`)
 Loaded centrally from `scripts/themes.json`.
 
-| Theme | Ground (`bg`) | Cards (`card`) | Accent (`cyan`) | Alert (`pink`) | Success (`emerald`) | Best For |
-|---|---|---|---|---|---|---|
-| **`light`** | `#FFFFFF` | `#F1F5F9` | `#2B5C8F` | `#EE1818` | `#10B981` | Management briefs, quarterly reviews |
-| **`dark`** | `#0B0F19` | `#1E293B` | `#00F0FF` | `#FF0080` | `#10B981` | Tech architecture, executive keynotes |
-| **`yellow`** | `#F5E050` | `#FFFFFF` | `#2B5C8F` | `#E95119` | `#10B981` | High-impact pitches, strategic proposals |
+| Theme | Ground (`bg`) | Cards (`card_bg`) | Primary (`p`) | Secondary (`s`) | Accent (`a`) | Alert (`alert`) | OK (`ok`) | Best For |
+|---|---|---|---|---|---|---|---|---|
+| **`light`** | `#FFFFFF` | `#F8FAFC` | `#2B5C8F` | `#007A92` | `#EC6A00` | `#E95119` | `#10B981` | Management briefs, quarterly reviews |
+| **`dark`** | `#0B0F19` | `#1E293B` | `#00F0FF` | `#38BDF8` | `#F5E050` | `#FF0080` | `#10B981` | Tech architecture, executive keynotes |
+| **`yellow`** | `#F5E050` | `#FFFFFF` | `#2B5C8F` | `#007A92` | `#EC6A00` | `#E95119` | `#10B981` | High-impact pitches, strategic proposals |
 
 - **Typography Scale**: **Slide Title `28.0 ~ 32.0pt` (Bold)**, **Subtitle `14.0 ~ 18.0pt` (Regular)**, Card Title `15.5 ~ 18.0pt` (Bold), Body `13.5 ~ 14.5pt`, Minimum badge/tag `>= 13.5pt` (Hard Floor), KPI Big Numbers `24.0 ~ 28.0pt`.
-- **Inline BMP Cues**: `• ✓` (emerald), `• ✖` (pink), `• ★` / `• ◆` (cyan). Strictly prohibit 4-byte SMP emojis.
+- **Inline BMP Cues**: `• ✓` (ok), `• ✖` (alert), `• ★` / `• ◆` (p). Strictly prohibit 4-byte SMP emojis.
 
 ---
 
@@ -54,8 +54,8 @@ engine.create_slide(
     layers=[
         # Layer 1: Horizontal SOP Flow (height=1.5")
         {"height": 1.5, "section_tag": "Process Analysis", "content": {"type": "flow", "steps": [
-            {"step": "STEP 01", "title": "Scan Vulnerabilities", "icon": "key", "color": engine.t["amber"]},
-            {"step": "STEP 02", "title": "Verify Remediation", "icon": "radar", "color": engine.t["cyan"]}
+            {"step": "STEP 01", "title": "Scan Vulnerabilities", "icon": "key", "color": engine.t["a"]},
+            {"step": "STEP 02", "title": "Verify Remediation", "icon": "radar", "color": engine.t["p"]}
         ]}},
         # Layer 2: Multimodal Multi-Column Grid (height=3.8")
         {"height": 3.8, "section_tag": "Remediation & Evidence", "cols": [

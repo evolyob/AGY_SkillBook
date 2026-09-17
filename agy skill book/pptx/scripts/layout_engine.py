@@ -117,7 +117,7 @@ class PPTXLayoutEngine:
         if isinstance(c, RGBColor): return c
         if isinstance(c, str) and c.startswith("#"): return _hex_to_rgb(c)
         if isinstance(c, str) and c in self.t: return self.t[c]
-        return default or self.t["cyan"]
+        return default or self.t.get("p", self.t.get("cyan"))
 
     # --- Layer 1: Atomic Primitives ---
 
