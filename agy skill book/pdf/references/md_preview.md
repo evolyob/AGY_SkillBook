@@ -57,7 +57,7 @@ body.ui-dark, body.theme-dark, [data-theme="dark"] {
 .card.col-span-2 { grid-column: 1 / -1; }
 .card h4 { margin-top: 0; color: var(--brand-primary); font-size: 1.05rem; }
 .card p, .card li { color: var(--text-main); line-height: 1.6; }
-.chart-card { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; overflow-x: auto; }
+.chart-card { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; overflow-x: auto; margin-bottom: 1.2rem; }
 </style>
 ```
 
@@ -95,32 +95,84 @@ body.ui-dark, body.theme-dark, [data-theme="dark"] {
 ```
 
 ### Template C: Native Mermaid Charts
-````markdown
-<div class="chart-card">
-```mermaid
-pie title 2026 防護資源分佈
-    "端點安全" : 35
-    "網路邊界" : 25
-    "身分鑑別" : 25
-    "合規稽核" : 15
-```
-</div>
 
+#### 1. Mixed Chart: Bar + Line (`xychart-beta`)
+````markdown
 <div class="chart-card">
 ```mermaid
 %%{init: {'theme': 'neutral'}}%%
 xychart-beta
-    title "季度高風險威脅處置量 (件數)"
+    title "2026 季度威脅處置量與預期目標"
     x-axis ["Q1", "Q2", "Q3", "Q4"]
     y-axis "處置件數" 0 --> 500
     bar [120, 210, 350, 480]
+    line [100, 190, 320, 460]
 ```
 </div>
+````
 
+#### 2. Network Topology & Defense Flow (`flowchart TD`)
+````markdown
 <div class="chart-card">
 ```mermaid
-flowchart LR
-    A["1. 基準盤點"] --> B["2. 規則標準化"] --> C["3. 自動化驗證"] --> D["4. 稽核結案歸檔"]
+flowchart TD
+    ext["外部不信任端點"] --> fw["次世代防火牆 (NGFW)"]
+    fw <==> dmz1["DMZ 交換器 01"]
+    fw <==> dmz2["DMZ 交換器 02"]
+    dmz1 --> host["API 閘道節點"]
+    dmz2 ==> host
+    oa(((OA 網段))) -.-> |跳板驗證| host
+    host ==> db[("核心資料庫")]
+```
+</div>
+````
+
+#### 3. Gantt Project Schedule (`gantt`)
+````markdown
+<div class="chart-card">
+```mermaid
+gantt
+    title "2026 合規導入與防禦加固排程"
+    dateFormat YYYY-MM-DD
+    section 盤點與評鑑
+      資產盤點 :a1, 2026-01-01, 30d
+      弱點掃描 :after a1, 14d
+    section 控制項落實
+      微隔離部署 :2026-02-15, 25d
+      稽核結案 :15d
+```
+</div>
+````
+
+#### 4. Milestone Timeline (`timeline`)
+````markdown
+<div class="chart-card">
+```mermaid
+timeline
+    title "2026 年度資安防護演練排程"
+    Q1 : 基線盤點 : 釣魚防範演練
+    Q2 : 微分段 PoC : 紅隊滲透測試
+    Q3 : 雙因子推行 : PCI DSS 認證查核
+    Q4 : DR 災難還原演練 : 跨組織攻防檢討
+```
+</div>
+````
+
+#### 5. Compliance Requirement Traceability (`requirementDiagram`)
+````markdown
+<div class="chart-card">
+```mermaid
+requirementDiagram
+    requirement isms_p0 {
+      id: ISO-27001-A.9
+      text: 特權存取必須啟用雙因子與即時稽核
+      risk: High
+      verifymethod: Test
+    }
+    element iam_gateway {
+      type: Module
+    }
+    iam_gateway - satisfies -> isms_p0
 ```
 </div>
 ````
