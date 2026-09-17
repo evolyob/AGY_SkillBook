@@ -10,6 +10,7 @@ CSS design tokens and verified layout archetypes (KPI Grid, Split Cards, Mermaid
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any, Dict
@@ -396,6 +397,60 @@ def build_template_c(diagram: str = "all") -> str:
     return "\n".join(parts).strip()
 
 
+def extract_mermaid_code(card_html: str) -> str:
+    """Extracts raw Mermaid DSL code from an archetype card."""
+    m = re.search(r"```mermaid\s*\n(.*?)\n```", card_html, re.DOTALL)
+    return m.group(1).strip() if m else ""
+
+
+def render_mermaid_to_svg(mermaid_code: str) -> str:
+    """Renders Mermaid code into clean SVG using mermaid.ink endpoint with robust error handling."""
+    import base64
+    import urllib.request
+    encoded = base64.b64encode(mermaid_code.encode("utf-8")).decode("ascii")
+    url = f"https://mermaid.ink/svg/{encoded}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=12) as response:
+        return response.read().decode("utf-8")
+
+
+def export_diagram_asset(diagram_type: str, output_file: str) -> str:
+    """Exports a specific Mermaid diagram archetype to an SVG or high-res PNG asset file via resvg_py."""
+    charts = {
+        "xychart": build_mermaid_xychart,
+        "flowchart": build_mermaid_flowchart,
+        "gantt": build_mermaid_gantt,
+        "timeline": build_mermaid_timeline,
+        "requirement": build_mermaid_requirement,
+        "sequence": build_mermaid_sequence,
+        "state": build_mermaid_state,
+        "class": build_mermaid_class,
+        "er": build_mermaid_er,
+    }
+    if diagram_type not in charts:
+        raise ValueError(f"Unknown diagram type '{diagram_type}'. Choose from: {list(charts.keys())}")
+    
+    card_str = charts[diagram_type]()
+    code = extract_mermaid_code(card_str)
+    if not code:
+        raise ValueError(f"No Mermaid code block found in '{diagram_type}' archetype")
+    
+    svg_str = render_mermaid_to_svg(code)
+    out_path = Path(output_file).resolve()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    if out_path.suffix.lower() == ".svg":
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(svg_str)
+        return str(out_path)
+    else:  # PNG output via resvg_py
+        import resvg_py
+        png_bytes = resvg_py.svg_to_bytes(svg_str)
+        with open(out_path, "wb") as f:
+            f.write(png_bytes)
+        return str(out_path)
+
+
 def generate_scaffold(
     title: str = "Executive Strategy & Performance Dashboard",
     subtitle: str = "Operational Baseline · Continuous Verification · Automated Workflow",
@@ -421,7 +476,7 @@ def generate_scaffold(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate standards-compliant Markdown preview files.")
+    parser = argparse.ArgumentParser(description="Generate standards-compliant Markdown preview files or export diagram assets.")
     parser.add_argument("-o", "--output", help="Output Markdown file path (default: stdout)")
     parser.add_argument("-t", "--title", default="Executive Strategy & Performance Dashboard", help="Document Title")
     parser.add_argument("-s", "--subtitle", default="Operational Baseline · Continuous Verification · Automated Workflow", help="Subtitle")
@@ -433,7 +488,21 @@ def main():
         help="Mermaid diagram archetype (default: all, 'original': user's 5 charts, 'safe': 6 artifact-safe charts)",
     )
     parser.add_argument("--css-only", action="store_true", help="Print only the CSS <style> block")
+    parser.add_argument("--export-diagram", choices=["xychart", "flowchart", "gantt", "timeline", "requirement", "sequence", "state", "class", "er"], help="Export a specific Mermaid archetype as a graphic asset")
+    parser.add_argument("--export-out", help="Target output file for --export-diagram (.svg or .png)")
     args = parser.parse_args()
+
+    if args.export_diagram:
+        if not args.export_out:
+            print("[!] Error: --export-out <file.svg|file.png> is required when using --export-diagram", file=sys.stderr)
+            sys.exit(1)
+        try:
+            saved = export_diagram_asset(args.export_diagram, args.export_out)
+            print(f"[+] Successfully exported diagram asset: {saved}")
+            sys.exit(0)
+        except Exception as e:
+            print(f"[!] Export failed: {e}", file=sys.stderr)
+            sys.exit(1)
 
     if args.css_only:
         content = generate_css_block()
