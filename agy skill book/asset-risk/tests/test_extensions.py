@@ -90,5 +90,28 @@ class TestDrillGenerator(unittest.TestCase):
         self.assertIn("遭勒索軟體或木馬惡意程式利用", plan["planning_fields"]["drill_theme"])
         self.assertIn("未定期安裝作業系統安全性修補程式", plan["planning_fields"]["target_and_scope"])
 
+    def test_pii_drill_plan_override(self):
+        """Verifies PII breach drill overrides steps 4-7 with statutory requirements."""
+        plan = generate_drill_plan(
+            asset_name="核心帳務系統",
+            category="軟體",
+            asset_type="應用系統",
+            threat="網站遭SQL/指令注入攻擊",
+            vulnerability="軟體開發未實作輸入參數過濾與參數化查詢",
+            is_pii=True
+        )
+        self.assertIn("個人資料外洩重大事件", plan["planning_fields"]["drill_theme"])
+        steps = plan["execution_steps"]
+        # Step 4: Special PII check
+        self.assertIn("特種個資", steps[3]["procedure"])
+        # Step 5: Art. 6 check
+        self.assertIn("個資法", steps[4]["procedure"])
+        # Step 6: 72-hour and Art. 12 notification
+        self.assertIn("72小時", steps[5]["procedure"])
+        self.assertIn("第12條", steps[5]["procedure"])
+        # Step 7: Controls A~J
+        self.assertIn("Controls A~J", steps[6]["procedure"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -56,6 +56,27 @@ class TestMatcherInference(unittest.TestCase):
         self.assertEqual(select_pair(self.param_db, "", "", "API 閘道系統")["category"], "軟體")
         self.assertEqual(select_pair(self.param_db, "", "", "核心網路交換機")["category"], "硬體")
 
+    def test_pii_inventory_evaluation(self):
+        """Tests Natural Join PII inventory evaluation and special PII detection."""
+        from matcher import load_pii_parameters, evaluate_pii_inventory
+        pii_db = load_pii_parameters()
+        rec1 = evaluate_pii_inventory(pii_db, "軟體", "應用系統", "會員CRM系統")
+        self.assertTrue(rec1["is_pii_applicable"])
+        self.assertEqual(rec1["has_special_pii"], "否")
+        self.assertEqual(rec1["col_h_format"], "資料庫")
+
+        rec2 = evaluate_pii_inventory(pii_db, "文件", "作業紀錄", "員工健檢報告紙本")
+        self.assertTrue(rec2["is_pii_applicable"])
+        self.assertEqual(rec2["has_special_pii"], "是")
+        self.assertEqual(rec2["col_h_format"], "紙本")
+
+    def test_pii_non_applicable_guard(self):
+        """Tests that hardware assets are blocked from PII inventory."""
+        from matcher import load_pii_parameters, evaluate_pii_inventory
+        pii_db = load_pii_parameters()
+        rec = evaluate_pii_inventory(pii_db, "硬體", "網路設備", "核心網路交換機")
+        self.assertFalse(rec["is_pii_applicable"])
+
 
 if __name__ == "__main__":
     unittest.main()

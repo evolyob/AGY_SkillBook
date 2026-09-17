@@ -18,6 +18,14 @@ STEPS_SCHEMA = [
 ]
 
 
+PII_STEPS_OVERRIDE = {
+    4: ("受害清查", "調閱{name}存取日誌與資料庫稽核軌跡，清查受波及之個資欄位（比對一般識別與特種個資），並統計遭洩漏之當事人筆數與影響半徑。"),
+    5: ("事故判定", "跨部門評估外洩事故損害層級，判定外洩資料是否涉及《個資法》第6條特種個資，並確認是否已達重大個人資料外洩法定通報要件。"),
+    6: ("通報主管機關與當事人", "依法定時限（72小時內）向目的事業主管機關完成資安與個資通報，並依《個資法》第12條以適當方式即時通知受害當事人。"),
+    7: ("修補還原", "徹底修補「{vuln}」弱點，檢討該資產 Controls A~J 防護控制項（強化個資遮蔽、存取白名單），並自安全備份復原{name}。"),
+}
+
+
 def load_parameters(param_path: Optional[str] = None) -> Dict[str, Any]:
     """Loads declarative parameters from JSON data store."""
     target = Path(param_path) if param_path else Path(__file__).resolve().parent.parent / "data" / "parameters.json"
@@ -40,24 +48,41 @@ def resolve_asset_keywords(
 
 
 def generate_drill_plan(
-    asset_name: str, category: str, asset_type: str, threat: str, vulnerability: str
+    asset_name: str, category: str, asset_type: str, threat: str, vulnerability: str,
+    *, is_pii: bool = False
 ) -> Dict[str, Any]:
     """Binds canonical keywords into standard planning fields and execution steps."""
     name, c, t, th, v = asset_name.strip(), category.strip(), asset_type.strip(), threat.strip(), vulnerability.strip()
     kwargs = {"name": name, "category": c, "type": t, "threat": th, "vuln": v}
 
-    planning = {
-        "drill_theme": f"【{name}面臨「{th}」之災害復原演練】",
-        "target_and_scope": f"模擬{name}（{c}-{t}）因「{v}」遭遇「{th}」之緊急應變與災害復原。",
-        "scenario_description": f"模擬{name}因存在「{v}」之安全弱點，遭遇「{th}」，引發異常警報與未授權操作風險，威脅業務正常營運之災害情境。",
-        "playbook_flow": "收到通報 ➔ 緊急阻斷 ➔ 隔離保全 ➔ 受害清查 ➔ 事故判定 ➔ 通報主管機關 ➔ 修補還原 ➔ 驗證重啟"
-    }
+    if is_pii:
+        planning = {
+            "drill_theme": f"【{name}面臨個人資料外洩重大事件之災害復原演練】",
+            "target_and_scope": f"模擬{name}（{c}-{t}）因「{v}」遭「{th}」，導致大量個人資料外洩之緊急應變、法定通報與系統復原。",
+            "scenario_description": f"模擬{name}因存在「{v}」之安全弱點，遭「{th}」，引發大規模個人資料（含特種/一般個資）外洩與異常存取風險，影響當事人隱私權益之重大災害情境。",
+            "playbook_flow": "收到通報 ➔ 緊急阻斷 ➔ 隔離保全 ➔ 受害清查(含個資) ➔ 事故判定(含法規門檻) ➔ 通報主管與當事人 ➔ 修補還原(Controls檢討) ➔ 驗證重啟"
+        }
+    else:
+        planning = {
+            "drill_theme": f"【{name}面臨「{th}」之災害復原演練】",
+            "target_and_scope": f"模擬{name}（{c}-{t}）因「{v}」遭遇「{th}」之緊急應變與災害復原。",
+            "scenario_description": f"模擬{name}因存在「{v}」之安全弱點，遭遇「{th}」，引發異常警報與未授權操作風險，威脅業務正常營運之災害情境。",
+            "playbook_flow": "收到通報 ➔ 緊急阻斷 ➔ 隔離保全 ➔ 受害清查 ➔ 事故判定 ➔ 通報主管機關 ➔ 修補還原 ➔ 驗證重啟"
+        }
 
-    steps = [
-        {"step_no": no, "phase_code": phase, "unit_role": "", "duration": "",
-         "procedure": tpl.format(**kwargs)}
-        for no, phase, tpl in STEPS_SCHEMA
-    ]
+    steps = []
+    for no, phase, default_tpl in STEPS_SCHEMA:
+        if is_pii and no in PII_STEPS_OVERRIDE:
+            phase_code, tpl = PII_STEPS_OVERRIDE[no]
+        else:
+            phase_code, tpl = phase, default_tpl
+        steps.append({
+            "step_no": no,
+            "phase_code": phase_code,
+            "unit_role": "",
+            "duration": "",
+            "procedure": tpl.format(**kwargs)
+        })
 
     return {"asset_name": name, "category": c, "type": t, "threat": th, "vulnerability": v,
             "planning_fields": planning, "execution_steps": steps}
@@ -91,7 +116,8 @@ def main():
     parser.add_argument("--threat", help="Threat")
     parser.add_argument("--vuln", help="Vulnerability")
     parser.add_argument("--high-risk-file", help="Batch JSON file of high-risk items")
-    parser.add_argument("--format", choices=["json", "markdown"], default="json", help="Output format")
+    parser.add_argument("--format", "-f", choices=["json", "markdown"], default="json", help="Output format")
+    parser.add_argument("--pii", action="store_true", help="Generate PII Breach Drill Plan (overrides steps 4-7)")
     parser.add_argument("--param-path", help="Custom parameters.json path")
     args = parser.parse_args()
 
@@ -104,13 +130,13 @@ def main():
                 param_db, pair_id=i.get("pair_id") or i.get("id"), name=i.get("name") or i.get("asset_name"),
                 cat=i.get("category"), atype=i.get("type"), threat=i.get("threat"), vuln=i.get("vulnerability")
             )
-            plans.append(generate_drill_plan(name, c, t, th, v))
+            plans.append(generate_drill_plan(name, c, t, th, v, is_pii=args.pii))
     else:
         name, c, t, th, v = resolve_asset_keywords(
             param_db, pair_id=args.pair_id, name=args.name,
             cat=args.cat, atype=args.type, threat=args.threat, vuln=args.vuln
         )
-        plans = [generate_drill_plan(name, c, t, th, v)]
+        plans = [generate_drill_plan(name, c, t, th, v, is_pii=args.pii)]
 
     if args.format == "markdown":
         print("\n\n---\n\n".join(format_as_markdown(p) for p in plans))
