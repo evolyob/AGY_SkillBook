@@ -68,78 +68,78 @@ body.ui-dark, body.theme-dark, [data-theme="dark"] {
 ### Template A: Document Header & KPI Grid
 ```html
 <div class="doc-header">
-  <h1>2026 資安防護戰略與營運指標看板</h1>
-  <p class="doc-subtitle">全面落實 CIS 基線加固 · 零信任微分段架構 · 自動化威脅處置</p>
+  <h1>Executive Strategy & Performance Dashboard</h1>
+  <p class="doc-subtitle">Operational Baseline · Continuous Verification · Automated Workflow</p>
 </div>
 <div class="kpi-grid">
-  <div class="kpi-card"><div class="kpi-val">99.98%</div><div class="kpi-label">服務可用率</div></div>
-  <div class="kpi-card"><div class="kpi-val">&lt; 15ms</div><div class="kpi-label">閘道防護延遲</div></div>
-  <div class="kpi-card"><div class="kpi-val">17 單位</div><div class="kpi-label">ISMS 合規輔導</div></div>
-  <div class="kpi-card"><div class="kpi-val">0 件</div><div class="kpi-label">P0 漏報事故</div></div>
+  <div class="kpi-card"><div class="kpi-val">99.98%</div><div class="kpi-label">Service Availability</div></div>
+  <div class="kpi-card"><div class="kpi-val">&lt; 15ms</div><div class="kpi-label">Average Latency</div></div>
+  <div class="kpi-card"><div class="kpi-val">12 Units</div><div class="kpi-label">Active Modules</div></div>
+  <div class="kpi-card"><div class="kpi-val">0</div><div class="kpi-label">Critical Incidents</div></div>
 </div>
 ```
 
-### Template B: Split Cards (As-Is / To-Be)
+### Template B: Split Cards (As-Is vs. To-Be / Contrast)
 ```html
-<h3 class="doc-section-title">現況挑戰與處置行動</h3>
+<h3 class="doc-section-title">Operational Challenges & Mitigation Plan</h3>
 <div class="card-grid">
   <div class="card">
-    <h4>✖ 當前痛點與瓶頸</h4>
-    <ul><li>審查週期長達 3.5 天，跨系統查驗延宕。</li><li>特權帳號盤點依賴試算表，缺乏即時追蹤。</li></ul>
+    <h4>✖ As-Is (Bottlenecks & Gaps)</h4>
+    <ul><li>Manual review cycle averages 3.5 days, delaying deployment.</li><li>Asset inventory relies on spreadsheets without live drift tracking.</li></ul>
   </div>
   <div class="card">
-    <h4>✔ 處置行動與自動化</h4>
-    <ul><li>導入自動化規則比對，處置時間降至 15 分鐘。</li><li>集中式 IAM 稽核鏈，每日自動核對權限異動。</li></ul>
+    <h4>✔ To-Be (Target Architecture)</h4>
+    <ul><li>Automated policy engine reduces verification turnaround to &lt; 15 minutes.</li><li>Continuous IAM auditing pipeline detects unauthorized config drift daily.</li></ul>
   </div>
 </div>
 ```
 
-### Template C: Native Mermaid Charts
+### Template C: Native Mermaid Visual Archetypes
 
-#### 1. Mixed Chart: Bar + Line (`xychart-beta`)
+#### 1. Dual-Track Chart: Volume vs. Target (`xychart-beta`)
 ````markdown
 <div class="chart-card">
 ```mermaid
 %%{init: {'theme': 'neutral'}}%%
 xychart-beta
-    title "2026 季度威脅處置量與預期目標"
+    title "Quarterly Throughput vs. Performance Target"
     x-axis ["Q1", "Q2", "Q3", "Q4"]
-    y-axis "處置件數" 0 --> 500
+    y-axis "Processed Units" 0 --> 500
     bar [120, 210, 350, 480]
     line [100, 190, 320, 460]
 ```
 </div>
 ````
 
-#### 2. Network Topology & Defense Flow (`flowchart TD`)
+#### 2. Architecture Topology & Flow (`flowchart TD`)
 ````markdown
 <div class="chart-card">
 ```mermaid
 flowchart TD
-    ext["外部不信任端點"] --> fw["次世代防火牆 (NGFW)"]
-    fw <==> dmz1["DMZ 交換器 01"]
-    fw <==> dmz2["DMZ 交換器 02"]
-    dmz1 --> host["API 閘道節點"]
-    dmz2 ==> host
-    oa(((OA 網段))) -.-> |跳板驗證| host
-    host ==> db[("核心資料庫")]
+    ext["Untrusted Ingress / Clients"] --> gateway["Edge Gateway / Load Balancer"]
+    gateway <==> tier1["Service Cluster 01"]
+    gateway <==> tier2["Service Cluster 02"]
+    tier1 --> core["Core Processing Worker"]
+    tier2 ==> core
+    admin(((Management Console))) -.-> |mTLS / Bastion| core
+    core ==> storage[("Persistent Database / Storage")]
 ```
 </div>
 ````
 
-#### 3. Gantt Project Schedule (`gantt`)
+#### 3. Phased Roadmap & Dependency Schedule (`gantt`)
 ````markdown
 <div class="chart-card">
 ```mermaid
 gantt
-    title "2026 合規導入與防禦加固排程"
+    title "Project Execution & Phased Delivery"
     dateFormat YYYY-MM-DD
-    section 盤點與評鑑
-      資產盤點 :a1, 2026-01-01, 30d
-      弱點掃描 :after a1, 14d
-    section 控制項落實
-      微隔離部署 :2026-02-15, 25d
-      稽核結案 :15d
+    section Discovery & Scoping
+      Baseline Audit :a1, 2026-01-01, 30d
+      Risk Assessment :after a1, 14d
+    section Implementation & Rollout
+      Infrastructure Migration :2026-02-15, 25d
+      Final Acceptance :15d
 ```
 </div>
 ````
@@ -149,30 +149,30 @@ gantt
 <div class="chart-card">
 ```mermaid
 timeline
-    title "2026 年度資安防護演練排程"
-    Q1 : 基線盤點 : 釣魚防範演練
-    Q2 : 微分段 PoC : 紅隊滲透測試
-    Q3 : 雙因子推行 : PCI DSS 認證查核
-    Q4 : DR 災難還原演練 : 跨組織攻防檢討
+    title "Annual Strategic Milestone Roadmap"
+    Q1 : Baseline Scoping : Initial Assessment
+    Q2 : Architecture PoC : Stress & Penetration Test
+    Q3 : Multi-Factor Rollout : Compliance Verification
+    Q4 : Disaster Recovery Drill : Annual Retrospective
 ```
 </div>
 ````
 
-#### 5. Compliance Requirement Traceability (`requirementDiagram`)
+#### 5. Specification & Requirement Traceability (`requirementDiagram`)
 ````markdown
 <div class="chart-card">
 ```mermaid
 requirementDiagram
-    requirement isms_p0 {
-      id: ISO-27001-A.9
-      text: 特權存取必須啟用雙因子與即時稽核
+    requirement req_p0 {
+      id: REQ-001-CORE
+      text: Critical access must enforce dual-factor auth and automated audit logging
       risk: High
       verifymethod: Test
     }
-    element iam_gateway {
-      type: Module
+    element auth_gateway {
+      type: Component
     }
-    iam_gateway - satisfies -> isms_p0
+    auth_gateway - satisfies -> req_p0
 ```
 </div>
 ````
