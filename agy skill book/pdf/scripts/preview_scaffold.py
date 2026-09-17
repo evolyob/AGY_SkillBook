@@ -148,11 +148,9 @@ def build_template_b() -> str:
 </div>"""
 
 
-def build_template_c() -> str:
-    """Builds Template C: Native Mermaid Visual Archetypes with CommonMark compliant blank lines."""
-    return """<h3 class="doc-section-title">System Architecture & Performance Metrics</h3>
-
-<div class="chart-card">
+def build_mermaid_xychart() -> str:
+    return """<div class="chart-card">
+<h4>1. Dual-Track Chart: Volume vs. Target (xychart-beta)</h4>
 
 ```mermaid
 %%{init: {'theme': 'neutral'}}%%
@@ -164,9 +162,12 @@ xychart-beta
     line [100, 190, 320, 460]
 ```
 
-</div>
+</div>"""
 
-<div class="chart-card">
+
+def build_mermaid_flowchart() -> str:
+    return """<div class="chart-card">
+<h4>2. Architecture Topology & Flow (flowchart TD)</h4>
 
 ```mermaid
 flowchart TD
@@ -182,10 +183,224 @@ flowchart TD
 </div>"""
 
 
+def build_mermaid_gantt() -> str:
+    return """<div class="chart-card">
+<h4>3. Phased Roadmap & Dependency Schedule (gantt)</h4>
+
+```mermaid
+gantt
+    title "Project Execution & Phased Delivery"
+    dateFormat YYYY-MM-DD
+    section Discovery & Scoping
+      Baseline Audit :a1, 2026-01-01, 30d
+      Risk Assessment :after a1, 14d
+    section Implementation & Rollout
+      Infrastructure Migration :2026-02-15, 25d
+      Final Acceptance :15d
+```
+
+</div>"""
+
+
+def build_mermaid_timeline() -> str:
+    return """<div class="chart-card">
+<h4>4. Milestone Timeline (timeline)</h4>
+
+```mermaid
+timeline
+    title "Annual Strategic Milestone Roadmap"
+    Q1 : Baseline Scoping : Initial Assessment
+    Q2 : Architecture PoC : Stress & Penetration Test
+    Q3 : Multi-Factor Rollout : Compliance Verification
+    Q4 : Disaster Recovery Drill : Annual Retrospective
+```
+
+</div>"""
+
+
+def build_mermaid_requirement() -> str:
+    return """<div class="chart-card">
+<h4>5. Specification & Requirement Traceability (requirementDiagram)</h4>
+
+```mermaid
+requirementDiagram
+    requirement req_p0 {
+      id: REQ-001-CORE
+      text: Critical access must enforce dual-factor auth and automated audit logging
+      risk: High
+      verifymethod: Test
+    }
+    element auth_gateway {
+      type: Component
+    }
+    auth_gateway - satisfies -> req_p0
+```
+
+</div>"""
+
+
+def build_mermaid_sequence() -> str:
+    return """<div class="chart-card">
+<h4>6. API Interaction & Authentication Handshake (sequenceDiagram)</h4>
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Client User
+    participant GW as API Gateway
+    participant Auth as Identity Provider (IAM)
+    participant Svc as Core API Service
+    participant DB as Secure Vault Storage
+
+    User->>GW: 1. HTTPS POST /login
+    GW->>Auth: 2. Validate Credentials & MFA
+    Auth-->>GW: 3. Issue Signed JWT Bearer Token
+    GW-->>User: 4. 200 OK (JWT Token)
+    User->>GW: 5. GET /api/v1/assets (Bearer Token)
+    GW->>Svc: 6. Forward Authorized Request
+    Svc->>DB: 7. Query Encrypted Records
+    DB-->>Svc: 8. Return Dataset
+    Svc-->>User: 9. 200 OK JSON Response
+```
+
+</div>"""
+
+
+def build_mermaid_state() -> str:
+    return """<div class="chart-card">
+<h4>7. Lifecycle & State Machine (stateDiagram-v2)</h4>
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draft: Asset Discovered
+    Draft --> InReview: Submit for Review
+    InReview --> Approved: Risk Assessment Passed
+    InReview --> Rejected: Findings Require Fix
+    Rejected --> Draft: Remediate Findings
+    Approved --> Active: Production Deployment
+    Active --> UnderAudit: Periodic Compliance Audit
+    UnderAudit --> Active: Audit Passed
+    UnderAudit --> Deprecated: EOL Notice
+    Active --> Deprecated: Service Sunset
+    Deprecated --> Archived: Encrypted Backup & Purge
+    Archived --> [*]
+```
+
+</div>"""
+
+
+def build_mermaid_class() -> str:
+    return """<div class="chart-card">
+<h4>8. Domain Object Model (classDiagram)</h4>
+
+```mermaid
+classDiagram
+    class AssetRecord {
+        +String assetId
+        +String hostname
+        +String ipAddress
+        +String tierLevel
+        +scanVulnerabilities()
+        +updateComplianceStatus()
+    }
+    class VulnerabilityFinding {
+        +String cveId
+        +Float cvssScore
+        +String severityRating
+        +evaluateExploitability()
+    }
+    class DrillPlan {
+        +String drillId
+        +Date scheduledDate
+        +String rtoObjective
+        +executeDrill()
+    }
+    AssetRecord "1" *-- "many" VulnerabilityFinding : maps
+    AssetRecord "1" o-- "many" DrillPlan : schedules
+```
+
+</div>"""
+
+
+def build_mermaid_er() -> str:
+    return """<div class="chart-card">
+<h4>9. Relational Database Schema (erDiagram)</h4>
+
+```mermaid
+erDiagram
+    ASSET_SYSTEM ||--o{ AUDIT_LOG : tracks
+    ASSET_SYSTEM }|--|| ASSET_GROUP : belongs_to
+    ASSET_SYSTEM ||--o{ VULN_FINDING : contains
+    VULN_FINDING ||--|| CVE_REFERENCE : references
+
+    ASSET_SYSTEM {
+        string asset_id PK
+        string hostname
+        string ip_address
+        string owner_dept
+        string env_tier
+    }
+    AUDIT_LOG {
+        int log_id PK
+        string asset_id FK
+        datetime timestamp
+        string event_type
+        string operator_id
+    }
+    VULN_FINDING {
+        string finding_id PK
+        string asset_id FK
+        string cve_id FK
+        string remediation_status
+    }
+    CVE_REFERENCE {
+        string cve_id PK
+        float cvss_score
+        string severity_level
+    }
+```
+
+</div>"""
+
+
+def build_template_c(diagram: str = "all") -> str:
+    """Builds Template C: Native Mermaid Visual Archetypes."""
+    charts = {
+        "xychart": build_mermaid_xychart,
+        "flowchart": build_mermaid_flowchart,
+        "gantt": build_mermaid_gantt,
+        "timeline": build_mermaid_timeline,
+        "requirement": build_mermaid_requirement,
+        "sequence": build_mermaid_sequence,
+        "state": build_mermaid_state,
+        "class": build_mermaid_class,
+        "er": build_mermaid_er,
+    }
+    parts = ['<h3 class="doc-section-title">Visual Models & Architecture (Mermaid Archetypes)</h3>\n']
+    
+    if diagram == "original":
+        for key in ["xychart", "flowchart", "gantt", "timeline", "requirement"]:
+            parts.append(charts[key]())
+            parts.append("")
+    elif diagram == "safe":
+        for key in ["flowchart", "sequence", "state", "class", "er", "xychart"]:
+            parts.append(charts[key]())
+            parts.append("")
+    elif diagram in charts:
+        parts.append(charts[diagram]())
+    else:  # "all"
+        for fn in charts.values():
+            parts.append(fn())
+            parts.append("")
+            
+    return "\n".join(parts).strip()
+
+
 def generate_scaffold(
     title: str = "Executive Strategy & Performance Dashboard",
     subtitle: str = "Operational Baseline · Continuous Verification · Automated Workflow",
     templates: str = "all",
+    diagram: str = "all",
 ) -> str:
     """Combines CSS block with selected templates into a complete, verified Markdown preview document."""
     parts = [generate_css_block(), ""]
@@ -199,7 +414,7 @@ def generate_scaffold(
         parts.append("")
 
     if templates in ["c", "all", "charts"]:
-        parts.append(build_template_c())
+        parts.append(build_template_c(diagram=diagram))
         parts.append("")
 
     return "\n".join(parts)
@@ -211,13 +426,24 @@ def main():
     parser.add_argument("-t", "--title", default="Executive Strategy & Performance Dashboard", help="Document Title")
     parser.add_argument("-s", "--subtitle", default="Operational Baseline · Continuous Verification · Automated Workflow", help="Subtitle")
     parser.add_argument("--template", choices=["all", "a", "b", "c"], default="all", help="Templates to include (default: all)")
+    parser.add_argument(
+        "--diagram",
+        choices=["all", "original", "safe", "xychart", "flowchart", "gantt", "timeline", "requirement", "sequence", "state", "class", "er"],
+        default="all",
+        help="Mermaid diagram archetype (default: all, 'original': user's 5 charts, 'safe': 6 artifact-safe charts)",
+    )
     parser.add_argument("--css-only", action="store_true", help="Print only the CSS <style> block")
     args = parser.parse_args()
 
     if args.css_only:
         content = generate_css_block()
     else:
-        content = generate_scaffold(title=args.title, subtitle=args.subtitle, templates=args.template)
+        content = generate_scaffold(
+            title=args.title,
+            subtitle=args.subtitle,
+            templates=args.template,
+            diagram=args.diagram,
+        )
 
     if args.output:
         out_path = os.path.abspath(args.output)

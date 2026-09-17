@@ -25,6 +25,7 @@ python3 scripts/preview_scaffold.py -t "Project Title" -s "Subtitle" -o preview.
 - `--template a`: Only Header & KPI Dashboard Grid.
 - `--template b`: Only As-Is vs To-Be Split Cards.
 - `--template c`: Only Native Mermaid Charts.
+- `--diagram <type>`: Choose Mermaid chart (`original` for user's 5 classic archetypes, `safe` for 6 Artifact-safe charts, `all`, or single chart: `flowchart`, `gantt`, `timeline`, `requirement`, `sequence`, `state`, `class`, `er`, `xychart`).
 - `--css-only`: Output only the CSS block.
 
 ### Phase 2: Refine & Verify
