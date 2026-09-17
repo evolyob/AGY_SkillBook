@@ -6,60 +6,19 @@ Fast, browser-ready preview protocol using modern Web CSS design tokens and nati
 
 ## 1. Embedded Design Tokens & Surface Styles
 
-Place this `<style>` block at the top of the generated Markdown preview file. It automatically adapts to Light Mode, Dark Mode, and HackMD with zero `!important` reliance.
+The canonical `<style>` block is managed centrally in `scripts/themes.json` (`markdown_preview.style`).
+Insert this style block at the top of every preview Markdown file to ensure automatic Light Mode, Dark Mode, and HackMD adaptability:
 
 ```html
+<!-- Canonical style block from scripts/themes.json["markdown_preview"]["style"] -->
 <style>
-:root {
-  --surface-base: #f8fafc;
-  --surface-card: #ffffff;
-  --border-subtle: #e2e8f0;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --brand-primary: #1e3a8a;
-  --brand-accent: #2563eb;
-  --kpi-bg: #f1f5f9;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface-base: #0b1120;
-    --surface-card: #1e293b;
-    --border-subtle: #334155;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --brand-primary: #38bdf8;
-    --brand-accent: #60a5fa;
-    --kpi-bg: #0f172a;
-  }
-}
-body.ui-dark, body.theme-dark, [data-theme="dark"] {
-  --surface-base: #0b1120;
-  --surface-card: #1e293b;
-  --border-subtle: #334155;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --brand-primary: #38bdf8;
-  --brand-accent: #60a5fa;
-  --kpi-bg: #0f172a;
-}
-.doc-header { margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-subtle); padding-bottom: 0.8rem; }
-.doc-header h1 { margin: 0 0 0.3rem 0; color: var(--brand-primary); font-size: 1.85rem; }
-.doc-header .doc-subtitle { color: var(--text-muted); font-size: 0.95rem; margin: 0; }
-.doc-section-title { display: flex; align-items: center; gap: 8px; margin: 2rem 0 1rem 0; padding-left: 10px; border-left: 4px solid var(--brand-accent); color: var(--brand-primary); font-size: 1.25rem; font-weight: 700; }
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 1.2rem 0 1.8rem 0; }
-.kpi-card { background: var(--kpi-bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem 0.6rem; text-align: center; }
-.kpi-val { font-size: 1.45rem; font-weight: 800; color: var(--brand-primary); line-height: 1.2; }
-.kpi-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
-.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 1.8rem; }
-.card { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.2rem 1.4rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
-.card.col-span-2 { grid-column: 1 / -1; }
-.card h4 { margin-top: 0; color: var(--brand-primary); font-size: 1.05rem; }
-.card p, .card li { color: var(--text-main); line-height: 1.6; }
-.chart-card { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; overflow-x: auto; margin-bottom: 1.2rem; }
+/* Design tokens & responsive grid rules (defined in scripts/themes.json) */
 </style>
 ```
+
+Core UI tokens defined in `themes.json`:
+- **Colors**: `--brand-primary` (`#1e3a8a`), `--brand-accent` (`#2563eb`), `--surface-card` (`#ffffff`), `--border-subtle` (`#e2e8f0`)
+- **Containers**: `.doc-header` (Header), `.kpi-grid` / `.kpi-card` (KPIs), `.card-grid` / `.card` (Bento layout), `.chart-card` (Mermaid container)
 
 ---
 
@@ -181,6 +140,6 @@ requirementDiagram
 
 ## 3. Workflow: Preview First -> PDF Publish
 
-1. **Phase 1 (Preview)**: Directly generate `preview.md` containing the `<style>` block and Markdown/Mermaid components. Inspect in browser/HackMD.
-2. **Phase 2 (Refine)**: Adjust narrative, numbers, and layout directly in plain Markdown.
+1. **Phase 1 (Preview)**: Fetch `<style>` from `scripts/themes.json["markdown_preview"]["style"]` and assemble Markdown/Mermaid components. Inspect in browser/HackMD.
+2. **Phase 2 (Refine)**: Adjust narrative, numbers, and layout directly in plain Markdown. Run `scripts/verifier.py preview.md`.
 3. **Phase 3 (PDF Publish)**: When confirmed, invoke `scripts/builder.py` following `references/pdf_generate.md` to compile the final print-ready A4 PDF.
