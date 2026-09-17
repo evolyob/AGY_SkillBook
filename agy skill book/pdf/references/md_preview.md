@@ -6,25 +6,27 @@ Fast, browser-ready preview protocol using modern Web CSS design tokens and nati
 
 ## 1. Embedded Design Tokens & Surface Styles
 
-The canonical `<style>` block is managed centrally in `scripts/pdf_themes.json` (`markdown_preview.style`).
+The canonical `<style>` block is managed centrally in [`scripts/preview.css`](../scripts/preview.css).
 Insert this style block at the top of every preview Markdown file to ensure automatic Light Mode, Dark Mode, and HackMD adaptability:
 
 ```html
-<!-- Canonical style block from scripts/pdf_themes.json["markdown_preview"]["style"] -->
+<!-- Canonical style block from scripts/preview.css -->
 <style>
-/* Design tokens & responsive grid rules (defined in scripts/pdf_themes.json) */
+/* Load contents of scripts/preview.css */
 </style>
 ```
 
-Core UI tokens defined in `pdf_themes.json`:
-- **Colors**: `--brand-primary` (`#1e3a8a`), `--brand-accent` (`#2563eb`), `--surface-card` (`#ffffff`), `--border-subtle` (`#e2e8f0`)
+Core UI tokens defined in [`scripts/preview.css`](../scripts/preview.css):
+- **Colors**: `--brand-primary` (`#2B5C8F`), `--brand-accent` (`#007A92`), `--surface-card` (`#F8FAFC`), `--border-subtle` (`#CBD5E1`)
 - **Containers**: `.doc-header` (Header), `.kpi-grid` / `.kpi-card` (KPIs), `.card-grid` / `.card` (Bento layout), `.chart-card` (Mermaid container)
 
 ---
 
-## 2. Standard Component Templates
+## 2. Standard Component Templates (`templates/`)
 
-### Template A: Document Header & KPI Grid
+Modular component skeletons are stored under the [`templates/`](../templates/) directory for plug-and-play report construction:
+
+### Template A: Document Header & KPI Grid ([`templates/template_a_header_kpi.html`](../templates/template_a_header_kpi.html))
 ```html
 <div class="doc-header">
   <h1>Executive Strategy & Performance Dashboard</h1>
@@ -38,7 +40,7 @@ Core UI tokens defined in `pdf_themes.json`:
 </div>
 ```
 
-### Template B: Split Cards (As-Is vs. To-Be / Contrast)
+### Template B: Split Cards (As-Is vs. To-Be / Contrast) ([`templates/template_b_split_cards.html`](../templates/template_b_split_cards.html))
 ```html
 <h3 class="doc-section-title">Operational Challenges & Mitigation Plan</h3>
 <div class="card-grid">
@@ -53,7 +55,7 @@ Core UI tokens defined in `pdf_themes.json`:
 </div>
 ```
 
-### Template C: Native Mermaid Visual Archetypes
+### Template C: Native Mermaid Visual Archetypes ([`templates/template_c_charts.md`](../templates/template_c_charts.md))
 
 #### 1. Dual-Track Chart: Volume vs. Target (`xychart-beta`)
 ````markdown
@@ -140,6 +142,6 @@ requirementDiagram
 
 ## 3. Workflow: Preview First -> PDF Publish
 
-1. **Phase 1 (Preview)**: Fetch `<style>` from `scripts/pdf_themes.json["markdown_preview"]["style"]` and assemble Markdown/Mermaid components. Inspect in browser/HackMD.
+1. **Phase 1 (Preview)**: Fetch `<style>` from [`scripts/preview.css`](../scripts/preview.css) and assemble Markdown/Mermaid components from [`templates/`](../templates/). Inspect in browser/HackMD.
 2. **Phase 2 (Refine)**: Adjust narrative, numbers, and layout directly in plain Markdown. Run `scripts/verifier.py preview.md`.
 3. **Phase 3 (PDF Publish)**: When confirmed, invoke `scripts/builder.py` following `references/pdf_generate.md` to compile the final print-ready A4 PDF.
