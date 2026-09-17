@@ -117,7 +117,7 @@ class PPTXLayoutEngine:
         if isinstance(c, RGBColor): return c
         if isinstance(c, str) and c.startswith("#"): return _hex_to_rgb(c)
         if isinstance(c, str) and c in self.t: return self.t[c]
-        return default or self.t.get("p", self.t.get("cyan"))
+        return default or self.t["p"]
 
     # --- Layer 1: Atomic Primitives ---
 
@@ -149,7 +149,7 @@ class PPTXLayoutEngine:
         if not tok or tok not in self._icon_cache: return None
         try:
             with open(self._icon_cache[tok], "r", encoding="utf-8") as f:
-                svg_str = f.read().replace("currentColor", _rgb_to_hex(self.color(color, self.t["cyan"])))
+                svg_str = f.read().replace("currentColor", _rgb_to_hex(self.color(color, self.t["p"])))
             return slide.shapes.add_picture(io.BytesIO(resvg_py.svg_to_bytes(svg_str)), Inches(left), Inches(top), Inches(size), Inches(size))
         except Exception as e:
             logger.warning(f"[PPTXEngine] Failed to render SVG icon '{icon_token}': {e}")
@@ -168,10 +168,10 @@ class PPTXLayoutEngine:
         return card
 
     def _pill(self, slide, left: float, top: float, w: float, h: float, bg=None, border=None, bw: float = 1.0):
-        return self._card(slide, left, top, w, h, bg=bg or self.t["cyan"], border=border, bw=bw, radius=self.pill_r)
+        return self._card(slide, left, top, w, h, bg=bg or self.t["p"], border=border, bw=bw, radius=self.pill_r)
 
     def _badge(self, slide, left: float, top: float, w: float, h: float, text: str, bg=None, fg: Optional[RGBColor] = None, size: float = 13.5):
-        c_bg = self.color(bg, self.t["cyan"])
+        c_bg = self.color(bg, self.t["p"])
         badge = self._pill(slide, left, top, w, h, bg=c_bg)
         tf = badge.text_frame; tf.vertical_anchor = MSO_ANCHOR.MIDDLE
         tf.word_wrap = True; tf.auto_size = MSO_AUTO_SIZE.NONE
@@ -208,7 +208,7 @@ class PPTXLayoutEngine:
             for i, wt in enumerate(col_weights): tbl.columns[i].width = Inches(w * (wt / tot))
         curr_row = 0
         header_bg = self.color(content.get("header_bg"), self.t.get("card_alt", self.t["card"]))
-        header_fg = self.color(content.get("header_fg"), self.t["cyan"])
+        header_fg = self.color(content.get("header_fg"), self.t["p"])
         if headers:
             for c_idx, h_text in enumerate(headers):
                 cell = tbl.cell(0, c_idx); cell.fill.solid(); cell.fill.fore_color.rgb = header_bg; cell.vertical_anchor = MSO_ANCHOR.MIDDLE
@@ -266,9 +266,9 @@ class PPTXLayoutEngine:
             self._text_block(slide, sx, sy + circle_sz + 0.08, sw, sh - circle_sz - 0.08, [(tag, 13.5, st_col, True, 0), (title, 14.0, self.t["text_primary"], True, 2)], align=PP_ALIGN.CENTER)
             if i < len(steps) - 1:
                 arr_x, arr_sz = sx + sw + 0.12, 0.28
-                if not self._add_icon(slide, arr_x, sy + (circle_sz - arr_sz) / 2.0, arr_sz, "caret-right", self.t["cyan"]):
+                if not self._add_icon(slide, arr_x, sy + (circle_sz - arr_sz) / 2.0, arr_sz, "caret-right", self.t["p"]):
                     arr = slide.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Inches(arr_x), Inches(sy + (circle_sz - arr_sz) / 2.0), Inches(arr_sz), Inches(arr_sz))
-                    arr.fill.solid(); arr.fill.fore_color.rgb = self.t["cyan"]; arr.line.fill.background()
+                    arr.fill.solid(); arr.fill.fore_color.rgb = self.t["p"]; arr.line.fill.background()
 
     def _render_kpi(self, slide, box: Tuple[float, float, float, float], content: Dict[str, Any], col: RGBColor):
         x, y, w, h = box
@@ -330,7 +330,7 @@ class PPTXLayoutEngine:
         x, y, w, h = box
         self._card(slide, x, y, w, h, bg=self.t["card"], border=self.t["border_light"])
         lbl, val = content.get("label", "Progress"), max(0, min(100, float(content.get("val", content.get("value", 0)))))
-        p_col, tok = self.color(content.get("color"), self.t["emerald"]), content.get("icon")
+        p_col, tok = self.color(content.get("color"), self.t["ok"]), content.get("icon")
         if tok: self._add_icon(slide, x + w - 0.55, y + 0.20, 0.38, tok, p_col)
         self._text(slide, x + 0.25, y + 0.20, w - (0.85 if tok else 0.50), 0.35, lbl, size=14.5, bold=True)
         self._pill(slide, x + 0.25, y + 0.65, w - 0.50, 0.22, bg=self.t["card_alt"])
@@ -341,7 +341,7 @@ class PPTXLayoutEngine:
         x, y, w, h = box
         self._card(slide, x, y, w, h, bg=self.t["card"], border=self.t["border_light"])
         lbl, val = content.get("label", "Ratio"), max(0, min(100, float(content.get("val", content.get("value", 0)))))
-        d_col, tok = self.color(content.get("color"), self.t["cyan"]), content.get("icon")
+        d_col, tok = self.color(content.get("color"), self.t["p"]), content.get("icon")
         if tok: self._add_icon(slide, x + w - 0.55, y + 0.20, 0.38, tok, d_col)
         dia = min(w - 0.8, h - 1.1, 1.7)
         cx, cy = x + (w - dia) / 2.0, y + 0.25
@@ -386,7 +386,7 @@ class PPTXLayoutEngine:
         if footer: self._badge(slide, x + 0.25, y + h - 0.45, w - 0.50, 0.32, str(footer), bg=self.t.get("card_alt", self.t["card"]), fg=self.t["text_muted"])
 
     def render_slot(self, slide, box: Tuple[float, float, float, float], content: Any, accent: Optional[RGBColor] = None):
-        col = self.color(accent, self.t["cyan"])
+        col = self.color(accent, self.t["p"])
         if isinstance(content, (str, bytes, io.BytesIO)) or (isinstance(content, dict) and content.get("type") == "image"):
             return self._render_image(slide, box, content)
         if isinstance(content, list) and len(content) > 0 and isinstance(content[0], (dict, list, tuple)):
@@ -409,13 +409,13 @@ class PPTXLayoutEngine:
         char_weight = sum(2.0 if ord(c) > 127 else 1.0 for c in str(title))
         is_multiline = char_weight > 48.0 or len(str(title)) > 26
         paras = []
-        if kicker: paras.append((str(kicker).upper(), 13.5, self.t["cyan"], True, 2))
+        if kicker: paras.append((str(kicker).upper(), 13.5, self.t["p"], True, 2))
         paras.append((str(title), 24.0 if is_multiline else 28.0, self.t["text_primary"], True, 4 if subtitle else 0))
         if subtitle: paras.append((str(subtitle), 14.5, self.t["text_sub"], False, 0))
         tb_h = (1.45 if is_multiline else 0.95) if (subtitle or kicker) else (0.85 if is_multiline else 0.56)
         bar_h = (1.30 if is_multiline else 0.88) if (subtitle or kicker) else (0.85 if is_multiline else 0.55)
         bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y + 0.02), Inches(self.geo.get("header_accent_bar_width", 0.10)), Inches(bar_h))
-        bar.fill.solid(); bar.fill.fore_color.rgb = self.t["amber"] if self.theme_name == "yellow" else self.t["cyan"]; bar.line.fill.background()
+        bar.fill.solid(); bar.fill.fore_color.rgb = self.t["a"] if self.theme_name == "yellow" else self.t["p"]; bar.line.fill.background()
         self._text_block(slide, x + 0.10 + bar_gap, y, w - (0.10 + bar_gap) - 0.20, tb_h, paras)
         return y + tb_h + 0.10
 
@@ -436,7 +436,7 @@ class PPTXLayoutEngine:
             if section_tag:
                 sec_weight = sum(2.0 if ord(c) > 127 else 1.0 for c in str(section_tag))
                 sec_w = max(1.60, min(sec_weight * 0.12 + 0.45, 3.50))
-                self._badge(slide, lx, ly, sec_w, 0.34, section_tag, bg=self.t["cyan"], fg=self.t["bg"])
+                self._badge(slide, lx, ly, sec_w, 0.34, section_tag, bg=self.t["p"], fg=self.t["bg"])
                 ly += 0.42
                 lh = max(0.20, lh - 0.42)
             
