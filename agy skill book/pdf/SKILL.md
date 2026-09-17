@@ -44,7 +44,7 @@ Choose the target reference file based on your input/output mode:
 
 ### Step 3: Execute Operation
 - **Action**: 
-  - For Markdown preview: Write `.md` with embedded `<style>` block and Mermaid diagrams.
+  - For Markdown preview: Execute `scripts/preview_scaffold.py -o preview.md`, populate content, and verify with `scripts/verifier.py preview.md`.
   - For PDF generation: Execute Python ReportLab script (`scripts/builder.py`).
   - For PDF processing: Execute `pypdf`, `pdfplumber`, or CLI commands.
 - **Criteria**: Exit code 0; target deliverable produced.
