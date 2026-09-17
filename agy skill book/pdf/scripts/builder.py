@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Universal Composable PDF Layout Engine (ReportLab) - 4-Tier Architecture
-Layer 0: SSOT Config (themes.json + CJK fonts)
+Layer 0: SSOT Config (pdf_themes.json + CJK fonts)
 Layer 1: Pure Geometry Solver & Card Factory (calc_cols, build_card, build_split_row)
 Layer 2: Semantic Facades (Pill Badges, Flow, Action Board, KPI Row, Checklist, Hero Header, Tables, Charts)
 Layer 3: Master Document Generators (1-Pager Infographics & Multi-Page Reports)
@@ -29,9 +29,10 @@ from reportlab.graphics.charts.legends import Legend
 # ==============================================================================
 
 def load_theme_config() -> Dict[str, Any]:
-    for p in [Path(__file__).parent / "themes.json" if "__file__" in globals() else None,
-             Path.home() / ".gemini/config/skills/pdf/scripts/themes.json",
-             Path.home() / ".gemini/skills/pdf/scripts/themes.json"]:
+    for p in [Path(__file__).parent / "pdf_themes.json" if "__file__" in globals() else None,
+             Path.home() / ".gemini/config/skills/pdf/scripts/pdf_themes.json",
+             Path.home() / ".gemini/skills/pdf/scripts/pdf_themes.json",
+             Path(__file__).parent / "themes.json" if "__file__" in globals() else None]:
         if p and p.exists():
             with open(p, "r", encoding="utf-8") as f: return json.load(f)
     return {"fonts": {}, "themes": {}, "global_colors": {}, "geometry": {}}
