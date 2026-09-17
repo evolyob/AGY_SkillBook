@@ -6,18 +6,18 @@ Fast, browser-ready preview protocol using modern Web CSS design tokens and nati
 
 ## 1. Embedded Design Tokens & Surface Styles
 
-The canonical `<style>` block is dynamically generated from `scripts/pdf_themes.json` themes (SSOT) via `scripts/builder.py` (`python3 scripts/builder.py --preview-style`).
+The canonical `<style>` block is managed centrally in `scripts/pdf_themes.json` (`markdown_preview.style`).
 Insert this style block at the top of every preview Markdown file to ensure automatic Light Mode, Dark Mode, and HackMD adaptability:
 
 ```html
-<!-- Canonical style block generated dynamically via scripts/builder.py --preview-style -->
+<!-- Canonical style block from scripts/pdf_themes.json["markdown_preview"]["style"] -->
 <style>
-/* Design tokens & responsive grid rules (derived from scripts/pdf_themes.json["themes"]) */
+/* Design tokens & responsive grid rules (defined in scripts/pdf_themes.json) */
 </style>
 ```
 
-Core UI tokens defined in `pdf_themes.json["themes"]`:
-- **Colors**: `--brand-primary` (theme `p`), `--brand-accent` (theme `s`), `--surface-card` (theme `card_bg`), `--border-subtle` (theme `border`)
+Core UI tokens defined in `pdf_themes.json`:
+- **Colors**: `--brand-primary` (`#1e3a8a`), `--brand-accent` (`#2563eb`), `--surface-card` (`#ffffff`), `--border-subtle` (`#e2e8f0`)
 - **Containers**: `.doc-header` (Header), `.kpi-grid` / `.kpi-card` (KPIs), `.card-grid` / `.card` (Bento layout), `.chart-card` (Mermaid container)
 
 ---
@@ -140,6 +140,6 @@ requirementDiagram
 
 ## 3. Workflow: Preview First -> PDF Publish
 
-1. **Phase 1 (Preview)**: Fetch `<style>` dynamically via `scripts/builder.py --preview-style` (derived from `pdf_themes.json["themes"]` SSOT) and assemble Markdown/Mermaid components. Inspect in browser/HackMD.
+1. **Phase 1 (Preview)**: Fetch `<style>` from `scripts/pdf_themes.json["markdown_preview"]["style"]` and assemble Markdown/Mermaid components. Inspect in browser/HackMD.
 2. **Phase 2 (Refine)**: Adjust narrative, numbers, and layout directly in plain Markdown. Run `scripts/verifier.py preview.md`.
 3. **Phase 3 (PDF Publish)**: When confirmed, invoke `scripts/builder.py` following `references/pdf_generate.md` to compile the final print-ready A4 PDF.

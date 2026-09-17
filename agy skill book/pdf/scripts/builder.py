@@ -91,90 +91,6 @@ def get_theme_palette(theme_name: Optional[str] = None) -> Dict[str, Any]:
         "yellow": colors.HexColor("#FEF08A"), "chart_palette": [p, s, a, hl, alert, ok]
     }
 
-
-def get_markdown_preview_style(light_theme: str = "light", dark_theme: str = "dark") -> str:
-    """Dynamically generates the canonical Markdown preview <style> block from themes SSOT."""
-    lt = _THEMES.get(light_theme, {})
-    dt = _THEMES.get(dark_theme, {})
-
-    bg_l = lt.get("bg", "#FFFFFF")
-    card_l = lt.get("card_bg", "#F8FAFC")
-    border_l = lt.get("border", "#CBD5E1")
-    txt_l = lt.get("txt", "#0B0F19")
-    muted_l = lt.get("muted", "#64748B")
-    p_l = lt.get("p", "#2B5C8F")
-    s_l = lt.get("s", "#007A92")
-    alert_l = lt.get("alert", "#E95119")
-    ok_l = lt.get("ok", "#10B981")
-
-    bg_d = dt.get("bg", "#0B1120")
-    card_d = dt.get("card_bg", "#1E293B")
-    border_d = dt.get("border", "#334155")
-    txt_d = dt.get("txt", "#F8FAFC")
-    muted_d = dt.get("muted", "#94A3B8")
-    p_d = dt.get("p", "#38BDF8")
-    s_d = dt.get("s", "#60A5FA")
-    alert_d = dt.get("alert", "#FF0080")
-    ok_d = dt.get("ok", "#10B981")
-
-    return f"""<style>
-:root {{
-  --surface-base: {bg_l};
-  --surface-card: {card_l};
-  --border-subtle: {border_l};
-  --text-main: {txt_l};
-  --text-muted: {muted_l};
-  --brand-primary: {p_l};
-  --brand-accent: {s_l};
-  --kpi-bg: {card_l};
-  --color-alert: {alert_l};
-  --color-ok: {ok_l};
-  --radius-sm: 6px;
-  --radius-md: 10px;
-}}
-@media (prefers-color-scheme: dark) {{
-  :root {{
-    --surface-base: {bg_d};
-    --surface-card: {card_d};
-    --border-subtle: {border_d};
-    --text-main: {txt_d};
-    --text-muted: {muted_d};
-    --brand-primary: {p_d};
-    --brand-accent: {s_d};
-    --kpi-bg: {bg_d};
-    --color-alert: {alert_d};
-    --color-ok: {ok_d};
-  }}
-}}
-body.ui-dark, body.theme-dark, [data-theme="dark"] {{
-  --surface-base: {bg_d};
-  --surface-card: {card_d};
-  --border-subtle: {border_d};
-  --text-main: {txt_d};
-  --text-muted: {muted_d};
-  --brand-primary: {p_d};
-  --brand-accent: {s_d};
-  --kpi-bg: {bg_d};
-  --color-alert: {alert_d};
-  --color-ok: {ok_d};
-}}
-.doc-header {{ margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-subtle); padding-bottom: 0.8rem; }}
-.doc-header h1 {{ margin: 0 0 0.3rem 0; color: var(--brand-primary); font-size: 1.85rem; }}
-.doc-header .doc-subtitle {{ color: var(--text-muted); font-size: 0.95rem; margin: 0; }}
-.doc-section-title {{ display: flex; align-items: center; gap: 8px; margin: 2rem 0 1rem 0; padding-left: 10px; border-left: 4px solid var(--brand-accent); color: var(--brand-primary); font-size: 1.25rem; font-weight: 700; }}
-.kpi-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 1.2rem 0 1.8rem 0; }}
-.kpi-card {{ background: var(--kpi-bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem 0.6rem; text-align: center; }}
-.kpi-val {{ font-size: 1.45rem; font-weight: 800; color: var(--brand-primary); line-height: 1.2; }}
-.kpi-label {{ font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }}
-.card-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 1.8rem; }}
-.card {{ background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.2rem 1.4rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }}
-.card.col-span-2 {{ grid-column: 1 / -1; }}
-.card h4 {{ margin-top: 0; color: var(--brand-primary); font-size: 1.05rem; }}
-.card p, .card li {{ color: var(--text-main); line-height: 1.6; }}
-.chart-card {{ background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; overflow-x: auto; margin-bottom: 1.2rem; }}
-</style>"""
-
-
 def resolve_color(c: Any, default: Optional[colors.Color] = None) -> colors.Color:
     """Polymorphic Color Resolver: Supports ReportLab Color, Hex strings (#RRGGBB), and theme token names."""
     if isinstance(c, colors.Color):
@@ -516,13 +432,7 @@ def main():
     parser.add_argument("-t", "--title", help="Document Title", default="Technical Report")
     parser.add_argument("-s", "--subtitle", help="Document Subtitle", default="")
     parser.add_argument("--theme", help="Theme palette", default="light")
-    parser.add_argument("--preview-style", action="store_true", help="Print canonical markdown preview style block derived from themes SSOT")
     args = parser.parse_args()
-
-    if args.preview_style:
-        print(get_markdown_preview_style())
-        return
-
     if args.input and args.output:
         story = [build_section_heading("1. Overview"), build_body(f"Automated technical report compiled from {args.input}.")]
         generate_multipage_report(args.output, args.title, args.subtitle, story, theme=args.theme)
