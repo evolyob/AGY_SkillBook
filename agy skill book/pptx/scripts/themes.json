@@ -8,8 +8,8 @@
   },
   "geometry": {
     "card_radius": 0.04,
-    "pill_radius": 0.50,
-    "header_accent_bar_width": 0.10,
+    "pill_radius": 0.5,
+    "header_accent_bar_width": 0.1,
     "description": "Global SSOT geometry parameters: 0.04 for modern Bento micro-rounded cards, 0.50 for full pill capsules."
   },
   "symbols": {
@@ -58,7 +58,16 @@
         "amber": "#EC6A00",
         "pink": "#E95119",
         "magenta": "#FF0080",
-        "electric_cyan": "#00F0FF"
+        "electric_cyan": "#00F0FF",
+        "p": "#2B5C8F",
+        "s": "#007A92",
+        "a": "#EC6A00",
+        "hl": "#FF0080",
+        "alert": "#E95119",
+        "ok": "#10B981",
+        "card_bg": "#FFFFFF",
+        "txt": "#0B0F19",
+        "muted": "#2B5C8F"
       },
       "accents": [
         "#2B5C8F",
@@ -88,7 +97,16 @@
         "amber": "#F5E050",
         "pink": "#FF0080",
         "magenta": "#FF0080",
-        "electric_cyan": "#00F0FF"
+        "electric_cyan": "#00F0FF",
+        "p": "#00F0FF",
+        "s": "#38BDF8",
+        "a": "#F5E050",
+        "hl": "#7C3AED",
+        "alert": "#FF0080",
+        "ok": "#10B981",
+        "card_bg": "#1E293B",
+        "txt": "#FFFFFF",
+        "muted": "#94A3B8"
       },
       "accents": [
         "#F5E050",
@@ -118,7 +136,16 @@
         "amber": "#EC6A00",
         "pink": "#FF0080",
         "magenta": "#FF0080",
-        "electric_cyan": "#00F0FF"
+        "electric_cyan": "#00F0FF",
+        "p": "#2B5C8F",
+        "s": "#007A92",
+        "a": "#EC6A00",
+        "hl": "#F5E050",
+        "alert": "#E95119",
+        "ok": "#10B981",
+        "card_bg": "#F8FAFC",
+        "txt": "#0B0F19",
+        "muted": "#7E8287"
       },
       "accents": [
         "#2B5C8F",
