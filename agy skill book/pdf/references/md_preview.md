@@ -25,7 +25,7 @@ python3 scripts/preview_scaffold.py -t "Project Title" -s "Subtitle" -o preview.
 - `--template a`: Only Header & KPI Dashboard Grid.
 - `--template b`: Only As-Is vs To-Be Split Cards.
 - `--template c`: Only Native Mermaid Charts.
-- `--diagram <type>`: Choose Mermaid chart (`all` or single chart: `flowchart`, `xychart`, `gantt`, `timeline`, `sequence`, `er`).
+- `--diagram <type>`: Choose Mermaid chart (`all` or single chart: `flowchart`, `xychart`, `gantt`, `sequence`, `er`).
 - `--export-diagram <type>`: Export a specific Mermaid chart as an asset.
 - `--export-out <file>`: Output path for exported graphic (.svg or .png).
 - `--css-only`: Output only the CSS block.

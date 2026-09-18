@@ -5,7 +5,7 @@ Markdown Visual Preview Scaffolder (preview_scaffold.py)
 Generates standards-compliant, browser-ready Markdown preview files with embedded
 CSS design tokens and verified layout archetypes (KPI Grid, Split Cards, Mermaid).
 Provides lightweight single-diagram SVG/PNG export for PDF embedding.
-All colors are dynamically resolved from pdf_themes.json SSOT (Zero Hardcoding).
+All colors dynamically align with pdf_themes.json SSOT (Zero Hardcoding, Light Mode Standard).
 """
 
 import argparse
@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 # ----------------------------------------------------------------------
-# SSOT ARCHETYPE DICTIONARY (6 Canonical Mermaid Models - Zero Hardcoded Colors)
+# SSOT ARCHETYPE DICTIONARY (5 Canonical Mermaid Models)
 # ----------------------------------------------------------------------
 ARCHETYPES: Dict[str, Dict[str, str]] = {
     "flowchart": {
@@ -57,19 +57,9 @@ ARCHETYPES: Dict[str, Dict[str, str]] = {
       Infrastructure Migration :2026-02-15, 25d
       Final Acceptance :15d""",
     },
-    "timeline": {
-        "title": "4. 年度策略規劃與推進節奏 (Timeline)",
-        "card_title": "4. Milestone Timeline (timeline)",
-        "code": """timeline
-    title "Annual Strategic Milestone Roadmap"
-    Q1 : Baseline Scoping : Initial Assessment
-    Q2 : Architecture PoC : Stress & Penetration Test
-    Q3 : Multi-Factor Rollout : Compliance Verification
-    Q4 : Disaster Recovery Drill : Annual Retrospective""",
-    },
     "sequence": {
-        "title": "5. API 認證交握與時序調度 (Sequence Diagram)",
-        "card_title": "5. API Interaction & Authentication Handshake (sequenceDiagram)",
+        "title": "4. API 認證交握與時序調度 (Sequence Diagram)",
+        "card_title": "4. API Interaction & Authentication Handshake (sequenceDiagram)",
         "code": """sequenceDiagram
     autonumber
     actor User as Client User
@@ -89,8 +79,8 @@ ARCHETYPES: Dict[str, Dict[str, str]] = {
     Svc-->>User: 9. 200 OK JSON Response""",
     },
     "er": {
-        "title": "6. 關聯式資料庫與日誌架構 (ER Diagram)",
-        "card_title": "6. Relational Database Schema (erDiagram)",
+        "title": "5. 關聯式資料庫與日誌架構 (ER Diagram)",
+        "card_title": "5. Relational Database Schema (erDiagram)",
         "code": """erDiagram
     ASSET_SYSTEM ||--o{ AUDIT_LOG : tracks
     ASSET_SYSTEM }|--|| ASSET_GROUP : belongs_to
@@ -161,73 +151,36 @@ def get_theme_directive(theme_name: str = "light") -> str:
     )
 
 
-def generate_css_block(light_theme: str = "light", dark_theme: str = "dark") -> str:
+def generate_css_block(theme_name: str = "light") -> str:
     """Generates the embedded canonical <style> block derived from pdf_themes.json SSOT."""
     cfg = load_theme_config()
     themes = cfg.get("themes", {})
-    lt = themes.get(light_theme, {})
-    dt = themes.get(dark_theme, {})
+    th = themes.get(theme_name, themes.get("light", {}))
 
-    bg_l = lt.get("bg", "#FFFFFF")
-    card_l = lt.get("card_bg", "#F8FAFC")
-    border_l = lt.get("border", "#CBD5E1")
-    txt_l = lt.get("txt", "#0B0F19")
-    muted_l = lt.get("muted", "#64748B")
-    p_l = lt.get("p", "#2B5C8F")
-    s_l = lt.get("s", "#007A92")
-    alert_l = lt.get("alert", "#E95119")
-    ok_l = lt.get("ok", "#10B981")
-
-    bg_d = dt.get("bg", "#0B1120")
-    card_d = dt.get("card_bg", "#1E293B")
-    border_d = dt.get("border", "#334155")
-    txt_d = dt.get("txt", "#F8FAFC")
-    muted_d = dt.get("muted", "#94A3B8")
-    p_d = dt.get("p", "#38BDF8")
-    s_d = dt.get("s", "#60A5FA")
-    alert_d = dt.get("alert", "#FF0080")
-    ok_d = dt.get("ok", "#10B981")
+    bg = th.get("bg", "#FFFFFF")
+    card = th.get("card_bg", "#F8FAFC")
+    border = th.get("border", "#CBD5E1")
+    txt = th.get("txt", "#0B0F19")
+    muted = th.get("muted", "#64748B")
+    p = th.get("p", "#2B5C8F")
+    s = th.get("s", "#007A92")
+    alert = th.get("alert", "#E95119")
+    ok = th.get("ok", "#10B981")
 
     return f"""<style>
 :root {{
-  --surface-base: {bg_l};
-  --surface-card: {card_l};
-  --border-subtle: {border_l};
-  --text-main: {txt_l};
-  --text-muted: {muted_l};
-  --brand-primary: {p_l};
-  --brand-accent: {s_l};
-  --kpi-bg: {card_l};
-  --color-alert: {alert_l};
-  --color-ok: {ok_l};
+  --surface-base: {bg};
+  --surface-card: {card};
+  --border-subtle: {border};
+  --text-main: {txt};
+  --text-muted: {muted};
+  --brand-primary: {p};
+  --brand-accent: {s};
+  --kpi-bg: {card};
+  --color-alert: {alert};
+  --color-ok: {ok};
   --radius-sm: 6px;
   --radius-md: 10px;
-}}
-@media (prefers-color-scheme: dark) {{
-  :root {{
-    --surface-base: {bg_d};
-    --surface-card: {card_d};
-    --border-subtle: {border_d};
-    --text-main: {txt_d};
-    --text-muted: {muted_d};
-    --brand-primary: {p_d};
-    --brand-accent: {s_d};
-    --kpi-bg: {bg_d};
-    --color-alert: {alert_d};
-    --color-ok: {ok_d};
-  }}
-}}
-body.ui-dark, body.theme-dark, [data-theme="dark"] {{
-  --surface-base: {bg_d};
-  --surface-card: {card_d};
-  --border-subtle: {border_d};
-  --text-main: {txt_d};
-  --text-muted: {muted_d};
-  --brand-primary: {p_d};
-  --brand-accent: {s_d};
-  --kpi-bg: {bg_d};
-  --color-alert: {alert_d};
-  --color-ok: {ok_d};
 }}
 .doc-header {{ margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-subtle); padding-bottom: 0.8rem; }}
 .doc-header h1 {{ margin: 0 0 0.3rem 0; color: var(--brand-primary); font-size: 1.85rem; }}
@@ -358,7 +311,7 @@ def generate_scaffold(
     theme: str = "light",
 ) -> str:
     """Combines CSS block with selected templates into a complete Markdown preview document."""
-    parts = [generate_css_block(light_theme=theme), ""]
+    parts = [generate_css_block(theme_name=theme), ""]
 
     if templates in ["a", "all", "header"]:
         parts.append(build_template_a(title, subtitle))
@@ -387,7 +340,6 @@ def main():
         default="all",
         help="Mermaid diagram filter (default: all)",
     )
-    parser.add_argument("--theme", default="light", help="Theme palette from pdf_themes.json (e.g. light, dark, yellow)")
     parser.add_argument("--css-only", action="store_true", help="Print only the CSS <style> block")
     parser.add_argument("--export-diagram", choices=list(ARCHETYPES.keys()), help="Export a specific Mermaid archetype as an image asset")
     parser.add_argument("--export-out", help="Target output file for --export-diagram (.svg or .png)")
@@ -397,19 +349,18 @@ def main():
         if not args.export_out:
             print("[!] Error: --export-out <file.svg|file.png> is required with --export-diagram", file=sys.stderr)
             sys.exit(1)
-        saved = export_diagram_asset(args.export_diagram, args.export_out, theme_name=args.theme)
+        saved = export_diagram_asset(args.export_diagram, args.export_out)
         print(f"[+] Successfully exported diagram asset: {saved}")
         sys.exit(0)
 
     if args.css_only:
-        content = generate_css_block(light_theme=args.theme)
+        content = generate_css_block()
     else:
         content = generate_scaffold(
             title=args.title,
             subtitle=args.subtitle,
             templates=args.template,
             diagram=args.diagram,
-            theme=args.theme,
         )
 
     if args.output:
