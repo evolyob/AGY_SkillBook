@@ -22,9 +22,10 @@ Invoke `preview_scaffold.py` to produce a fully styled, verified starter file:
 python3 scripts/preview_scaffold.py -t "Project Title" -s "Subtitle" -o preview.md
 ```
 *Optional flags*:
-- `--template <blocks>`: Composable Lego blocks (comma-separated): `kpi`, `action_board`, `matrix`, `table`, `checklist`, `pipeline`, `charts`, or `all` (e.g. `--template action_board,matrix,table`).
-- `--diagram <type>`: Choose Mermaid chart (`all` or single chart: `flowchart`, `xychart`, `gantt`, `sequence`, `er`).
-- `--export-diagram <type>`: Export a specific Mermaid chart as an asset.
+- `--template <blocks>`: Composable Lego blocks (comma-separated): `kpi`, `matrix`, `table`, `checklist`, `pipeline`, `charts`, or `all` (e.g. `--template kpi,matrix,table`).
+- `--diagram <type>`: Choose Mermaid chart (`all` or single chart: `flowchart`, `sequence`, `er`).
+- `--py`: Generate runnable Python ReportLab builder script (`build_pdf.py`) instead of Markdown preview.
+- `--export-diagram <type>`: Export a specific Mermaid chart as an asset (`flowchart`, `sequence`, `er`).
 - `--export-out <file>`: Output path for exported graphic (.svg or .png).
 - `--css-only`: Output only the CSS block.
 
@@ -35,9 +36,15 @@ python3 scripts/preview_scaffold.py -t "Project Title" -s "Subtitle" -o preview.
 python3 scripts/verifier.py preview.md
 ```
 
-### Phase 3: Compile to PDF
-When preview is accepted, compile to formal deliverable:
+### Phase 3: Compile to PDF (Python Orchestration)
+When preview is accepted, generate the matching Python builder script and compile the formal A4 deliverable:
 ```bash
-python3 scripts/builder.py preview.md -o output.pdf
+# 1. Generate runnable Python builder scaffold matching the layout
+python3 scripts/preview_scaffold.py --py -t "Project Title" -s "Subtitle" -o build_pdf.py
+
+# 2. Refine data slots in build_pdf.py and compile PDF
+python3 build_pdf.py output.pdf
+
+# 3. Verify quality gates (Exit Code 0 mandatory)
 python3 scripts/verifier.py output.pdf
 ```
