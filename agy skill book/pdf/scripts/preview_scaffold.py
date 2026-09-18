@@ -85,6 +85,23 @@ def generate_css_block(theme_name: str = "light") -> str:
 .matrix-tag {{ display: inline-block; font-size: 0.75rem; font-weight: 700; color: var(--brand-accent); background: rgba(0, 122, 146, 0.08); padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; }}
 .matrix-card h4 {{ margin: 0 0 0.5rem 0; color: var(--brand-primary); font-size: 1.05rem; }}
 .matrix-card ul {{ margin: 0; padding-left: 1.2rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.6; }}
+.action-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 1.2rem 0 1.8rem 0; }}
+.action-card {{ background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem 1.3rem; }}
+.action-card.as-is {{ border-top: 4px solid var(--color-alert); }}
+.action-card.to-be {{ border-top: 4px solid var(--color-ok); }}
+.action-card h4 {{ margin: 0 0 0.6rem 0; font-size: 1.05rem; }}
+.action-card.as-is h4 {{ color: var(--color-alert); }}
+.action-card.to-be h4 {{ color: var(--color-ok); }}
+.action-card ul {{ margin: 0; padding-left: 1.2rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.6; }}
+.table-wrap {{ overflow-x: auto; margin: 1.2rem 0 1.8rem 0; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); }}
+.preview-table {{ width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }}
+.preview-table th {{ background: var(--brand-primary); color: #FFF; padding: 8px 12px; font-weight: 700; }}
+.preview-table td {{ padding: 8px 12px; border-bottom: 1px solid var(--border-subtle); color: var(--text-main); }}
+.preview-table tr:nth-child(even) td {{ background: var(--surface-card); }}
+.checklist-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 1.2rem 0 1.8rem 0; }}
+.check-item {{ display: flex; align-items: flex-start; gap: 10px; background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem 1rem; }}
+.check-badge {{ background: var(--brand-accent); color: #FFF; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }}
+.check-text {{ font-size: 0.85rem; color: var(--text-main); line-height: 1.45; }}
 .chart-card {{ background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; overflow-x: auto; margin-bottom: 1.2rem; }}
 .chart-card h4 {{ margin: 0 0 0.8rem 0; color: var(--brand-primary); font-size: 1.05rem; }}
 </style>"""
@@ -146,7 +163,8 @@ def generate_scaffold(
     parts = [generate_css_block(theme_name=theme), "", header, ""]
 
     tokens = [t.strip().lower() for t in templates.split(",") if t.strip()]
-    selected = ["kpi", "pipeline", "matrix", "charts"] if "all" in tokens else tokens
+    canonical_blocks = ["kpi", "action_board", "matrix", "table", "checklist", "pipeline", "charts"]
+    selected = canonical_blocks if "all" in tokens else tokens
 
     for b in selected:
         if b in BLOCK_TEMPLATES:
@@ -165,7 +183,7 @@ def main():
     parser.add_argument(
         "--template",
         default="all",
-        help="Composable building blocks (comma-separated): kpi, pipeline, matrix, charts, or all (default: all)",
+        help="Composable Lego blocks: kpi, action_board, matrix, table, checklist, pipeline, charts, or all",
     )
     parser.add_argument(
         "--diagram",
