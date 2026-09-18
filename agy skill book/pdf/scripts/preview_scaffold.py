@@ -85,14 +85,6 @@ def generate_css_block(theme_name: str = "light") -> str:
 .matrix-tag {{ display: inline-block; font-size: 0.75rem; font-weight: 700; color: var(--brand-accent); background: rgba(0, 122, 146, 0.08); padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; }}
 .matrix-card h4 {{ margin: 0 0 0.5rem 0; color: var(--brand-primary); font-size: 1.05rem; }}
 .matrix-card ul {{ margin: 0; padding-left: 1.2rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.6; }}
-.action-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 1.2rem 0 1.8rem 0; }}
-.action-card {{ background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem 1.3rem; }}
-.action-card.as-is {{ border-top: 4px solid var(--color-alert); }}
-.action-card.to-be {{ border-top: 4px solid var(--color-ok); }}
-.action-card h4 {{ margin: 0 0 0.6rem 0; font-size: 1.05rem; }}
-.action-card.as-is h4 {{ color: var(--color-alert); }}
-.action-card.to-be h4 {{ color: var(--color-ok); }}
-.action-card ul {{ margin: 0; padding-left: 1.2rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.6; }}
 .table-wrap {{ overflow-x: auto; margin: 1.2rem 0 1.8rem 0; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); }}
 .preview-table {{ width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }}
 .preview-table th {{ background: var(--brand-primary); color: #FFF; padding: 8px 12px; font-weight: 700; }}
@@ -163,7 +155,7 @@ def generate_scaffold(
     parts = [generate_css_block(theme_name=theme), "", header, ""]
 
     tokens = [t.strip().lower() for t in templates.split(",") if t.strip()]
-    canonical_blocks = ["kpi", "action_board", "matrix", "table", "checklist", "pipeline", "charts"]
+    canonical_blocks = ["kpi", "matrix", "table", "checklist", "pipeline", "charts"]
     selected = canonical_blocks if "all" in tokens else tokens
 
     for b in selected:
@@ -177,13 +169,13 @@ def generate_scaffold(
 
 def main():
     parser = argparse.ArgumentParser(description="Composable Markdown Preview & Mermaid Asset Scaffolder")
-    parser.add_argument("-o", "--output", help="Output Markdown file path (default: stdout)")
+    parser.add_argument("-o", "--output", help="Output file path (default: stdout)")
     parser.add_argument("-t", "--title", default="Executive Strategy & Performance Dashboard", help="Document Title")
     parser.add_argument("-s", "--subtitle", default="Operational Baseline | Continuous Verification | Automated Workflow", help="Subtitle")
     parser.add_argument(
         "--template",
         default="all",
-        help="Composable Lego blocks: kpi, action_board, matrix, table, checklist, pipeline, charts, or all",
+        help="Composable Lego blocks: kpi, matrix, table, checklist, pipeline, charts, or all",
     )
     parser.add_argument(
         "--diagram",
