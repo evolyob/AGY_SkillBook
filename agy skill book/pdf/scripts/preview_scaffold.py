@@ -22,7 +22,12 @@ def clean_text(text: str) -> str:
 
 def load_data_asset(filename: str) -> Dict[str, Any]:
     """Loads static JSON asset from skill directory with graceful fallback."""
-    for base in [Path(__file__).parent, Path.home() / ".gemini/config/skills/pdf/scripts"]:
+    for base in [
+        Path(__file__).parent.parent / "data",
+        Path(__file__).parent,
+        Path.home() / ".gemini/config/skills/pdf/data",
+        Path.home() / ".gemini/config/skills/pdf/scripts",
+    ]:
         target = base / filename
         if target.exists():
             try:

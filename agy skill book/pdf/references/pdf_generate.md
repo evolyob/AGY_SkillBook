@@ -5,7 +5,7 @@ SSOT for design tokens, pure-geometry dynamic solver, and declarative multimodal
 ---
 
 ## 1. Themes & Surface Tokens (`get_theme_palette()`)
-Loaded centrally from `scripts/pdf_themes.json`. Printable canvas width: `total=540pt` (A4/Letter).
+Loaded centrally from `data/pdf_themes.json`. Printable canvas width: `total=540pt` (A4/Letter).
 
 | Theme | Ground (`bg`) | Cards (`card`) | Primary (`p`) | Pink Alert | Green OK | Best For |
 |---|---|---|---|---|---|---|

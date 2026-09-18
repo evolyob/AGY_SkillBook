@@ -29,8 +29,11 @@ from reportlab.graphics.charts.legends import Legend
 # ==============================================================================
 
 def load_theme_config() -> Dict[str, Any]:
-    for p in [Path(__file__).parent / "pdf_themes.json" if "__file__" in globals() else None,
+    for p in [Path(__file__).parent.parent / "data" / "pdf_themes.json" if "__file__" in globals() else None,
+             Path(__file__).parent / "pdf_themes.json" if "__file__" in globals() else None,
+             Path.home() / ".gemini/config/skills/pdf/data/pdf_themes.json",
              Path.home() / ".gemini/config/skills/pdf/scripts/pdf_themes.json",
+             Path.home() / ".gemini/skills/pdf/data/pdf_themes.json",
              Path.home() / ".gemini/skills/pdf/scripts/pdf_themes.json",
              Path(__file__).parent / "themes.json" if "__file__" in globals() else None]:
         if p and p.exists():
@@ -38,7 +41,9 @@ def load_theme_config() -> Dict[str, Any]:
     return {"fonts": {}, "themes": {}, "global_colors": {}, "geometry": {}}
 
 def load_detox_rules() -> Dict[str, Any]:
-    for p in [Path(__file__).parent / "rules_gate.json" if "__file__" in globals() else None,
+    for p in [Path(__file__).parent.parent / "data" / "rules_gate.json" if "__file__" in globals() else None,
+             Path(__file__).parent / "rules_gate.json" if "__file__" in globals() else None,
+             Path.home() / ".gemini/config/skills/pdf/data/rules_gate.json",
              Path.home() / ".gemini/hooks/rules_gate.json"]:
         if p and p.exists():
             try:

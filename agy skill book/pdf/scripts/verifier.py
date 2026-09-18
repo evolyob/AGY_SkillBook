@@ -17,7 +17,13 @@ from pypdf import PdfReader
 
 
 def load_gate_rules():
-    for p in [Path(__file__).parent / "rules_gate.json", Path.home() / ".gemini/hooks/rules_gate.json"]:
+    for p in [
+        Path(__file__).parent.parent / "data" / "rules_gate.json",
+        Path(__file__).parent / "rules_gate.json",
+        Path.home() / ".gemini/config/skills/pdf/data/rules_gate.json",
+        Path.home() / ".gemini/config/skills/pdf/scripts/rules_gate.json",
+        Path.home() / ".gemini/hooks/rules_gate.json",
+    ]:
         if not p.exists(): continue
         try:
             with open(p, "r", encoding="utf-8") as f: return json.load(f)
