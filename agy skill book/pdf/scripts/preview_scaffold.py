@@ -226,13 +226,13 @@ def build_mermaid_requirement() -> str:
 ```mermaid
 requirementDiagram
     requirement req_p0 {
-      id: REQ-001-CORE
-      text: Critical access must enforce dual-factor auth and automated audit logging
-      risk: High
-      verifymethod: Test
+      id: "REQ-001-CORE"
+      text: "Critical access must enforce dual-factor auth and automated audit logging"
+      risk: high
+      verifymethod: test
     }
     element auth_gateway {
-      type: Component
+      type: component
     }
     auth_gateway - satisfies -> req_p0
 ```
