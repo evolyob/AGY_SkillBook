@@ -1,36 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Markdown Visual Preview & Graphic Asset Scaffolder (preview_scaffold.py)
+Markdown Visual Preview Scaffolder (preview_scaffold.py)
 Generates standards-compliant, browser-ready Markdown preview files with embedded
 CSS design tokens and verified layout archetypes (KPI Grid, Split Cards, Mermaid).
-Supports direct multi-format graphic export (SVG/PNG via resvg_py) and 1-stop PDF
-compilation with built-in caching to optimize turnaround and eliminate command chaining.
+Provides lightweight single-diagram SVG/PNG export for PDF embedding.
 """
 
 import argparse
 import base64
-import concurrent.futures
-import hashlib
 import json
 import os
 import re
 import sys
 import urllib.request
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-
-# Local Cache Directory for Rendered Mermaid SVGs and PNGs
-CACHE_DIR = Path.home() / ".cache" / "mermaid"
-CACHE_DIR.mkdir(parents=True, exist_ok=True)
+from typing import Any, Dict
 
 # ----------------------------------------------------------------------
-# STEP 1 & 2: SSOT ARCHETYPE DICTIONARY (7 Canonical Mermaid Models)
+# SSOT ARCHETYPE DICTIONARY (6 Canonical Mermaid Models)
 # ----------------------------------------------------------------------
 ARCHETYPES: Dict[str, Dict[str, str]] = {
     "flowchart": {
         "title": "1. 網路拓撲與服務流向架構 (Flowchart TD)",
-        "desc": "展示多層次隔離網路、閘道路由與核心叢集拓撲。",
         "card_title": "1. Architecture Topology & Flow (flowchart TD)",
         "code": """flowchart TD
     ext["Untrusted Ingress / Clients"] --> gateway["Edge Gateway / Load Balancer"]
@@ -43,7 +35,6 @@ ARCHETYPES: Dict[str, Dict[str, str]] = {
     },
     "xychart": {
         "title": "2. 季產能與效能目標趨勢 (XYChart Beta)",
-        "desc": "雙軌數據視覺化：條狀圖對比目標折線圖。",
         "card_title": "2. Dual-Track Chart: Volume vs. Target (xychart-beta)",
         "code": """%%{init: {'theme': 'neutral'}}%%
 xychart-beta
@@ -55,7 +46,6 @@ xychart-beta
     },
     "gantt": {
         "title": "3. 專案里程碑與排程相依 (Gantt Schedule)",
-        "desc": "專案階段里程碑、排程相依性與交付甘特圖。",
         "card_title": "3. Phased Roadmap & Dependency Schedule (gantt)",
         "code": """gantt
     title "Project Execution & Phased Delivery"
@@ -69,7 +59,6 @@ xychart-beta
     },
     "timeline": {
         "title": "4. 年度策略規劃與推進節奏 (Timeline)",
-        "desc": "季度關鍵轉折點、架構驗證與演練時間軸。",
         "card_title": "4. Milestone Timeline (timeline)",
         "code": """timeline
     title "Annual Strategic Milestone Roadmap"
@@ -80,7 +69,6 @@ xychart-beta
     },
     "sequence": {
         "title": "5. API 認證交握與時序調度 (Sequence Diagram)",
-        "desc": "用戶端、API Gateway、IAM 認證中心與資料庫交互時序。",
         "card_title": "5. API Interaction & Authentication Handshake (sequenceDiagram)",
         "code": """sequenceDiagram
     autonumber
@@ -100,28 +88,9 @@ xychart-beta
     DB-->>Svc: 8. Return Dataset
     Svc-->>User: 9. 200 OK JSON Response""",
     },
-    "state": {
-        "title": "6. 資產生命週期狀態機 (State Diagram v2)",
-        "desc": "從資產發掘、評估審查、上線運行至歸檔除役的狀態機。",
-        "card_title": "6. Lifecycle & State Machine (stateDiagram-v2)",
-        "code": """stateDiagram-v2
-    [*] --> Draft: Asset Discovered
-    Draft --> InReview: Submit for Review
-    InReview --> Approved: Risk Assessment Passed
-    InReview --> Rejected: Findings Require Fix
-    Rejected --> Draft: Remediate Findings
-    Approved --> Active: Production Deployment
-    Active --> UnderAudit: Periodic Compliance Audit
-    UnderAudit --> Active: Audit Passed
-    UnderAudit --> Deprecated: EOL Notice
-    Active --> Deprecated: Service Sunset
-    Deprecated --> Archived: Encrypted Backup & Purge
-    Archived --> [*]""",
-    },
     "er": {
-        "title": "7. 關聯式資料庫與日誌架構 (ER Diagram)",
-        "desc": "實體關係模型、主鍵/外鍵結構與稽核日誌綱要。",
-        "card_title": "7. Relational Database Schema (erDiagram)",
+        "title": "6. 關聯式資料庫與日誌架構 (ER Diagram)",
+        "card_title": "6. Relational Database Schema (erDiagram)",
         "code": """erDiagram
     ASSET_SYSTEM ||--o{ AUDIT_LOG : tracks
     ASSET_SYSTEM }|--|| ASSET_GROUP : belongs_to
@@ -308,15 +277,7 @@ def render_archetype_card(diagram_key: str) -> str:
 def build_template_c(diagram: str = "all") -> str:
     """Builds Template C: Native Mermaid Visual Archetypes."""
     parts = ['<h3 class="doc-section-title">Visual Models & Architecture (Mermaid Archetypes)</h3>\n']
-    
-    if diagram == "original":
-        keys = ["flowchart", "xychart", "gantt", "timeline"]
-    elif diagram == "safe":
-        keys = ["flowchart", "xychart", "gantt", "timeline", "sequence", "state", "er"]
-    elif diagram in ARCHETYPES:
-        keys = [diagram]
-    else:  # "all"
-        keys = list(ARCHETYPES.keys())
+    keys = [diagram] if diagram in ARCHETYPES else list(ARCHETYPES.keys())
         
     for k in keys:
         if k in ARCHETYPES:
@@ -332,45 +293,22 @@ def extract_mermaid_code(card_html: str) -> str:
     return m.group(1).strip() if m else ""
 
 
-def render_mermaid_to_svg(mermaid_code: str, *, use_cache: bool = True) -> str:
-    """
-    Renders Mermaid code into clean SVG. Uses local SHA-256 disk caching to
-    eliminate redundant HTTP requests and guarantee high performance.
-    """
-    cache_key = hashlib.sha256(mermaid_code.strip().encode("utf-8")).hexdigest()[:16]
-    cache_file = CACHE_DIR / f"{cache_key}.svg"
-    
-    if use_cache and cache_file.exists():
-        try:
-            return cache_file.read_text(encoding="utf-8")
-        except Exception:
-            pass
-
+def render_mermaid_to_svg(mermaid_code: str) -> str:
+    """Renders Mermaid DSL to SVG using mermaid.ink endpoint."""
     encoded = base64.b64encode(mermaid_code.strip().encode("utf-8")).decode("ascii")
     url = f"https://mermaid.ink/svg/{encoded}"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    
-    try:
-        with urllib.request.urlopen(req, timeout=15) as response:
-            svg_str = response.read().decode("utf-8")
-    except Exception as err:
-        raise RuntimeError(f"Failed to fetch SVG from mermaid.ink: {err}") from err
-
-    try:
-        cache_file.write_text(svg_str, encoding="utf-8")
-    except Exception:
-        pass
-
-    return svg_str
+    with urllib.request.urlopen(req, timeout=15) as response:
+        return response.read().decode("utf-8")
 
 
-def export_diagram_asset(diagram_type: str, output_file: str, *, use_cache: bool = True) -> Path:
-    """Exports a specific Mermaid diagram archetype to an SVG or high-res PNG asset file."""
+def export_diagram_asset(diagram_type: str, output_file: str) -> Path:
+    """Exports a Mermaid archetype to SVG or PNG (via resvg_py)."""
     if diagram_type not in ARCHETYPES:
         raise ValueError(f"Unknown diagram type '{diagram_type}'. Choose from: {list(ARCHETYPES.keys())}")
     
     code = ARCHETYPES[diagram_type]["code"]
-    svg_str = render_mermaid_to_svg(code, use_cache=use_cache)
+    svg_str = render_mermaid_to_svg(code)
     
     out_path = Path(output_file).resolve()
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -379,120 +317,10 @@ def export_diagram_asset(diagram_type: str, output_file: str, *, use_cache: bool
         out_path.write_text(svg_str, encoding="utf-8")
         return out_path
     
-    # Rasterize via resvg_py
-    try:
-        import resvg_py
-    except ImportError as err:
-        raise RuntimeError("resvg_py is required for PNG rendering. Run: pip install resvg_py") from err
-
+    import resvg_py
     png_bytes = resvg_py.svg_to_bytes(svg_str)
     out_path.write_bytes(png_bytes)
     return out_path
-
-
-def export_all_diagrams(output_dir: str, keys: Optional[List[str]] = None, *, use_cache: bool = True) -> List[Path]:
-    """Batch exports diagrams into output directory concurrently for maximum performance."""
-    target_dir = Path(output_dir).resolve()
-    target_dir.mkdir(parents=True, exist_ok=True)
-    diagram_keys = keys or list(ARCHETYPES.keys())
-    
-    def _worker(item):
-        idx, key = item
-        p_png = target_dir / f"{idx:02d}_{key}.png"
-        p_svg = target_dir / f"{idx:02d}_{key}.svg"
-        export_diagram_asset(key, str(p_png), use_cache=use_cache)
-        export_diagram_asset(key, str(p_svg), use_cache=use_cache)
-        return p_png
-
-    items = [(i, k) for i, k in enumerate(diagram_keys, 1) if k in ARCHETYPES]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(items), 6)) as ex:
-        results = list(ex.map(_worker, items))
-    return results
-
-
-def compile_pdf_showcase(
-    output_pdf: str,
-    diagram_keys: Optional[List[str]] = None,
-    *,
-    title: str = "Mermaid 視覺架構原生渲染全集",
-    subtitle: str = "preview_scaffold.py × ReportLab 7 款架構圖整合手冊",
-    theme: str = "light",
-) -> Path:
-    """
-    Compiles a comprehensive ReportLab PDF showcase embedding the Mermaid archetypes.
-    Single-invocation end-to-end pipeline: exports assets, formats flowables, generates
-    multipage PDF with BoundCanvas headers/footers, and validates against verifier.py.
-    """
-    from PIL import Image as PILImage
-
-    scripts_dir = Path(__file__).parent.resolve()
-    sys.path.insert(0, str(scripts_dir))
-    
-    try:
-        from builder import generate_multipage_report, build_section_heading, build_body
-    except ImportError as err:
-        raise RuntimeError(f"Could not import builder.py from {scripts_dir}: {err}") from err
-
-    keys = diagram_keys or list(ARCHETYPES.keys())
-    temp_dir = CACHE_DIR / "render_temp"
-    temp_dir.mkdir(parents=True, exist_ok=True)
-
-    story: List[Any] = [
-        build_section_heading("完整 Mermaid 原生視覺模型總覽 (7 Archetypes Showcase)"),
-        build_body(
-            "本手冊展示由 preview_scaffold.py 直接自原生 Mermaid DSL 語法編譯，"
-            "透過向量渲染引擎光柵化為高解析圖檔，並無縫嵌入 ReportLab 流式排版引擎之完整成果。"
-            "涵蓋拓撲、產能趨勢、甘特排程、里程時間軸、時序交握、狀態機與實體關係模型。"
-        ),
-        build_body("排版具備跨頁自動調適、向量無失真光柵化與頁首頁尾動態綁定能力。"),
-    ]
-
-    from reportlab.platypus import Image as RLImage, PageBreak, Spacer
-
-    # Max printable dimensions for A4 with margins
-    max_w = 460.0
-    max_h = 320.0
-
-    for idx, key in enumerate(keys, 1):
-        if key not in ARCHETYPES:
-            continue
-        info = ARCHETYPES[key]
-        png_path = temp_dir / f"{idx:02d}_{key}.png"
-        export_diagram_asset(key, str(png_path), use_cache=True)
-
-        with PILImage.open(png_path) as im:
-            orig_w, orig_h = im.size
-
-        scale = min(max_w / orig_w, max_h / orig_h, 1.0)
-        final_w = max(10.0, orig_w * scale)
-        final_h = max(10.0, orig_h * scale)
-
-        story.append(build_section_heading(info["title"]))
-        story.append(build_body(info["desc"]))
-        story.append(Spacer(1, 10))
-        story.append(RLImage(str(png_path), width=final_w, height=final_h))
-        if idx < len(keys):
-            story.append(PageBreak())
-
-    out_pdf_path = Path(output_pdf).resolve()
-    out_pdf_path.parent.mkdir(parents=True, exist_ok=True)
-
-    generate_multipage_report(
-        str(out_pdf_path),
-        title=title,
-        subtitle=subtitle,
-        story_elements=story,
-        theme=theme,
-    )
-
-    # Automatic Verification Gate Check
-    try:
-        import verifier
-        verifier.verify_pdf(str(out_pdf_path), verbose=True)
-    except Exception as e:
-        print(f"[*] Note: Verification notice: {e}", file=sys.stderr)
-
-    return out_pdf_path
 
 
 def generate_scaffold(
@@ -501,7 +329,7 @@ def generate_scaffold(
     templates: str = "all",
     diagram: str = "all",
 ) -> str:
-    """Combines CSS block with selected templates into a complete, verified Markdown preview document."""
+    """Combines CSS block with selected templates into a complete Markdown preview document."""
     parts = [generate_css_block(), ""]
 
     if templates in ["a", "all", "header"]:
@@ -520,53 +348,30 @@ def generate_scaffold(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Unified Markdown Preview & Mermaid Asset/PDF Pipeline.")
+    parser = argparse.ArgumentParser(description="Markdown Preview & Mermaid Asset Scaffolder")
     parser.add_argument("-o", "--output", help="Output Markdown file path (default: stdout)")
     parser.add_argument("-t", "--title", default="Executive Strategy & Performance Dashboard", help="Document Title")
     parser.add_argument("-s", "--subtitle", default="Operational Baseline · Continuous Verification · Automated Workflow", help="Subtitle")
     parser.add_argument("--template", choices=["all", "a", "b", "c"], default="all", help="Templates to include (default: all)")
     parser.add_argument(
         "--diagram",
-        choices=["all", "original", "safe"] + list(ARCHETYPES.keys()),
+        choices=["all"] + list(ARCHETYPES.keys()),
         default="all",
-        help="Mermaid diagram archetype filter (default: all)",
+        help="Mermaid diagram filter (default: all)",
     )
     parser.add_argument("--css-only", action="store_true", help="Print only the CSS <style> block")
     parser.add_argument("--export-diagram", choices=list(ARCHETYPES.keys()), help="Export a specific Mermaid archetype as an image asset")
     parser.add_argument("--export-out", help="Target output file for --export-diagram (.svg or .png)")
-    parser.add_argument("--export-dir", help="Export all (or filtered) diagram assets directly into target directory")
-    parser.add_argument("--compile-pdf", "--export-pdf", dest="compile_pdf", help="Compile diagrams directly into a verified ReportLab PDF")
-    parser.add_argument("--no-cache", action="store_true", help="Bypass local disk cache and force remote re-fetch")
     args = parser.parse_args()
 
-    use_cache = not args.no_cache
-
-    # Mode 1: 1-Stop PDF Compilation
-    if args.compile_pdf:
-        keys = list(ARCHETYPES.keys()) if args.diagram in ["all", "safe", "original"] else [args.diagram]
-        print(f"[+] Compiling 1-stop verified PDF with {len(keys)} diagram archetypes to: {args.compile_pdf}")
-        pdf_path = compile_pdf_showcase(args.compile_pdf, keys, title=args.title, subtitle=args.subtitle)
-        print(f"[+] Done! PDF compiled successfully at: {pdf_path}")
-        sys.exit(0)
-
-    # Mode 2: Batch Export Directory
-    if args.export_dir:
-        keys = list(ARCHETYPES.keys()) if args.diagram in ["all", "safe", "original"] else [args.diagram]
-        print(f"[+] Batch exporting {len(keys)} diagram assets into: {args.export_dir}")
-        exported = export_all_diagrams(args.export_dir, keys, use_cache=use_cache)
-        print(f"[+] Successfully exported {len(exported)} diagram assets into: {args.export_dir}")
-        sys.exit(0)
-
-    # Mode 3: Single Diagram Export
     if args.export_diagram:
         if not args.export_out:
             print("[!] Error: --export-out <file.svg|file.png> is required with --export-diagram", file=sys.stderr)
             sys.exit(1)
-        saved = export_diagram_asset(args.export_diagram, args.export_out, use_cache=use_cache)
+        saved = export_diagram_asset(args.export_diagram, args.export_out)
         print(f"[+] Successfully exported diagram asset: {saved}")
         sys.exit(0)
 
-    # Mode 4: Markdown Preview Scaffold Output
     if args.css_only:
         content = generate_css_block()
     else:
