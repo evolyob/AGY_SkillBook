@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Markdown Visual Preview Scaffolder (preview_scaffold.py)
-Generates standards-compliant, browser-ready Markdown preview files with embedded
-CSS design tokens and verified layout archetypes (KPI Grid, Split Cards, Mermaid).
-Provides lightweight single-diagram SVG/PNG export for PDF embedding.
-All colors dynamically align with pdf_themes.json SSOT (Zero Hardcoding, Light Mode Standard).
+Composable Visual Preview & Graphic Asset Scaffolder (preview_scaffold.py)
+Generates modular, browser-ready Markdown preview files with composable building blocks:
+- KPI Grid (4-metric performance dashboard)
+- SOP Pipeline (linear execution phases 01 -> 04)
+- Quadrant Matrix (2x2 strategic prioritization grid)
+- Native Mermaid Visual Archetypes (5 canonical models)
+All visual tokens and colors are dynamically derived from pdf_themes.json SSOT.
 """
 
 import argparse
@@ -16,7 +18,7 @@ import re
 import sys
 import urllib.request
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 # ----------------------------------------------------------------------
 # SSOT ARCHETYPE DICTIONARY (5 Canonical Mermaid Models)
@@ -152,7 +154,7 @@ def get_theme_directive(theme_name: str = "light") -> str:
 
 
 def generate_css_block(theme_name: str = "light") -> str:
-    """Generates the embedded canonical <style> block derived from pdf_themes.json SSOT."""
+    """Generates canonical embedded <style> block supporting all building block grids."""
     cfg = load_theme_config()
     themes = cfg.get("themes", {})
     th = themes.get(theme_name, themes.get("light", {}))
@@ -186,49 +188,113 @@ def generate_css_block(theme_name: str = "light") -> str:
 .doc-header h1 {{ margin: 0 0 0.3rem 0; color: var(--brand-primary); font-size: 1.85rem; }}
 .doc-header .doc-subtitle {{ color: var(--text-muted); font-size: 0.95rem; margin: 0; }}
 .doc-section-title {{ display: flex; align-items: center; gap: 8px; margin: 2rem 0 1rem 0; padding-left: 10px; border-left: 4px solid var(--brand-accent); color: var(--brand-primary); font-size: 1.25rem; font-weight: 700; }}
+
+/* Building Block 1: KPI Grid */
 .kpi-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 1.2rem 0 1.8rem 0; }}
 .kpi-card {{ background: var(--kpi-bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem 0.6rem; text-align: center; }}
 .kpi-val {{ font-size: 1.45rem; font-weight: 800; color: var(--brand-primary); line-height: 1.2; }}
 .kpi-label {{ font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }}
-.card-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 1.8rem; }}
-.card {{ background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.2rem 1.4rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }}
-.card.col-span-2 {{ grid-column: 1 / -1; }}
-.card h4 {{ margin-top: 0; color: var(--brand-primary); font-size: 1.05rem; }}
-.card p, .card li {{ color: var(--text-main); line-height: 1.6; }}
+
+/* Building Block 2: SOP Pipeline */
+.pipeline-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 1.2rem 0 1.8rem 0; }}
+.pipeline-step {{ background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem 1.1rem; position: relative; }}
+.step-num {{ display: inline-block; background: var(--brand-primary); color: #FFFFFF; font-size: 0.75rem; font-weight: 700; border-radius: 4px; padding: 2px 7px; margin-bottom: 6px; }}
+.step-title {{ font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }}
+.step-desc {{ font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; margin: 0; }}
+
+/* Building Block 3: Quadrant Matrix (2x2) */
+.matrix-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 1.2rem 0 1.8rem 0; }}
+.matrix-card {{ background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem 1.3rem; }}
+.matrix-tag {{ display: inline-block; font-size: 0.75rem; font-weight: 700; color: var(--brand-accent); background: rgba(0, 122, 146, 0.08); padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; }}
+.matrix-card h4 {{ margin: 0 0 0.5rem 0; color: var(--brand-primary); font-size: 1.05rem; }}
+.matrix-card ul {{ margin: 0; padding-left: 1.2rem; font-size: 0.85rem; color: var(--text-main); line-height: 1.6; }}
+
+/* Building Block 4: Charts Container */
 .chart-card {{ background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; overflow-x: auto; margin-bottom: 1.2rem; }}
+.chart-card h4 {{ margin: 0 0 0.8rem 0; color: var(--brand-primary); font-size: 1.05rem; }}
 </style>"""
 
 
-def build_template_a(title: str, subtitle: str) -> str:
-    """Builds Template A: Document Header & KPI Dashboard Grid."""
+def build_block_header(title: str, subtitle: str) -> str:
+    """Builds Document Title Header block."""
     return f"""<div class="doc-header">
   <h1>{title}</h1>
   <p class="doc-subtitle">{subtitle}</p>
-</div>
-<div class="kpi-grid">
-  <div class="kpi-card"><div class="kpi-val">99.98%</div><div class="kpi-label">Service Availability</div></div>
-  <div class="kpi-card"><div class="kpi-val">&lt; 15ms</div><div class="kpi-label">Average Latency</div></div>
-  <div class="kpi-card"><div class="kpi-val">12 Units</div><div class="kpi-label">Active Modules</div></div>
-  <div class="kpi-card"><div class="kpi-val">0</div><div class="kpi-label">Critical Incidents</div></div>
 </div>"""
 
 
-def build_template_b() -> str:
-    """Builds Template B: Split Cards (As-Is vs. To-Be / Contrast)."""
-    return """<h3 class="doc-section-title">Operational Challenges & Mitigation Plan</h3>
-<div class="card-grid">
-  <div class="card">
-    <h4>✖ As-Is (Bottlenecks & Gaps)</h4>
+def build_block_kpi() -> str:
+    """Building Block: 4-Column Performance KPI Grid."""
+    return """<h3 class="doc-section-title">關鍵量化指標 (Key Performance Indicators)</h3>
+<div class="kpi-grid">
+  <div class="kpi-card"><div class="kpi-val">99.98%</div><div class="kpi-label">服務妥善率 (Availability)</div></div>
+  <div class="kpi-card"><div class="kpi-val">&lt; 15ms</div><div class="kpi-label">平均請求延遲 (Latency)</div></div>
+  <div class="kpi-card"><div class="kpi-val">12 個</div><div class="kpi-label">核心運行單元 (Active Units)</div></div>
+  <div class="kpi-card"><div class="kpi-val">0 件</div><div class="kpi-label">重大資安事件 (Critical Incidents)</div></div>
+</div>"""
+
+
+def build_block_pipeline() -> str:
+    """Building Block: SOP Execution Pipeline (Phase 01 -> 04)."""
+    return """<h3 class="doc-section-title">標準作業程序管線 (SOP Execution Pipeline)</h3>
+<div class="pipeline-grid">
+  <div class="pipeline-step">
+    <span class="step-num">PHASE 01</span>
+    <div class="step-title">事件判定與通報</div>
+    <p class="step-desc">監控觸發異常警報，完成風險等級初判並召集應變小組。</p>
+  </div>
+  <div class="pipeline-step">
+    <span class="step-num">PHASE 02</span>
+    <div class="step-title">隔離遏阻與止血</div>
+    <p class="step-desc">切斷受害節點網路連接，阻斷惡意流量蔓延並保存證據日誌。</p>
+  </div>
+  <div class="pipeline-step">
+    <span class="step-num">PHASE 03</span>
+    <div class="step-title">修復回滾與驗證</div>
+    <p class="step-desc">重灌乾淨映像檔或備援切換，校驗資料完整性後重新上線。</p>
+  </div>
+  <div class="pipeline-step">
+    <span class="step-num">PHASE 04</span>
+    <div class="step-title">事後覆盤與歸檔</div>
+    <p class="step-desc">產出根本原因分析 (RCA) 報告，更新自動化防禦規則與演練手冊。</p>
+  </div>
+</div>"""
+
+
+def build_block_matrix() -> str:
+    """Building Block: Quadrant Matrix 2x2 (Strategic Prioritization / Risk vs Impact)."""
+    return """<h3 class="doc-section-title">決策優先級象限矩陣 (Quadrant Matrix 2x2)</h3>
+<div class="matrix-grid">
+  <div class="matrix-card">
+    <span class="matrix-tag">象限 I (高影響 · 低成本)</span>
+    <h4>優先執行 (Quick Wins)</h4>
     <ul>
-      <li>Manual review cycle averages 3.5 days, delaying deployment.</li>
-      <li>Asset inventory relies on spreadsheets without live drift tracking.</li>
+      <li>關鍵管理存取強制啟用多因子認證 (MFA)</li>
+      <li>自動化漏洞掃描與弱點排程熱修補</li>
     </ul>
   </div>
-  <div class="card">
-    <h4>✔ To-Be (Target Architecture)</h4>
+  <div class="matrix-card">
+    <span class="matrix-tag">象限 II (高影響 · 高成本)</span>
+    <h4>重大專案 (Strategic)</h4>
     <ul>
-      <li>Automated policy engine reduces verification turnaround to &lt; 15 minutes.</li>
-      <li>Continuous IAM auditing pipeline detects unauthorized config drift daily.</li>
+      <li>異地多活備援架構升級與災防演練</li>
+      <li>零信任 (Zero Trust) 身分邊界全面導入</li>
+    </ul>
+  </div>
+  <div class="matrix-card">
+    <span class="matrix-tag">象限 III (低影響 · 低成本)</span>
+    <h4>日常維運 (Fill-Ins)</h4>
+    <ul>
+      <li>端點資產清冊定時校對與盤點</li>
+      <li>例行性系統日誌備份完整性抽檢</li>
+    </ul>
+  </div>
+  <div class="matrix-card">
+    <span class="matrix-tag">象限 IV (低影響 · 高成本)</span>
+    <h4>暫緩推遲 (Deprioritize)</h4>
+    <ul>
+      <li>非核心歷史系統自研介面翻新</li>
+      <li>過度客製化監控腳本重複造輪子</li>
     </ul>
   </div>
 </div>"""
@@ -251,9 +317,9 @@ def render_archetype_card(diagram_key: str, theme_name: str = "light") -> str:
 </div>"""
 
 
-def build_template_c(diagram: str = "all", theme_name: str = "light") -> str:
-    """Builds Template C: Native Mermaid Visual Archetypes."""
-    parts = ['<h3 class="doc-section-title">Visual Models & Architecture (Mermaid Archetypes)</h3>\n']
+def build_block_charts(diagram: str = "all", theme_name: str = "light") -> str:
+    """Building Block: Native Mermaid Visual Archetypes."""
+    parts = ['<h3 class="doc-section-title">視覺拓撲與架構模型 (Mermaid Archetypes)</h3>\n']
     keys = [diagram] if diagram in ARCHETYPES else list(ARCHETYPES.keys())
         
     for k in keys:
@@ -262,12 +328,6 @@ def build_template_c(diagram: str = "all", theme_name: str = "light") -> str:
             parts.append("")
             
     return "\n".join(parts).strip()
-
-
-def extract_mermaid_code(card_html: str) -> str:
-    """Extracts raw Mermaid DSL code from an archetype card."""
-    m = re.search(r"```mermaid\s*\n(.*?)\n```", card_html, re.DOTALL)
-    return m.group(1).strip() if m else ""
 
 
 def render_mermaid_to_svg(mermaid_code: str, theme_name: str = "light") -> str:
@@ -310,30 +370,41 @@ def generate_scaffold(
     diagram: str = "all",
     theme: str = "light",
 ) -> str:
-    """Combines CSS block with selected templates into a complete Markdown preview document."""
-    parts = [generate_css_block(theme_name=theme), ""]
+    """Combines CSS block with selected building blocks like Lego blocks."""
+    parts = [generate_css_block(theme_name=theme), "", build_block_header(title, subtitle), ""]
 
-    if templates in ["a", "all", "header"]:
-        parts.append(build_template_a(title, subtitle))
-        parts.append("")
+    raw_tokens = [t.strip().lower() for t in templates.split(",") if t.strip()]
+    
+    if "all" in raw_tokens:
+        selected_blocks = ["kpi", "pipeline", "matrix", "charts"]
+    else:
+        selected_blocks = raw_tokens
 
-    if templates in ["b", "all", "cards"]:
-        parts.append(build_template_b())
-        parts.append("")
+    block_map = {
+        "kpi": lambda: build_block_kpi(),
+        "pipeline": lambda: build_block_pipeline(),
+        "matrix": lambda: build_block_matrix(),
+        "charts": lambda: build_block_charts(diagram=diagram, theme_name=theme),
+    }
 
-    if templates in ["c", "all", "charts"]:
-        parts.append(build_template_c(diagram=diagram, theme_name=theme))
-        parts.append("")
+    for b in selected_blocks:
+        if b in block_map:
+            parts.append(block_map[b]())
+            parts.append("")
 
     return "\n".join(parts)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Markdown Preview & Mermaid Asset Scaffolder")
+    parser = argparse.ArgumentParser(description="Composable Markdown Preview & Mermaid Asset Scaffolder")
     parser.add_argument("-o", "--output", help="Output Markdown file path (default: stdout)")
     parser.add_argument("-t", "--title", default="Executive Strategy & Performance Dashboard", help="Document Title")
     parser.add_argument("-s", "--subtitle", default="Operational Baseline · Continuous Verification · Automated Workflow", help="Subtitle")
-    parser.add_argument("--template", choices=["all", "a", "b", "c"], default="all", help="Templates to include (default: all)")
+    parser.add_argument(
+        "--template",
+        default="all",
+        help="Composable building blocks (comma-separated): kpi, pipeline, matrix, charts, or all (default: all)",
+    )
     parser.add_argument(
         "--diagram",
         choices=["all"] + list(ARCHETYPES.keys()),

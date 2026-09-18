@@ -22,9 +22,7 @@ Invoke `preview_scaffold.py` to produce a fully styled, verified starter file:
 python3 scripts/preview_scaffold.py -t "Project Title" -s "Subtitle" -o preview.md
 ```
 *Optional flags*:
-- `--template a`: Only Header & KPI Dashboard Grid.
-- `--template b`: Only As-Is vs To-Be Split Cards.
-- `--template c`: Only Native Mermaid Charts.
+- `--template <blocks>`: Composable Lego blocks (comma-separated): `kpi`, `pipeline`, `matrix`, `charts`, or `all` (e.g. `--template pipeline,charts`).
 - `--diagram <type>`: Choose Mermaid chart (`all` or single chart: `flowchart`, `xychart`, `gantt`, `sequence`, `er`).
 - `--export-diagram <type>`: Export a specific Mermaid chart as an asset.
 - `--export-out <file>`: Output path for exported graphic (.svg or .png).
