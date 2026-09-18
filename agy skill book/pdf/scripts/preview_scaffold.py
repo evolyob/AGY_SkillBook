@@ -173,6 +173,7 @@ def main():
         default="all",
         help="Mermaid diagram filter (default: all)",
     )
+    parser.add_argument("--theme", default="light", help="Theme key from pdf_themes.json (default: light)")
     parser.add_argument("--css-only", action="store_true", help="Print only the CSS <style> block")
     parser.add_argument("--export-diagram", choices=list(ARCHETYPES.keys()), help="Export a specific Mermaid archetype as an image asset")
     parser.add_argument("--export-out", help="Target output file for --export-diagram (.svg or .png)")
@@ -187,13 +188,14 @@ def main():
         sys.exit(0)
 
     if args.css_only:
-        content = generate_css_block()
+        content = generate_css_block(theme_name=args.theme)
     else:
         content = generate_scaffold(
             title=args.title,
             subtitle=args.subtitle,
             templates=args.template,
             diagram=args.diagram,
+            theme=args.theme,
         )
 
     if args.output:
