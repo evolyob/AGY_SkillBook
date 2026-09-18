@@ -109,7 +109,7 @@ def generate_css_block(theme_name: str = "light") -> str:
 
 def build_charts_block(diagram: str = "all", theme_name: str = "light") -> str:
     """Builds Mermaid charts container block with injected theme directives."""
-    parts = ['<h3 class="doc-section-title">視覺拓撲與架構模型 (Mermaid Archetypes)</h3>\n']
+    parts = ['<h3 class="doc-section-title">Visual Topologies & Architecture Models (Mermaid Archetypes)</h3>\n']
     keys = [diagram] if diagram in ARCHETYPES else list(ARCHETYPES.keys())
     directive = get_theme_directive(theme_name)
     for k in keys:
@@ -152,7 +152,7 @@ def export_diagram_asset(diagram_type: str, output_file: str, theme_name: str = 
 
 def generate_scaffold(
     title: str = "Executive Strategy & Performance Dashboard",
-    subtitle: str = "Operational Baseline · Continuous Verification · Automated Workflow",
+    subtitle: str = "Operational Baseline | Continuous Verification | Automated Workflow",
     templates: str = "all",
     diagram: str = "all",
     theme: str = "light",
@@ -179,7 +179,7 @@ def main():
     parser = argparse.ArgumentParser(description="Composable Markdown Preview & Mermaid Asset Scaffolder")
     parser.add_argument("-o", "--output", help="Output Markdown file path (default: stdout)")
     parser.add_argument("-t", "--title", default="Executive Strategy & Performance Dashboard", help="Document Title")
-    parser.add_argument("-s", "--subtitle", default="Operational Baseline · Continuous Verification · Automated Workflow", help="Subtitle")
+    parser.add_argument("-s", "--subtitle", default="Operational Baseline | Continuous Verification | Automated Workflow", help="Subtitle")
     parser.add_argument(
         "--template",
         default="all",
