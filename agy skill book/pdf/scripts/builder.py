@@ -59,7 +59,6 @@ _GEO = _CFG.get("geometry", {
     "pill_radius": 0.50,
     "card_border_width": 0.75,
     "pipeline_height": 50.0,
-    "action_board_height": 70.0,
     "kpi_row_height": 52.0,
     "chart_width": 240.0,
     "chart_height": 115.0,
@@ -232,18 +231,6 @@ def build_pipeline_flow(steps: List[Dict[str, Any]], total: float = _GEO["page_p
     t.hAlign = "LEFT"
     t.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('RIGHTPADDING', (0,0), (-1,-1), 0)]))
     return t
-
-def build_action_board(as_is_dict: Dict[str, Any], to_be_dict: Dict[str, Any], total: float = _GEO["page_printable_width"], uniform_height: float = _GEO["action_board_height"], gap: float = _GEO["grid_gap"]) -> Table:
-    pal = get_theme_palette()
-    col_ws = calc_cols(total, 2, gap=gap)
-    half_w = col_ws[0]
-    def _box(d, is_pink):
-        col, bg = (pal["alert"], pal["pink_bg"]) if is_pink else (pal["emerald"], pal["green_bg"])
-        paras = [_p(f"{'✖' if is_pink else '✓'} {d.get('title', '')}", sz=12.0, col=col, bold=True), Spacer(1, 2)]
-        for it in d.get("items", []): paras.append(_p(f"• {it}", sz=BASE_FONT_SZ, col=pal["dark"], lead=14.5))
-        if "highlight" in d: paras.extend([Spacer(1, 1), _p(f"<b>{d['highlight']}</b>", sz=BASE_FONT_SZ, col=col, bold=True, lead=14.5)])
-        return build_card(paras, width=half_w, height=uniform_height, bg=bg, border=col, border_width=1.2, pad=6)
-    return build_split_row([_box(as_is_dict, True), _box(to_be_dict, False)], weights=[0.5, 0.5], total=total, gap=gap)
 
 def build_checklist_grid(items: List[Tuple[int, str, str]], total: float = _GEO["page_printable_width"], cols: int = 2, gap: float = _GEO["grid_gap"]) -> Table:
     pal = get_theme_palette()
