@@ -24,7 +24,6 @@ python3 scripts/preview_scaffold.py -t "Project Title" -s "Subtitle" -o preview.
 *Optional flags*:
 - `--template <blocks>`: Composable Lego blocks (comma-separated): `kpi`, `matrix`, `table`, `checklist`, `pipeline`, `charts`, or `all` (e.g. `--template kpi,matrix,table`).
 - `--diagram <type>`: Choose Mermaid chart (`all` or single chart: `flowchart`, `sequence`, `er`).
-- `--py`: Generate runnable Python ReportLab builder script (`build_pdf.py`) instead of Markdown preview.
 - `--export-diagram <type>`: Export a specific Mermaid chart as an asset (`flowchart`, `sequence`, `er`).
 - `--export-out <file>`: Output path for exported graphic (.svg or .png).
 - `--css-only`: Output only the CSS block.
@@ -36,15 +35,12 @@ python3 scripts/preview_scaffold.py -t "Project Title" -s "Subtitle" -o preview.
 python3 scripts/verifier.py preview.md
 ```
 
-### Phase 3: Compile to PDF (Python Orchestration)
-When preview is accepted, generate the matching Python builder script and compile the formal A4 deliverable:
+### Phase 3: Transition to PDF Generation
+When the visual structure and content are approved in Markdown preview:
+1. Switch to `references/pdf_generate.md` for formal ReportLab layout rules.
+2. Author `build_pdf.py` using `builder.py` APIs adhering to the 6-Category layout budget.
+3. Compile and verify the final A4 deliverable:
 ```bash
-# 1. Generate runnable Python builder scaffold matching the layout
-python3 scripts/preview_scaffold.py --py -t "Project Title" -s "Subtitle" -o build_pdf.py
-
-# 2. Refine data slots in build_pdf.py and compile PDF
 python3 build_pdf.py output.pdf
-
-# 3. Verify quality gates (Exit Code 0 mandatory)
 python3 scripts/verifier.py output.pdf
 ```
