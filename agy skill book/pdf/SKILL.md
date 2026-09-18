@@ -1,6 +1,6 @@
 ---
 name: pdf
-description: Process PDF files including extraction, creation, merging, splitting, OCR, and form filling.
+description: Process, inspect, extract, merge, split, and OCR PDF documents, or generate composable A4 PDF reports (ReportLab) and browser Markdown previews (CSS Bento cards, KPI grids, Mermaid topologies).
 dependencies: [reportlab, pypdf, pdfplumber, pandas, pytesseract, pdf2image, resvg_py]
 ---
 
@@ -12,7 +12,7 @@ Act as a Senior PDF Engineering Assistant to inspect, manipulate, extract, fill,
 ## Tool Priority Matrix
 - **Text & Table Extraction**: `pdfplumber` > `pdftotext` > `pypdf`
 - **Page Manipulation (Merge/Split/Rotate/Encrypt)**: `pypdf` > `qpdf`
-- **PDF Creation & Report Layout**: `reportlab` (via `scripts/builder.py`)
+- **PDF Creation & Report Layout**: `reportlab` (via `scripts/builder.py` and `references/pdf_generate.md`)
 - **Scanned PDF (OCR)**: `pytesseract` + `pdf2image`
 
 ---
@@ -45,7 +45,7 @@ Choose the target reference file based on your input/output mode:
 ### Step 3: Execute Operation
 - **Action**: 
   - For Markdown preview: Execute `scripts/preview_scaffold.py -o preview.md`, populate content, and verify with `scripts/verifier.py preview.md`.
-  - For PDF generation: Execute Python ReportLab script (`scripts/builder.py`).
+  - For PDF generation: Author Python build script using `builder.py` APIs adhering to `references/pdf_generate.md`, and compile via `python3 build_pdf.py <output.pdf>`.
   - For PDF processing: Execute `pypdf`, `pdfplumber`, or CLI commands.
 - **Criteria**: Exit code 0; target deliverable produced.
 
@@ -53,4 +53,5 @@ Choose the target reference file based on your input/output mode:
 - **Action**: Run automated verification via `scripts/verifier.py <target_file>`:
   - **PDF Mode (6-Gate)**: Binary integrity, page count, typography $\ge$ 10.5pt, Unicode glyphs, AI detox.
   - **Markdown Mode (5-Gate)**: Tag/fence symmetry, layout orphan check, content balance ratio, AI detox (supports `--fix`).
+  - **Tooling Invariants**: `python3 -m unittest discover tests` verifies layout math and verifier sensitivity.
 - **Criteria**: Target deliverable passes verification gates with Exit Code 0.
