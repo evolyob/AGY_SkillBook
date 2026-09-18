@@ -31,7 +31,8 @@
     "投標需知": "投標須知",
     "答復": "答覆",
     "賬戶": "帳戶",
-    "結賬": "結帳"
+    "結賬": "結帳",
+    "代碼": "程式"
   },
   "contextual_whitelists_zh": {
     "佈局": "(?:CSS|css|網格|版面|介面|UI|畫布|晶片|電路|PCB|layout|Layout)\\s*佈局|佈局\\s*(?:元件|模組|設計|規劃)",
@@ -78,20 +79,20 @@
       "regex": "—"
     },
     {
-      "label": "hedge preamble (It is important to note)",
-      "regex": "[Ii]t('s| is| should be) ((important|worth|crucial|vital|essential) (to note|noting|mentioning|remembering)|(worth noting|worth mentioning))"
+      "label": "canned openings & filler preambles (In today's fast-paced / I hope this email / It is important)",
+      "regex": "\\b(I hope this (email|message) finds you well|look no further( than)?|without further ado)\\b|\\b[Ii]n (today'?s?|this|an?)\\s+(?:(?:fast-paced|rapidly changing|ever-evolving|constantly shifting|interconnected|dynamic|digital|modern)\\s+)+(world|era|landscape|age)\\b|[Ii]t('s| is| should be) ((important|worth|crucial|vital|essential) (to note|noting|mentioning|remembering)|(worth noting|worth mentioning))"
     },
     {
-      "label": "LLM corporate verbs (delve/streamline/empower)",
-      "regex": "\\b(delv\\w+|leverag\\w+|streamlin\\w+|empower\\w*)\\b"
+      "label": "LLM corporate overdrive verbs (delve/spearhead/bolster/catalyze/streamline)",
+      "regex": "\\b(delv\\w+|leverag\\w+|underscor\\w+|harness\\w*|foster\\w*|streamlin\\w+|navigat\\w+|utiliz\\w+|facilitat\\w+|empower\\w*|spearhead\\w*|bolster\\w*|catalyz\\w+)\\b"
     },
     {
-      "label": "puffery adjectives (pivotal/testament to/seamless)",
-      "regex": "\\b(pivotal|seamless|multifaceted)\\b|\\btestament to\\b|\\bbeacon of\\b|\\btapestry\\b"
+      "label": "puffery adjectives & buzzword metaphors (pivotal/seamless/multifaceted/paradigm shift/tapestry)",
+      "regex": "\\b(pivotal|seamless|multifaceted|bespoke|holistic|burgeoning|robust)\\b|\\btestament to\\b|\\bbeacon of\\b|\\btapestry\\b|\\bparadigm shift\\b|\\bcornerstone\\b"
     },
     {
-      "label": "negative contrast setup (not just X but Y)",
-      "regex": "\\bnot (just|only|merely)\\b[^.;!?]{0,50}\\bbut\\b"
+      "label": "negative contrast setup (not just X but Y / not merely A but rather B)",
+      "regex": "\\bnot (just|only|merely|simply)\\b[^.;!?]{0,50}\\bbut\\b"
     }
   ]
 }
