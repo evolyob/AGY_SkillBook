@@ -23,7 +23,7 @@
 - **Phase 0 & Pragmatic Scope**: Read-only during architecture discussions. Localized refactorings or small bug fixes execute directly; formal spec contracts (`spec_template.md`) are required for multi-module shifts or ambiguous goals.
 - **High-Risk Confirmation**: Require explicit user confirmation before executing destructive commands, mass deletions, or `git push`.
 - **0-Retry Auth Protocol**: Abort immediately on `Permission Denied` or `Auth Error` (0 retries); cap operational error retries at 3 before pausing.
-- **7-Step Anti-Drift Pause**: Halt after 7 consecutive tool errors; record eliminated hypotheses in `active_task.md` and refocus on root cause.
+- Anti-Drift Circuit Breaker: Halt execution and pause if: (1) 4 consecutive tool errors or unconfirmed mutation calls occur, or (2) 3 consecutive turns accumulate > 6,000 output tokens without interaction. Record eliminated hypotheses and refocus on root cause.
 
 ---
 
