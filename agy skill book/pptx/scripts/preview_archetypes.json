@@ -1,0 +1,136 @@
+{
+  "archetypes": {
+    "flowchart": {
+      "pillar": "Pillar 2: Diagrams (Topology, Geometry & Process)",
+      "title": "Network Topology & Service Architecture (Flowchart TD)",
+      "aspect_ratio": "16:9",
+      "code": "flowchart TD\n    ext[\"Untrusted Ingress / Clients\"] --> gateway[\"Edge Gateway / Load Balancer\"]\n    gateway <==> tier1[\"Service Cluster 01\"]\n    gateway <==> tier2[\"Service Cluster 02\"]\n    tier1 --> core[\"Core Processing Worker\"]\n    tier2 ==> core\n    admin(((Management Console))) -.-> |mTLS / Bastion| core\n    core ==> storage[(\"Persistent Database / Storage\")]"
+    },
+    "sequence": {
+      "pillar": "Pillar 2: Diagrams (Topology, Geometry & Process)",
+      "title": "API Authentication Handshake & Sequence (Sequence Diagram)",
+      "aspect_ratio": "16:9",
+      "code": "sequenceDiagram\n    autonumber\n    actor User as Client User\n    participant GW as API Gateway\n    participant Auth as Identity Provider (IAM)\n    participant Svc as Core API Service\n    participant DB as Secure Vault Storage\n\n    User->>GW: 1. HTTPS POST /login\n    GW->>Auth: 2. Validate Credentials & MFA\n    Auth-->>GW: 3. Issue Signed JWT Bearer Token\n    GW-->>User: 4. 200 OK (JWT Token)\n    User->>GW: 5. GET /api/v1/assets (Bearer Token)\n    GW->>Svc: 6. Forward Authorized Request\n    Svc->>DB: 7. Query Encrypted Records\n    DB-->>Svc: 8. Return Dataset\n    Svc-->>User: 9. 200 OK JSON Response"
+    },
+    "er": {
+      "pillar": "Pillar 2: Diagrams (Topology, Geometry & Process)",
+      "title": "Relational Database & Audit Log Schema (ER Diagram)",
+      "aspect_ratio": "16:9",
+      "code": "erDiagram\n    ASSET_SYSTEM ||--o{ AUDIT_LOG : tracks\n    ASSET_SYSTEM }|--|| ASSET_GROUP : belongs_to\n    ASSET_SYSTEM ||--o{ VULN_FINDING : contains\n    VULN_FINDING ||--|| CVE_REFERENCE : references\n\n    ASSET_SYSTEM {\n        string asset_id PK\n        string hostname\n        string ip_address\n        string owner_dept\n        string env_tier\n    }\n    AUDIT_LOG {\n        int log_id PK\n        string asset_id FK\n        datetime timestamp\n        string event_type\n        string operator_id\n    }\n    VULN_FINDING {\n        string finding_id PK\n        string asset_id FK\n        string cve_id FK\n        string remediation_status\n    }\n    CVE_REFERENCE {\n        string cve_id PK\n        float cvss_score\n        string severity_level\n    }"
+    },
+    "gantt": {
+      "pillar": "Pillar 2: Diagrams (Editorial Timeline)",
+      "title": "Project Execution & Phased Delivery (Gantt Schedule)",
+      "aspect_ratio": "16:9",
+      "code": "gantt\n    title \"Project Execution & Phased Delivery\"\n    dateFormat YYYY-MM-DD\n    section Discovery & Scoping\n      Baseline Audit :a1, 2026-01-01, 30d\n      Risk Assessment :after a1, 14d\n    section Implementation & Rollout\n      Infrastructure Migration :2026-02-15, 25d\n      Final Acceptance :15d"
+    },
+    "xychart": {
+      "pillar": "Pillar 3: Charts (Quantitative Metrics)",
+      "title": "Quarterly Throughput vs. Performance Target (XYChart Beta)",
+      "aspect_ratio": "16:9",
+      "code": "xychart-beta\n    title \"Quarterly Throughput vs. Performance Target\"\n    x-axis [\"Q1\", \"Q2\", \"Q3\", \"Q4\"]\n    y-axis \"Processed Units\" 0 --> 500\n    bar [120, 210, 350, 480]\n    line [100, 190, 320, 460]"
+    }
+  },
+  "slide_templates": {
+    "executive_bento": {
+      "pillar": "Pillar 1: Cards (Executive Bento)",
+      "description": "Top-level management overview: upper 3 strategic pillars + lower 2 metrics",
+      "layers": [
+        {
+          "height": 2.7,
+          "cols": [
+            {"title": "Pillar 1: Identity & Access", "tag": "IAM Core", "icon": "shield", "body": ["Zero Trust architecture perimeter", "Mandatory hardware MFA enforcement"]},
+            {"title": "Pillar 2: Threat Detection", "tag": "SIEM Ops", "icon": "radar", "body": ["Continuous heuristic anomaly scanning", "Real-time automated incident alert"]},
+            {"title": "Pillar 3: Data Resilience", "tag": "BCP Plan", "icon": "database", "body": ["Daily immutable snapshot backups", "Quarterly disaster recovery drill"]}
+          ]
+        },
+        {
+          "height": 2.3,
+          "cols": [
+            {"type": "kpi", "label": "Mean Time to Detect (MTTD)", "val": "12m", "chg": "Down 45%", "icon": "gauge"},
+            {"type": "kpi", "label": "Automated Remediation Rate", "val": "99.4%", "chg": "Up 18%", "icon": "trend"}
+          ]
+        }
+      ]
+    },
+    "quadrant_matrix": {
+      "pillar": "Pillar 1: Cards (Quadrant Matrix 2x2)",
+      "description": "Strategic 2x2 decision grid: cost vs benefit priority quadrants",
+      "layers": [
+        {
+          "height": 2.5,
+          "section_tag": "High Impact",
+          "cols": [
+            {"title": "Quadrant I: Quick Wins", "tag": "P0 Priority", "icon": "star", "body": ["Multi-factor authentication mandatory rollout", "Automated vulnerability scan hotpatching"]},
+            {"title": "Quadrant II: Strategic", "tag": "P1 Priority", "icon": "key", "body": ["Multi-region active-active disaster recovery", "Organization-wide Zero Trust implementation"]}
+          ]
+        },
+        {
+          "height": 2.5,
+          "section_tag": "Low Impact",
+          "cols": [
+            {"title": "Quadrant III: Routine", "tag": "P2 Priority", "icon": "server", "body": ["Endpoint inventory regular reconciliation", "Backup snapshot integrity verification"]},
+            {"title": "Quadrant IV: Deprioritize", "tag": "P3 Priority", "icon": "box", "body": ["Custom in-house UI for non-critical tools", "Redundant proprietary script maintenance"]}
+          ]
+        }
+      ]
+    },
+    "sop_pipeline": {
+      "pillar": "Pillar 2: Diagrams (Process Flows)",
+      "description": "Linear operational procedure: horizontal pipeline steps with status icons",
+      "layers": [
+        {
+          "height": 5.0,
+          "section_tag": "Operational Pipeline",
+          "content": {
+            "type": "flow",
+            "steps": [
+              {"step": "PHASE 01", "title": "Triage & Alert", "icon": "radar", "desc": "Automated alarm triggers risk severity assessment."},
+              {"step": "PHASE 02", "title": "Containment", "icon": "shield", "desc": "Isolate affected nodes and block lateral movement."},
+              {"step": "PHASE 03", "title": "Remediation", "icon": "server", "desc": "Deploy verified clean golden images and patches."},
+              {"step": "PHASE 04", "title": "Post-Mortem", "icon": "database", "desc": "Publish root cause analysis and update playbooks."}
+            ]
+          }
+        }
+      ]
+    },
+    "editorial_diagram": {
+      "pillar": "Pillar 2: Diagrams (Topology & Geometry)",
+      "description": "Full-slide slot dedicated to external high-resolution Mermaid vector diagram",
+      "layers": [
+        {
+          "height": 5.2,
+          "cols": [
+            {
+              "type": "image",
+              "source": "assets/diagrams/topology.png",
+              "caption": "Service Mesh & Gateway Ingress Architecture"
+            }
+          ]
+        }
+      ]
+    },
+    "zebra_table": {
+      "pillar": "Pillar 4: Tables (Two-Dimensional Matrices)",
+      "description": "High-density compliance and specification matrix with alternating row fills",
+      "layers": [
+        {
+          "height": 5.0,
+          "cols": [
+            {
+              "type": "table",
+              "headers": ["Domain", "Standard Requirement", "Status", "Target Due"],
+              "rows": [
+                ["Identity (IAM)", "Mandatory MFA for all admin accounts", "100% Enforced", "2026-Q1"],
+                ["Data (DLP)", "AES-256 encryption at rest and in transit", "Compliant", "2026-Q2"],
+                ["Vulnerability", "CVSS 9.0+ hotpatch within 48 hours", "Active Monitoring", "2026-Q2"],
+                ["Disaster Recovery", "Daily backup with quarterly drill verification", "Passed Verification", "2026-Q3"]
+              ],
+              "zebra": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
