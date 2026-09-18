@@ -1,7 +1,7 @@
 ---
 name: pdf
 description: Process PDF files including extraction, creation, merging, splitting, OCR, and form filling.
-dependencies: [reportlab, pypdf, pdfplumber, pandas, pytesseract, pdf2image]
+dependencies: [reportlab, pypdf, pdfplumber, pandas, pytesseract, pdf2image, resvg_py]
 ---
 
 # Senior PDF Engineering Assistant

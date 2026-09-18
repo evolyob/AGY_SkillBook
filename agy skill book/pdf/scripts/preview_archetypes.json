@@ -1,0 +1,29 @@
+{
+  "archetypes": {
+    "flowchart": {
+      "title": "1. 網路拓撲與服務流向架構 (Flowchart TD)",
+      "code": "flowchart TD\n    ext[\"Untrusted Ingress / Clients\"] --> gateway[\"Edge Gateway / Load Balancer\"]\n    gateway <==> tier1[\"Service Cluster 01\"]\n    gateway <==> tier2[\"Service Cluster 02\"]\n    tier1 --> core[\"Core Processing Worker\"]\n    tier2 ==> core\n    admin(((Management Console))) -.-> |mTLS / Bastion| core\n    core ==> storage[(\"Persistent Database / Storage\")]"
+    },
+    "xychart": {
+      "title": "2. 季產能與效能目標趨勢 (XYChart Beta)",
+      "code": "xychart-beta\n    title \"Quarterly Throughput vs. Performance Target\"\n    x-axis [\"Q1\", \"Q2\", \"Q3\", \"Q4\"]\n    y-axis \"Processed Units\" 0 --> 500\n    bar [120, 210, 350, 480]\n    line [100, 190, 320, 460]"
+    },
+    "gantt": {
+      "title": "3. 專案里程碑與排程相依 (Gantt Schedule)",
+      "code": "gantt\n    title \"Project Execution & Phased Delivery\"\n    dateFormat YYYY-MM-DD\n    section Discovery & Scoping\n      Baseline Audit :a1, 2026-01-01, 30d\n      Risk Assessment :after a1, 14d\n    section Implementation & Rollout\n      Infrastructure Migration :2026-02-15, 25d\n      Final Acceptance :15d"
+    },
+    "sequence": {
+      "title": "4. API 認證交握與時序調度 (Sequence Diagram)",
+      "code": "sequenceDiagram\n    autonumber\n    actor User as Client User\n    participant GW as API Gateway\n    participant Auth as Identity Provider (IAM)\n    participant Svc as Core API Service\n    participant DB as Secure Vault Storage\n\n    User->>GW: 1. HTTPS POST /login\n    GW->>Auth: 2. Validate Credentials & MFA\n    Auth-->>GW: 3. Issue Signed JWT Bearer Token\n    GW-->>User: 4. 200 OK (JWT Token)\n    User->>GW: 5. GET /api/v1/assets (Bearer Token)\n    GW->>Svc: 6. Forward Authorized Request\n    Svc->>DB: 7. Query Encrypted Records\n    DB-->>Svc: 8. Return Dataset\n    Svc-->>User: 9. 200 OK JSON Response"
+    },
+    "er": {
+      "title": "5. 關聯式資料庫與日誌架構 (ER Diagram)",
+      "code": "erDiagram\n    ASSET_SYSTEM ||--o{ AUDIT_LOG : tracks\n    ASSET_SYSTEM }|--|| ASSET_GROUP : belongs_to\n    ASSET_SYSTEM ||--o{ VULN_FINDING : contains\n    VULN_FINDING ||--|| CVE_REFERENCE : references\n\n    ASSET_SYSTEM {\n        string asset_id PK\n        string hostname\n        string ip_address\n        string owner_dept\n        string env_tier\n    }\n    AUDIT_LOG {\n        int log_id PK\n        string asset_id FK\n        datetime timestamp\n        string event_type\n        string operator_id\n    }\n    VULN_FINDING {\n        string finding_id PK\n        string asset_id FK\n        string cve_id FK\n        string remediation_status\n    }\n    CVE_REFERENCE {\n        string cve_id PK\n        float cvss_score\n        string severity_level\n    }"
+    }
+  },
+  "templates": {
+    "kpi": "<h3 class=\"doc-section-title\">關鍵量化指標 (Key Performance Indicators)</h3>\n<div class=\"kpi-grid\">\n  <div class=\"kpi-card\"><div class=\"kpi-val\">99.98%</div><div class=\"kpi-label\">服務妥善率 (Availability)</div></div>\n  <div class=\"kpi-card\"><div class=\"kpi-val\">&lt; 15ms</div><div class=\"kpi-label\">平均請求延遲 (Latency)</div></div>\n  <div class=\"kpi-card\"><div class=\"kpi-val\">12 個</div><div class=\"kpi-label\">核心運行單元 (Active Units)</div></div>\n  <div class=\"kpi-card\"><div class=\"kpi-val\">0 件</div><div class=\"kpi-label\">重大資安事件 (Critical Incidents)</div></div>\n</div>",
+    "pipeline": "<h3 class=\"doc-section-title\">標準作業程序管線 (SOP Execution Pipeline)</h3>\n<div class=\"pipeline-grid\">\n  <div class=\"pipeline-step\"><span class=\"step-num\">PHASE 01</span><div class=\"step-title\">事件判定與通報</div><p class=\"step-desc\">監控觸發異常警報，完成風險等級初判並召集應變小組。</p></div>\n  <div class=\"pipeline-step\"><span class=\"step-num\">PHASE 02</span><div class=\"step-title\">隔離遏阻與止血</div><p class=\"step-desc\">切斷受害節點網路連接，阻斷惡意流量蔓延並保存證據日誌。</p></div>\n  <div class=\"pipeline-step\"><span class=\"step-num\">PHASE 03</span><div class=\"step-title\">修復回滾與驗證</div><p class=\"step-desc\">重灌乾淨映像檔或備援切換，校驗資料完整性後重新上線。</p></div>\n  <div class=\"pipeline-step\"><span class=\"step-num\">PHASE 04</span><div class=\"step-title\">事後覆盤與歸檔</div><p class=\"step-desc\">產出根本原因分析 (RCA) 報告，更新自動化防禦規則與演練手冊。</p></div>\n</div>",
+    "matrix": "<h3 class=\"doc-section-title\">決策優先級象限矩陣 (Quadrant Matrix 2x2)</h3>\n<div class=\"matrix-grid\">\n  <div class=\"matrix-card\"><span class=\"matrix-tag\">象限 I (高影響 · 低成本)</span><h4>優先執行 (Quick Wins)</h4><ul><li>關鍵管理存取強制啟用多因子認證 (MFA)</li><li>自動化漏洞掃描與弱點排程熱修補</li></ul></div>\n  <div class=\"matrix-card\"><span class=\"matrix-tag\">象限 II (高影響 · 高成本)</span><h4>重大專案 (Strategic)</h4><ul><li>異地多活備援架構升級與災防演練</li><li>零信任 (Zero Trust) 身分邊界全面導入</li></ul></div>\n  <div class=\"matrix-card\"><span class=\"matrix-tag\">象限 III (低影響 · 低成本)</span><h4>日常維運 (Fill-Ins)</h4><ul><li>端點資產清冊定時校對與盤點</li><li>例行性系統日誌備份完整性抽檢</li></ul></div>\n  <div class=\"matrix-card\"><span class=\"matrix-tag\">象限 IV (低影響 · 高成本)</span><h4>暫緩推遲 (Deprioritize)</h4><ul><li>非核心歷史系統自研介面翻新</li><li>過度客製化監控腳本重複造輪子</li></ul></div>\n</div>"
+  }
+}
