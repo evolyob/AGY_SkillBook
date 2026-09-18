@@ -5,6 +5,7 @@ Markdown Visual Preview Scaffolder (preview_scaffold.py)
 Generates standards-compliant, browser-ready Markdown preview files with embedded
 CSS design tokens and verified layout archetypes (KPI Grid, Split Cards, Mermaid).
 Provides lightweight single-diagram SVG/PNG export for PDF embedding.
+All colors are dynamically resolved from pdf_themes.json SSOT (Zero Hardcoding).
 """
 
 import argparse
@@ -18,7 +19,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 # ----------------------------------------------------------------------
-# SSOT ARCHETYPE DICTIONARY (6 Canonical Mermaid Models)
+# SSOT ARCHETYPE DICTIONARY (6 Canonical Mermaid Models - Zero Hardcoded Colors)
 # ----------------------------------------------------------------------
 ARCHETYPES: Dict[str, Dict[str, str]] = {
     "flowchart": {
@@ -36,8 +37,7 @@ ARCHETYPES: Dict[str, Dict[str, str]] = {
     "xychart": {
         "title": "2. 季產能與效能目標趨勢 (XYChart Beta)",
         "card_title": "2. Dual-Track Chart: Volume vs. Target (xychart-beta)",
-        "code": """%%{init: {'theme': 'neutral'}}%%
-xychart-beta
+        "code": """xychart-beta
     title "Quarterly Throughput vs. Performance Target"
     x-axis ["Q1", "Q2", "Q3", "Q4"]
     y-axis "Processed Units" 0 --> 500
@@ -143,6 +143,24 @@ def load_theme_config() -> Dict[str, Any]:
     return {}
 
 
+def get_theme_directive(theme_name: str = "light") -> str:
+    """Derives dynamic Mermaid %%{init}%% directive directly from pdf_themes.json SSOT."""
+    cfg = load_theme_config()
+    themes = cfg.get("themes", {})
+    th = themes.get(theme_name, themes.get("light", {}))
+    p = th.get("p", "#2B5C8F")
+    s = th.get("s", "#007A92")
+    txt = th.get("txt", "#0B0F19")
+    card_bg = th.get("card_bg", "#F8FAFC")
+    return (
+        f"%%{{init: {{'theme': 'base', 'themeVariables': {{"
+        f"'primaryColor': '{card_bg}', 'primaryTextColor': '{txt}', 'primaryBorderColor': '{p}', "
+        f"'lineColor': '{s}', 'secondaryColor': '{card_bg}', 'tertiaryColor': '{card_bg}', "
+        f"'mainBkg': '{card_bg}', 'nodeBorder': '{p}', 'clusterBkg': '{card_bg}', 'titleColor': '{p}'"
+        f"}}}}}}%%"
+    )
+
+
 def generate_css_block(light_theme: str = "light", dark_theme: str = "dark") -> str:
     """Generates the embedded canonical <style> block derived from pdf_themes.json SSOT."""
     cfg = load_theme_config()
@@ -157,6 +175,8 @@ def generate_css_block(light_theme: str = "light", dark_theme: str = "dark") -> 
     muted_l = lt.get("muted", "#64748B")
     p_l = lt.get("p", "#2B5C8F")
     s_l = lt.get("s", "#007A92")
+    alert_l = lt.get("alert", "#E95119")
+    ok_l = lt.get("ok", "#10B981")
 
     bg_d = dt.get("bg", "#0B1120")
     card_d = dt.get("card_bg", "#1E293B")
@@ -165,6 +185,8 @@ def generate_css_block(light_theme: str = "light", dark_theme: str = "dark") -> 
     muted_d = dt.get("muted", "#94A3B8")
     p_d = dt.get("p", "#38BDF8")
     s_d = dt.get("s", "#60A5FA")
+    alert_d = dt.get("alert", "#FF0080")
+    ok_d = dt.get("ok", "#10B981")
 
     return f"""<style>
 :root {{
@@ -176,8 +198,8 @@ def generate_css_block(light_theme: str = "light", dark_theme: str = "dark") -> 
   --brand-primary: {p_l};
   --brand-accent: {s_l};
   --kpi-bg: {card_l};
-  --color-alert: #E95119;
-  --color-ok: #10B981;
+  --color-alert: {alert_l};
+  --color-ok: {ok_l};
   --radius-sm: 6px;
   --radius-md: 10px;
 }}
@@ -191,8 +213,8 @@ def generate_css_block(light_theme: str = "light", dark_theme: str = "dark") -> 
     --brand-primary: {p_d};
     --brand-accent: {s_d};
     --kpi-bg: {bg_d};
-    --color-alert: #FF0080;
-    --color-ok: #10B981;
+    --color-alert: {alert_d};
+    --color-ok: {ok_d};
   }}
 }}
 body.ui-dark, body.theme-dark, [data-theme="dark"] {{
@@ -204,8 +226,8 @@ body.ui-dark, body.theme-dark, [data-theme="dark"] {{
   --brand-primary: {p_d};
   --brand-accent: {s_d};
   --kpi-bg: {bg_d};
-  --color-alert: #FF0080;
-  --color-ok: #10B981;
+  --color-alert: {alert_d};
+  --color-ok: {ok_d};
 }}
 .doc-header {{ margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-subtle); padding-bottom: 0.8rem; }}
 .doc-header h1 {{ margin: 0 0 0.3rem 0; color: var(--brand-primary); font-size: 1.85rem; }}
@@ -259,29 +281,31 @@ def build_template_b() -> str:
 </div>"""
 
 
-def render_archetype_card(diagram_key: str) -> str:
-    """Renders an archetype card HTML block for Markdown preview."""
+def render_archetype_card(diagram_key: str, theme_name: str = "light") -> str:
+    """Renders an archetype card HTML block for Markdown preview with theme colors from pdf_themes.json."""
     info = ARCHETYPES.get(diagram_key)
     if not info:
         return ""
+    directive = get_theme_directive(theme_name)
     return f"""<div class="chart-card">
 <h4>{info['card_title']}</h4>
 
 ```mermaid
+{directive}
 {info['code']}
 ```
 
 </div>"""
 
 
-def build_template_c(diagram: str = "all") -> str:
+def build_template_c(diagram: str = "all", theme_name: str = "light") -> str:
     """Builds Template C: Native Mermaid Visual Archetypes."""
     parts = ['<h3 class="doc-section-title">Visual Models & Architecture (Mermaid Archetypes)</h3>\n']
     keys = [diagram] if diagram in ARCHETYPES else list(ARCHETYPES.keys())
         
     for k in keys:
         if k in ARCHETYPES:
-            parts.append(render_archetype_card(k))
+            parts.append(render_archetype_card(k, theme_name=theme_name))
             parts.append("")
             
     return "\n".join(parts).strip()
@@ -293,8 +317,11 @@ def extract_mermaid_code(card_html: str) -> str:
     return m.group(1).strip() if m else ""
 
 
-def render_mermaid_to_svg(mermaid_code: str) -> str:
-    """Renders Mermaid DSL to SVG using mermaid.ink endpoint."""
+def render_mermaid_to_svg(mermaid_code: str, theme_name: str = "light") -> str:
+    """Renders Mermaid DSL to SVG using mermaid.ink endpoint, dynamically applying colors from pdf_themes.json."""
+    if not mermaid_code.strip().startswith("%%{init:"):
+        directive = get_theme_directive(theme_name)
+        mermaid_code = f"{directive}\n{mermaid_code.strip()}"
     encoded = base64.b64encode(mermaid_code.strip().encode("utf-8")).decode("ascii")
     url = f"https://mermaid.ink/svg/{encoded}"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -302,13 +329,13 @@ def render_mermaid_to_svg(mermaid_code: str) -> str:
         return response.read().decode("utf-8")
 
 
-def export_diagram_asset(diagram_type: str, output_file: str) -> Path:
-    """Exports a Mermaid archetype to SVG or PNG (via resvg_py)."""
+def export_diagram_asset(diagram_type: str, output_file: str, theme_name: str = "light") -> Path:
+    """Exports a Mermaid archetype to SVG or PNG (via resvg_py) with dynamic theme colors from pdf_themes.json."""
     if diagram_type not in ARCHETYPES:
         raise ValueError(f"Unknown diagram type '{diagram_type}'. Choose from: {list(ARCHETYPES.keys())}")
     
     code = ARCHETYPES[diagram_type]["code"]
-    svg_str = render_mermaid_to_svg(code)
+    svg_str = render_mermaid_to_svg(code, theme_name=theme_name)
     
     out_path = Path(output_file).resolve()
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -328,9 +355,10 @@ def generate_scaffold(
     subtitle: str = "Operational Baseline · Continuous Verification · Automated Workflow",
     templates: str = "all",
     diagram: str = "all",
+    theme: str = "light",
 ) -> str:
     """Combines CSS block with selected templates into a complete Markdown preview document."""
-    parts = [generate_css_block(), ""]
+    parts = [generate_css_block(light_theme=theme), ""]
 
     if templates in ["a", "all", "header"]:
         parts.append(build_template_a(title, subtitle))
@@ -341,7 +369,7 @@ def generate_scaffold(
         parts.append("")
 
     if templates in ["c", "all", "charts"]:
-        parts.append(build_template_c(diagram=diagram))
+        parts.append(build_template_c(diagram=diagram, theme_name=theme))
         parts.append("")
 
     return "\n".join(parts)
@@ -359,6 +387,7 @@ def main():
         default="all",
         help="Mermaid diagram filter (default: all)",
     )
+    parser.add_argument("--theme", default="light", help="Theme palette from pdf_themes.json (e.g. light, dark, yellow)")
     parser.add_argument("--css-only", action="store_true", help="Print only the CSS <style> block")
     parser.add_argument("--export-diagram", choices=list(ARCHETYPES.keys()), help="Export a specific Mermaid archetype as an image asset")
     parser.add_argument("--export-out", help="Target output file for --export-diagram (.svg or .png)")
@@ -368,18 +397,19 @@ def main():
         if not args.export_out:
             print("[!] Error: --export-out <file.svg|file.png> is required with --export-diagram", file=sys.stderr)
             sys.exit(1)
-        saved = export_diagram_asset(args.export_diagram, args.export_out)
+        saved = export_diagram_asset(args.export_diagram, args.export_out, theme_name=args.theme)
         print(f"[+] Successfully exported diagram asset: {saved}")
         sys.exit(0)
 
     if args.css_only:
-        content = generate_css_block()
+        content = generate_css_block(light_theme=args.theme)
     else:
         content = generate_scaffold(
             title=args.title,
             subtitle=args.subtitle,
             templates=args.template,
             diagram=args.diagram,
+            theme=args.theme,
         )
 
     if args.output:
