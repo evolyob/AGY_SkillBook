@@ -26,18 +26,33 @@ Loaded centrally from `data/pdf_themes.json`. Printable canvas width: `total=540
   3. **`SOP Pipeline`**: 橫向四階段流程 (`build_pipeline_flow`, 步驟與 `▶` 導航)
   4. **`Editorial Timeline`**: 時間軸與里程碑檢核 (`build_checklist_grid`)
 
-| Primitive | API Function | Line Cost | Grid Pattern | Use Case & Role |
-| :--- | :--- | :---: | :---: | :--- |
-| **Cards** | `build_kpi_row(kpis, total)` | **4 lines** | `100%` (3~4 cols) | Critical KPI metric cards (Large numbers + trend delta) |
-| **Cards** | `build_card_grid(cards, cols, total)` | **6 lines** | `100%` (3~4 cols) | 3~4 horizontal topic cards for strategic pillars/themes |
-| **Cards** | `build_action_board(as_is, to_be, total)` | **6 lines** | `50/50` Split | ✖ As-Is (Pink Painpoints) vs. ✔ To-Be (Green Actions) contrast board |
-| **Cards** | `build_split_row([card_l, card_r], total)` | **6 lines** | `50/50` Split | Dual symmetrical topic cards (Scope vs. Target) |
-| **Cards** | `build_card(content, width, height, ...)` | **4 lines** | `100%` Full | Full-width anchor card for policies, formulas, or execution roadmaps |
-| **Grid** | `build_zebra_table(headers, rows, total)` | **6–8 lines** | `100%` Full | High-density zebra comparison table / compliance matrix |
-| **Grid** | `build_checklist_grid(items, total, cols=2)` | **6–8 lines** | `50/50` Split | Dual-column structured checklist with numbered node badges |
-| **Flow** | `build_pipeline_flow(steps, total)` | **4 lines** | `100%` Full | 4-phase sequential roadmap with `▶` directional arrows |
-| **Charts** | `build_pie_chart(data, labels, w, h)` | **8–10 lines** | `50/50` or `100%` | Decoupled native ReportLab Pie Flowable with theme palette |
-| **Charts** | `build_bar_chart(data, cats, w, h, vert)` | **8–10 lines** | `50/50` or `100%` | Decoupled native ReportLab Bar Flowable (Vertical or Horizontal) |
+### A. ReportLab Native Primitives (Text & Structural Layout)
+| Primitive | API Function | Footprint (Cost / Grid) | Use Case & Role |
+| :--- | :--- | :---: | :--- |
+| **KPI Cards** | `build_kpi_row(kpis, total)` | **4 lines** / `100%` (3~4 cols) | Critical KPI metric cards (Large numbers + trend delta) |
+| **Topic Cards** | `build_card_grid(cards, cols, total)` | **6 lines** / `100%` (3~4 cols) | 3~4 horizontal topic cards for strategic pillars/themes |
+| **Action Board** | `build_action_board(as_is, to_be, total)` | **6 lines** / `50/50` Split | ✖ As-Is (Pink Painpoints) vs. ✔ To-Be (Green Actions) contrast board |
+| **Split Row** | `build_split_row([card_l, card_r], total)` | **6 lines** / `50/50` Split | Dual symmetrical topic cards (Scope vs. Target) |
+| **Anchor Card** | `build_card(content, width, height, ...)` | **4 lines** / `100%` Full | Full-width anchor card for policies, formulas, or execution roadmaps |
+| **Zebra Table** | `build_zebra_table(headers, rows, total)` | **6–8 lines** / `100%` Full | High-density zebra comparison table / compliance matrix |
+| **Pie Chart** | `build_pie_chart(data, labels, w, h)` | **8–10 lines** / `50/50` or `100%` | Decoupled native ReportLab Pie Flowable with theme palette |
+
+### B. Visual Topologies & Charts (Mermaid SVG Preferred, Fallback to Native)
+| Mermaid DSL (`preview_archetypes.json` Key) | Export Pipeline | Fallback Native Primitive | Footprint (Cost / Grid) |
+| :--- | :---: | :--- | :---: |
+| **`flowchart TD / LR`** (`flowchart`) | `resvg_py` -> SVG/PNG | `build_pipeline_flow(steps, total)` | **4 lines** / `100%` Full |
+| **`xychart-beta`** (`xychart`) | `resvg_py` -> SVG/PNG | `build_bar_chart(data, cats, w, h, vert)` | **8–10 lines** / `50/50` or `100%` |
+| **`gantt`** (`gantt`) | `resvg_py` -> SVG/PNG | `build_checklist_grid(items, total)` | **6–8 lines** / `50/50` Split |
+| **`sequenceDiagram`** (`sequence`) | `resvg_py` -> SVG/PNG | `build_split_row([card_l, card_r], total)` | **6 lines** / `50/50` Split |
+| **`erDiagram`** (`er`) | `resvg_py` -> SVG/PNG | `build_zebra_table(headers, rows, total)` | **6–8 lines** / `100%` Full |
+
+> **Asset Export Quick Command**:
+> `python3 scripts/preview_scaffold.py --export-diagram <key> --export-out assets/<file>.svg`
+> 
+> *Key Optional Flags*:
+> - `--export-diagram <key>`: Choose diagram (`flowchart`, `xychart`, `gantt`, `sequence`, `er`).
+> - `--export-out <file>`: Target vector (`.svg`) or rasterized image (`.png` via `resvg_py`).
+> - `--theme <name>`: Inherits palette from `pdf_themes.json` (`light`, `dark`, `ocean`, `forest`).
 
 ---
 
