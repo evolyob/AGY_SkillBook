@@ -394,7 +394,11 @@ class NumberedCanvas(canvas.Canvas):
         self.saveState()
         self.setFont(CJK_FONT, BASE_FONT_SZ)
         self.setFillColor(colors.HexColor("#7E8287"))
-        self.drawString(28, 790, self.doc_title)
+        if self._pageNumber > 1 and self.doc_title:
+            self.drawString(28, 808, self.doc_title)
+            self.setStrokeColor(colors.HexColor("#CBD5E1"))
+            self.setLineWidth(0.5)
+            self.line(28, 798, 540 + 28, 798)
         self.drawRightString(540 + 28, 20, f"Page {self._pageNumber} of {total_pages}")
         self.restoreState()
 
@@ -409,7 +413,7 @@ def _flatten(items: List[Any]) -> List[Any]:
 def generate_multipage_report(filename: str, title: str, subtitle: str = "", story_elements: Optional[List[Any]] = None, running_title: Optional[str] = None, note: str = "", theme: str = "light") -> str:
     token = _current_theme.set(theme)
     try:
-        doc = SimpleDocTemplate(filename, pagesize=A4, leftMargin=28, rightMargin=28, topMargin=28, bottomMargin=28)
+        doc = SimpleDocTemplate(filename, pagesize=A4, leftMargin=28, rightMargin=28, topMargin=52, bottomMargin=36)
         header = build_document_header(title, subtitle, note)
         class BoundCanvas(NumberedCanvas): pass
         BoundCanvas.doc_title, BoundCanvas.confidential_note = running_title or title, note or ""

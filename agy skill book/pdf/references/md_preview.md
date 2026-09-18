@@ -25,7 +25,9 @@ python3 scripts/preview_scaffold.py -t "Project Title" -s "Subtitle" -o preview.
 - `--template a`: Only Header & KPI Dashboard Grid.
 - `--template b`: Only As-Is vs To-Be Split Cards.
 - `--template c`: Only Native Mermaid Charts.
-- `--diagram <type>`: Choose Mermaid chart (`original` for user's 5 classic archetypes, `safe` for 6 Artifact-safe charts, `all`, or single chart: `flowchart`, `gantt`, `timeline`, `requirement`, `sequence`, `state`, `class`, `er`, `xychart`).
+- `--diagram <type>`: Choose Mermaid chart (`all`, `original`, `safe`, or single chart: `flowchart`, `xychart`, `gantt`, `timeline`, `sequence`, `state`, `er`).
+- `--export-dir <dir>`: Batch export diagram SVG/PNG assets concurrently.
+- `--compile-pdf <file.pdf>`: 1-stop pipeline compiling diagrams directly into a verified ReportLab PDF.
 - `--css-only`: Output only the CSS block.
 
 ### Phase 2: Refine & Verify
