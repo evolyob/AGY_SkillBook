@@ -1,40 +1,33 @@
 ---
 name: deep-mod
-description: Universal 4-stage interactive deep research pipeline featuring Socratic requirement clarification, systematic data collection, evidence-based fact-checking, and cross-department synthesis.
+description: Universal interactive deep research, architecture visualization, and surgical diff review pipeline with Anti-AI enforcement.
 metadata:
-  version: "3.2.0"
   task_type: open-ended
+dependencies: []
 ---
 
-# Deep Mod — Universal 4-Stage Research & Verification Pipeline
+# Deep Mod: Universal Research, Architecture & Code Review Pipeline
 
-A domain-agnostic interactive research and verification tool. Execute the 4 phases interactively step-by-step with the user, asking questions ONE at a time and pausing for user input/confirmation at each phase before advancing.
+## Objective
+Execute domain-agnostic interactive research, architecture visualization, and code review with Shift-Left Anti-AI enforcement.
 
----
+## Execution Workflow
 
-## 4-Stage Interactive Execution Pipeline
+### Step 1: Intake & Intent Routing
+- If input contains review keywords (`diff`, `review`, `架構圖`, `重構`):
+  Execute **Fast-Track**: Ask ONE boundary question, freeze scope, and proceed directly to Step 3 (Branch 2).
+- Otherwise, execute default **Deep Research**:
+  Proceed sequentially through Phase 1 to Phase 3 (ONE Socratic question per turn).
 
-Execute the following phases interactively. For each phase, read and apply the specified reference file in `references/`:
+### Step 2: Investigation (Default Mode Only)
+- Phase 1: Socratic Requirement Clarification (`references/socratic_protocol.md`).
+- Phase 2: Systematic Data Collection & Source Review (`references/search_protocol.md`).
+- Phase 3: Evidence-Based Fact-Checking (`references/fact_check_rules.md`).
 
-### Phase 1: Socratic Requirement Clarification (Interactive Step 1)
-- **Reference**: Read `[socratic_protocol.md](references/socratic_protocol.md)`.
-- **Action**: Ask ONE focused Socratic question per turn (up to 5 total questions) to establish problem boundaries, constraints, target deliverables, risk tolerance, and priority. Wait for user response before asking the next question or proceeding to Phase 2.
-
-### Phase 2: Systematic Data Collection & Source Review (Interactive Step 2)
-- **Reference**: Read `[search_protocol.md](references/search_protocol.md)`.
-- **Action**: Extract and categorize key data from target files or streams according to Phase 1 scope. Present collected source summary to the user for confirmation before proceeding to Phase 3.
-
-### Phase 3: Evidence-Based Fact-Checking (Interactive Step 3)
-- **Reference**: Read `[fact_check_rules.md](references/fact_check_rules.md)`.
-- **Action**: Evaluate data against 3-tier evidence hierarchy (Level 1–3) and flag unverified risks (`[HIGH RISK: UNVERIFIED]`). Present reliability scorecard summary to the user before proceeding to Phase 4.
-
-### Phase 4: Cross-Department Synthesis & Gap Audit (Interactive Step 4)
-- **Reference**: Read `[synthesis_rules.md](references/synthesis_rules.md)`.
-- **Action**: Cross-examine multi-source inputs, execute scenario stress-testing, and write the finalized **《Cross-Department Research Synthesis & Gap Audit Report》** directly to `~/agy/download/` (using UTF-8 with BOM). Output plain relative file path `download/[filename]` in the chat window.
-
----
-
-## Output Constraints
-
-- **File Output Rule**: Upon completing Phase 4, write the finalized report directly to `~/agy/download/` (using UTF-16 Unicode for Mac compatibility). In the chat response window, output ONLY a concise summary, key decision points, and the plain relative file path `download/[filename]`. Do NOT print full multi-page report text into the chat window, and do NOT convert the path to an absolute `file://` URL in the chat window.
-- **Report Content**: Must include a **Requirement Traceability Matrix** and a **Data Reliability Scorecard**. Omit conversational preambles and non-actionable filler text.
+### Step 3: Phase 4 Finalized Output
+Deliver finalized content directly to `~/agy/download/` with Anti-AI verification (`references/synthesis_rules.md`):
+- **Branch 1 (Deep Research)**: Cross-Department Synthesis & Gap Audit Report.
+- **Branch 2 (Architecture & Review)**: Auto-routed sub-track (`references/visual_archetypes.md`):
+  - **B1 (Explore)**: Mermaid topology, sequence diagram, ASCII directory tree, or pseudocode.
+  - **B2 (Diff)**: Before vs After Minimal-Diff + drop-in replacement block.
+  - **B3 (Explain)**: Visual diagram + 3~5 sentence plain-language walkthrough.
