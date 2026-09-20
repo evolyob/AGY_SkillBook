@@ -15,7 +15,7 @@
         "error rate", "revenue", "cost reduction", "ROI", "growth rate", "target completion",
         "percentage", "baseline", "metric", "KPI", "OKR", "headcount", "MTTR", "MTTD",
         "budget savings", "99.99%", "ms", "queries per second", "turnaround time", "loss ratio",
-        "可用性", "延遲", "達成率", "營收", "增長率", "指標", "停機時間", "修復時間", "成效數據"
+        "可用性", "延遲", "達成率", "營收", "成長率", "指標", "停機時間", "修復時間"
       ],
       "contextual_patterns": [
         "Statements containing numbers with units (%, ms, s, K, M, B, $, 萬, 億).",
@@ -35,7 +35,7 @@
         "pillars", "strategic pillars", "core themes", "dimensions", "key initiatives",
         "guiding principles", "focus areas", "functional domains", "quad-pillars", "workstreams",
         "capabilities", "architectural domains", "governance tracks", "strategic thrusts",
-        "三大面向", "四大支柱", "核心原則", "策略重點", "職能劃分", "工作軌道", "核心模組"
+        "三個方向", "四個重點", "核心原則", "策略重點", "分工", "核心模組"
       ],
       "contextual_patterns": [
         "Items enumerated into 3 or 4 balanced, equal-weighted topics.",
@@ -56,7 +56,7 @@
         "pain points", "remediation", "bottlenecks", "solutions", "defects", "corrective actions",
         "gap analysis", "legacy vs modern", "trade-offs", "problems vs fixes", "challenges vs countermeasures",
         "minimal-diff", "surgical diff", "code comparison", "patch comparison",
-        "現況", "目標", "痛點", "對策", "改善前", "改善後", "問題點", "處置措施", "現行缺失", "目標架構", "紅綠對照",
+        "現況", "目標", "痛點", "對策", "改善前", "改善後", "問題點", "對應做法", "目前問題", "目標架構", "紅綠對照",
         "改前改後", "精確差異", "重構對照", "最小變更"
       ],
       "contextual_patterns": [
@@ -77,7 +77,7 @@
         "scope", "in-scope", "out-of-scope", "boundary", "dual-track", "phase 1 vs phase 2",
         "client vs server", "internal vs external", "frontend vs backend", "primary vs secondary",
         "tier 1 vs tier 2", "on-premise vs cloud", "functional vs non-functional",
-        "範圍劃分", "納入範圍", "排除範圍", "雙軌並行", "內外對照", "邊界界定", "一期與二期", "對等架構"
+        "範圍劃分", "納入範圍", "排除範圍", "雙軌並行", "內外對照", "邊界定義", "一期與二期", "對稱架構"
       ],
       "contextual_patterns": [
         "Explicit division into two balanced halves or operational tiers.",
@@ -119,7 +119,7 @@
         "SOP", "pipeline", "phases", "stages", "step 1", "step 2", "step 3", "step 4",
         "triage", "containment", "eradication", "recovery", "post-mortem", "linear process",
         "execution workflow", "runbook", "deployment pipeline", "handover lifecycle", "progression",
-        "標準作業程序", "作業階段", "步驟一", "步驟二", "步驟三", "步驟四", "應變流程", "通報處置", "災後復原", "線性流程"
+        "標準作業程序", "作業階段", "步驟一", "步驟二", "步驟三", "步驟四", "應變流程", "通報流程", "災難復原", "線性流程"
       ],
       "contextual_patterns": [
         "Sequential numbering indicating chronological handoffs (Phase 01 -> Phase 02...).",
@@ -182,7 +182,7 @@
         "mTLS", "request-response", "client-server interaction", "webhook callback",
         "sync vs async call", "payload exchange", "HTTP method", "status code flow", "RPC invocation",
         "runtime control flow", "execution trace", "call stack",
-        "時序圖", "API 呼叫歷程", "驗證握手", "權杖交換", "客戶端與伺服端互動", "非同步回呼", "微服務呼叫鏈",
+        "時序圖", "API 呼叫歷程", "驗證握手", "非同步 callback", "微服務呼叫鏈",
         "控制流程"
       ],
       "contextual_patterns": [
@@ -203,7 +203,7 @@
         "ER diagram", "entity relationship", "database schema", "table structure", "primary key",
         "foreign key", "PK/FK", "cardinality", "one-to-many", "many-to-many", "relational model",
         "data dictionary", "schema migration", "foreign table", "audit log schema",
-        "實體關聯圖", "資料庫綱要", "資料表關聯", "主鍵與外鍵", "欄位規格", "一對多關聯", "關聯模型", "綱要異動"
+        "實體關聯圖", "資料庫 schema", "資料表關聯", "主鍵與外鍵", "欄位規格", "一對多關聯", "關聯模型", "schema 變更"
       ],
       "contextual_patterns": [
         "Definitions of tables, schemas, and relational constraints between entities.",
@@ -223,7 +223,7 @@
         "bar chart", "categorical comparison", "group comparison", "ranking", "quarterly volume",
         "distribution by team", "performance benchmarks", "count comparison", "head-to-head metrics",
         "histogram", "volume variance", "throughput comparison", "incident count by severity",
-        "長條圖", "柱狀圖", "分組比較", "跨組對比", "數量排行", "季度統計比較", "基準測試對比", "各類別分佈"
+        "長條圖", "柱狀圖", "分組比較", "各組比較", "數量排行", "季度統計比較", "benchmark 比較", "各類別分佈"
       ],
       "contextual_patterns": [
         "Discrete items compared along a single numeric axis (e.g., Team A: 45 vs. Team B: 80).",
@@ -243,7 +243,7 @@
         "pie chart", "donut chart", "percentage share", "budget allocation", "proportional breakdown",
         "composition", "market share", "portfolio split", "resource distribution",
         "segmentation percentage", "100% breakdown", "cost proportion", "spend allocation",
-        "圓餅圖", "甜甜圈圖", "比例分配", "預算佔比", "佔比分佈", "資源配額", "市場份額", "百分比拆解"
+        "圓餅圖", "甜甜圈圖", "比例分配", "預算佔比", "佔比分佈", "資源配額", "市佔率"
       ],
       "contextual_patterns": [
         "Data components where percentages naturally add up to 100%.",
@@ -263,7 +263,7 @@
         "2x2 matrix", "quadrant", "priority matrix", "impact vs cost", "effort vs impact",
         "urgency vs importance", "P0", "P1", "P2", "P3", "quick wins", "strategic bets",
         "money pit", "fill-ins", "decision grid", "prioritization framework", "resource allocation matrix",
-        "四象限", "決策矩陣", "優先級劃分", "高影響低成本", "速贏項目", "策略投資", "象限矩陣", "資源分配評估"
+        "四象限", "決策矩陣", "優先順序", "高影響低成本", "策略投資", "資源分配"
       ],
       "contextual_patterns": [
         "Items categorized across two orthagonal scales (High/Low Impact vs. High/Low Cost).",
@@ -283,7 +283,7 @@
         "table", "matrix table", "zebra table", "comparison matrix", "tabular data",
         "specifications", "multi-column data", "feature matrix", "audit log table",
         "compliance matrix", "inventory list", "detailed ledger", "attribute comparison",
-        "斑馬紋表格", "多欄位對照表", "規格清冊", "資產盤點表", "合規比對矩陣", "功能對照表", "結構化明細"
+        "多欄位對照表", "規格清冊", "資產盤點表", "合規比對矩陣", "功能對照表", "明細表"
       ],
       "contextual_patterns": [
         "Data naturally organized into 3 or more distinct attribute headers (e.g., Domain | Standard | Status | Target Due Date).",
