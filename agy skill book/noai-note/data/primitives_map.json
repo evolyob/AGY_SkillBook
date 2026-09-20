@@ -11,18 +11,57 @@
       "downstream_api": "builder.build_kpi_row",
       "semantic_intent": "Highlighting 3~4 high-impact standalone quantitative metrics, performance baselines, or SLA deltas.",
       "trigger_signals": [
-        "SLA", "availability", "uptime", "latency", "throughput", "QPS", "TPS", "P95", "P99",
-        "error rate", "revenue", "cost reduction", "ROI", "growth rate", "target completion",
-        "percentage", "baseline", "metric", "KPI", "OKR", "headcount", "MTTR", "MTTD",
-        "budget savings", "99.99%", "ms", "queries per second", "turnaround time", "loss ratio",
-        "可用性", "延遲", "達成率", "營收", "成長率", "指標", "停機時間", "修復時間"
+        "SLA",
+        "availability",
+        "uptime",
+        "latency",
+        "throughput",
+        "QPS",
+        "TPS",
+        "P95",
+        "P99",
+        "error rate",
+        "revenue",
+        "cost reduction",
+        "ROI",
+        "growth rate",
+        "target completion",
+        "percentage",
+        "baseline",
+        "metric",
+        "KPI",
+        "OKR",
+        "headcount",
+        "MTTR",
+        "MTTD",
+        "budget savings",
+        "99.99%",
+        "ms",
+        "queries per second",
+        "turnaround time",
+        "loss ratio",
+        "可用性",
+        "延遲",
+        "達成率",
+        "營收",
+        "成長率",
+        "指標",
+        "停機時間",
+        "修復時間"
       ],
       "contextual_patterns": [
         "Statements containing numbers with units (%, ms, s, K, M, B, $, 萬, 億).",
         "Comparative metrics with positive/negative trend symbols (▲, ▼, +, -).",
         "Executive targets explicitly declared as annual or quarterly goals."
       ],
-      "recommended_when": "The note includes 3 to 4 distinct quantitative benchmarks that summarize executive outcomes."
+      "recommended_when": "The note includes 3 to 4 distinct quantitative benchmarks that summarize executive outcomes.",
+      "capacity_budget": {
+        "max_items": 4,
+        "recommended_items": 3,
+        "max_value_length": 12,
+        "max_label_length": 10,
+        "overflow_strategy": "split_into_second_row_or_prioritize_top_metrics"
+      }
     },
     "card_grid": {
       "pillar": "Cards",
@@ -32,17 +71,40 @@
       "downstream_api": "builder.build_card_grid",
       "semantic_intent": "Displaying 3~4 horizontal or symmetrical strategic pillars, thematic principles, or decoupled functional modules.",
       "trigger_signals": [
-        "pillars", "strategic pillars", "core themes", "dimensions", "key initiatives",
-        "guiding principles", "focus areas", "functional domains", "quad-pillars", "workstreams",
-        "capabilities", "architectural domains", "governance tracks", "strategic thrusts",
-        "三個方向", "四個重點", "核心原則", "策略重點", "分工", "核心模組"
+        "pillars",
+        "strategic pillars",
+        "core themes",
+        "dimensions",
+        "key initiatives",
+        "guiding principles",
+        "focus areas",
+        "functional domains",
+        "quad-pillars",
+        "workstreams",
+        "capabilities",
+        "architectural domains",
+        "governance tracks",
+        "strategic thrusts",
+        "三個方向",
+        "四個重點",
+        "核心原則",
+        "策略重點",
+        "分工",
+        "核心模組"
       ],
       "contextual_patterns": [
         "Items enumerated into 3 or 4 balanced, equal-weighted topics.",
         "Categorization of an initiative into distinct operational departments or domains.",
         "Parallel initiatives that execute concurrently without linear sequence."
       ],
-      "recommended_when": "The discussion covers 3 to 4 parallel, non-chronological domains or strategic directives."
+      "recommended_when": "The discussion covers 3 to 4 parallel, non-chronological domains or strategic directives.",
+      "capacity_budget": {
+        "max_items": 4,
+        "recommended_items": 3,
+        "max_title_length": 12,
+        "max_body_lines": 3,
+        "overflow_strategy": "split_into_multi_tier_or_group"
+      }
     },
     "action_board": {
       "pillar": "Cards",
@@ -52,19 +114,56 @@
       "downstream_api": "builder.build_action_board",
       "semantic_intent": "Juxtaposing current operational deficits or pain points (As-Is / Red) directly against remedial solutions or future targets (To-Be / Green).",
       "trigger_signals": [
-        "as-is", "to-be", "before", "after", "current state", "future state", "target state",
-        "pain points", "remediation", "bottlenecks", "solutions", "defects", "corrective actions",
-        "gap analysis", "legacy vs modern", "trade-offs", "problems vs fixes", "challenges vs countermeasures",
-        "minimal-diff", "surgical diff", "code comparison", "patch comparison",
-        "現況", "目標", "痛點", "對策", "改善前", "改善後", "問題點", "對應做法", "目前問題", "目標架構", "紅綠對照",
-        "改前改後", "精確差異", "重構對照", "最小變更"
+        "as-is",
+        "to-be",
+        "before",
+        "after",
+        "current state",
+        "future state",
+        "target state",
+        "pain points",
+        "remediation",
+        "bottlenecks",
+        "solutions",
+        "defects",
+        "corrective actions",
+        "gap analysis",
+        "legacy vs modern",
+        "trade-offs",
+        "problems vs fixes",
+        "challenges vs countermeasures",
+        "minimal-diff",
+        "surgical diff",
+        "code comparison",
+        "patch comparison",
+        "現況",
+        "目標",
+        "痛點",
+        "對策",
+        "改善前",
+        "改善後",
+        "問題點",
+        "對應做法",
+        "目前問題",
+        "目標架構",
+        "紅綠對照",
+        "改前改後",
+        "精確差異",
+        "重構對照",
+        "最小變更"
       ],
       "contextual_patterns": [
         "Direct pairing of problem statements with counteracting solutions.",
         "Discussions evaluating migration from a legacy system to a newly proposed setup.",
         "Contrasting manual bottlenecks with automated remediations."
       ],
-      "recommended_when": "The primary objective is problem diagnosis and countermeasure approval."
+      "recommended_when": "The primary objective is problem diagnosis and countermeasure approval.",
+      "capacity_budget": {
+        "columns": 2,
+        "max_paired_items": 4,
+        "max_item_length": 35,
+        "overflow_strategy": "isolate_p0_problems_only"
+      }
     },
     "split_row": {
       "pillar": "Cards",
@@ -74,17 +173,40 @@
       "downstream_api": "builder.build_split_row",
       "semantic_intent": "Framing two complementary topics, dual-track scopes, or head-to-head boundary definitions across left and right panels.",
       "trigger_signals": [
-        "scope", "in-scope", "out-of-scope", "boundary", "dual-track", "phase 1 vs phase 2",
-        "client vs server", "internal vs external", "frontend vs backend", "primary vs secondary",
-        "tier 1 vs tier 2", "on-premise vs cloud", "functional vs non-functional",
-        "範圍劃分", "納入範圍", "排除範圍", "雙軌並行", "內外對照", "邊界定義", "一期與二期", "對稱架構"
+        "scope",
+        "in-scope",
+        "out-of-scope",
+        "boundary",
+        "dual-track",
+        "phase 1 vs phase 2",
+        "client vs server",
+        "internal vs external",
+        "frontend vs backend",
+        "primary vs secondary",
+        "tier 1 vs tier 2",
+        "on-premise vs cloud",
+        "functional vs non-functional",
+        "範圍劃分",
+        "納入範圍",
+        "排除範圍",
+        "雙軌並行",
+        "內外對照",
+        "邊界定義",
+        "一期與二期",
+        "對稱架構"
       ],
       "contextual_patterns": [
         "Explicit division into two balanced halves or operational tiers.",
         "Scope boundary negotiations establishing what will and will not be delivered.",
         "Dual-engine or dual-channel comparative specifications."
       ],
-      "recommended_when": "Content divides cleanly into two symmetrical categories or boundary contrasts."
+      "recommended_when": "Content divides cleanly into two symmetrical categories or boundary contrasts.",
+      "capacity_budget": {
+        "columns": 2,
+        "max_items_per_column": 4,
+        "max_item_length": 30,
+        "overflow_strategy": "move_secondary_details_to_appendix"
+      }
     },
     "anchor_card": {
       "pillar": "Cards",
@@ -94,19 +216,43 @@
       "downstream_api": "builder.build_card",
       "semantic_intent": "Full-width anchor container emphasizing an overarching policy, binding compliance mandate, executive conclusion, or mathematical algorithm.",
       "trigger_signals": [
-        "governance policy", "overarching principle", "core mandate", "executive statement",
-        "mandatory guideline", "formula", "algorithm specification", "architectural standard",
-        "single source of truth", "compliance rule", "binding constraint", "baseline directive",
-        "pseudocode", "algorithm skeleton", "code-shape sketch",
-        "最高治理方針", "核心準則", "法遵要求", "強制規定", "計算公式", "單一真實來源", "決策結論宣告",
-        "演算法骨架", "判斷邏輯"
+        "governance policy",
+        "overarching principle",
+        "core mandate",
+        "executive statement",
+        "mandatory guideline",
+        "formula",
+        "algorithm specification",
+        "architectural standard",
+        "single source of truth",
+        "compliance rule",
+        "binding constraint",
+        "baseline directive",
+        "pseudocode",
+        "algorithm skeleton",
+        "code-shape sketch",
+        "最高治理方針",
+        "核心準則",
+        "法遵要求",
+        "強制規定",
+        "計算公式",
+        "單一真實來源",
+        "決策結論宣告",
+        "演算法骨架",
+        "判斷邏輯"
       ],
       "contextual_patterns": [
         "A single authoritative policy paragraph that sets the premise for all other blocks.",
         "A core mathematical formula or operational equation.",
         "A non-negotiable regulatory or security constraint."
       ],
-      "recommended_when": "The note requires a bold, foundational premise or authoritative policy statement across the canvas."
+      "recommended_when": "The note requires a bold, foundational premise or authoritative policy statement across the canvas.",
+      "capacity_budget": {
+        "max_paragraphs": 1,
+        "max_lines": 4,
+        "max_char_count": 160,
+        "overflow_strategy": "condense_to_single_authoritative_assertion"
+      }
     },
     "pipeline_flow": {
       "pillar": "Diagrams",
@@ -116,17 +262,49 @@
       "downstream_api": "builder.build_pipeline_flow",
       "semantic_intent": "Presenting a linear, sequential, 3 to 4 stage standard operating procedure (SOP) or lifecycle without branching.",
       "trigger_signals": [
-        "SOP", "pipeline", "phases", "stages", "step 1", "step 2", "step 3", "step 4",
-        "triage", "containment", "eradication", "recovery", "post-mortem", "linear process",
-        "execution workflow", "runbook", "deployment pipeline", "handover lifecycle", "progression",
-        "標準作業程序", "作業階段", "步驟一", "步驟二", "步驟三", "步驟四", "應變流程", "通報流程", "災難復原", "線性流程"
+        "SOP",
+        "pipeline",
+        "phases",
+        "stages",
+        "step 1",
+        "step 2",
+        "step 3",
+        "step 4",
+        "triage",
+        "containment",
+        "eradication",
+        "recovery",
+        "post-mortem",
+        "linear process",
+        "execution workflow",
+        "runbook",
+        "deployment pipeline",
+        "handover lifecycle",
+        "progression",
+        "標準作業程序",
+        "作業階段",
+        "步驟一",
+        "步驟二",
+        "步驟三",
+        "步驟四",
+        "應變流程",
+        "通報流程",
+        "災難復原",
+        "線性流程"
       ],
       "contextual_patterns": [
         "Sequential numbering indicating chronological handoffs (Phase 01 -> Phase 02...).",
         "Incident response playbooks with sequential containment steps.",
         "Standard deployment, staging, and rollout lifecycles."
       ],
-      "recommended_when": "The note outlines a strict chronological progression across 3 to 4 discrete steps."
+      "recommended_when": "The note outlines a strict chronological progression across 3 to 4 discrete steps.",
+      "capacity_budget": {
+        "max_steps": 4,
+        "recommended_steps": 4,
+        "max_step_title_length": 8,
+        "max_step_desc_length": 20,
+        "overflow_strategy": "collapse_substeps_or_switch_to_flowchart"
+      }
     },
     "checklist_grid": {
       "pillar": "Diagrams",
@@ -136,17 +314,41 @@
       "downstream_api": "builder.build_checklist_grid",
       "semantic_intent": "Multi-item compliance verification, acceptance criteria, security audit requirements, or milestone tracking with check cues.",
       "trigger_signals": [
-        "checklist", "audit checks", "verification criteria", "readiness gate", "acceptance criteria",
-        "milestones", "compliance checklist", "go-live criteria", "security review items",
-        "inspection list", "sanity checks", "definition of done", "pass/fail criteria",
-        "檢核清單", "查核項目", "驗收條件", "上線審查", "稽核項目", "里程碑檢驗", "合規查核", "完成指標"
+        "checklist",
+        "audit checks",
+        "verification criteria",
+        "readiness gate",
+        "acceptance criteria",
+        "milestones",
+        "compliance checklist",
+        "go-live criteria",
+        "security review items",
+        "inspection list",
+        "sanity checks",
+        "definition of done",
+        "pass/fail criteria",
+        "檢核清單",
+        "查核項目",
+        "驗收條件",
+        "上線審查",
+        "稽核項目",
+        "里程碑檢驗",
+        "合規查核",
+        "完成指標"
       ],
       "contextual_patterns": [
         "Actionable items with binary completion criteria (passed, pending, verified).",
         "Numbered audit checkpoints before product or release sign-off.",
         "Governance compliance clauses requiring explicit operator confirmation."
       ],
-      "recommended_when": "Content specifies 4 to 6 discrete actionable verification items or audit controls."
+      "recommended_when": "Content specifies 4 to 6 discrete actionable verification items or audit controls.",
+      "capacity_budget": {
+        "columns": 2,
+        "max_items_per_column": 3,
+        "max_total_items": 6,
+        "max_item_length": 28,
+        "overflow_strategy": "truncate_to_blocking_gate_criteria_only"
+      }
     },
     "flowchart": {
       "pillar": "Diagrams",
@@ -156,19 +358,50 @@
       "downstream_api": "pretty_mermaid (flowchart TD / LR)",
       "semantic_intent": "Rendering distributed infrastructure, network ingress, routing paths, decoupled microservices, and persistent databases.",
       "trigger_signals": [
-        "architecture topology", "network routing", "microservices", "ingress", "gateway",
-        "load balancer", "worker cluster", "event bus", "message queue", "fallback path",
-        "branching logic", "failover routing", "infrastructure diagram", "service mesh", "cloud cluster",
-        "call tree", "file tree", "component tree", "directory map", "package layout",
-        "系統架構拓撲", "網路路由", "負載平衡", "邊界閘道", "微服務架構", "佇列分派", "備援路徑", "節點拓撲",
-        "檔案結構", "模組責任"
+        "architecture topology",
+        "network routing",
+        "microservices",
+        "ingress",
+        "gateway",
+        "load balancer",
+        "worker cluster",
+        "event bus",
+        "message queue",
+        "fallback path",
+        "branching logic",
+        "failover routing",
+        "infrastructure diagram",
+        "service mesh",
+        "cloud cluster",
+        "call tree",
+        "file tree",
+        "component tree",
+        "directory map",
+        "package layout",
+        "系統架構拓撲",
+        "網路路由",
+        "負載平衡",
+        "邊界閘道",
+        "微服務架構",
+        "佇列分派",
+        "備援路徑",
+        "節點拓撲",
+        "檔案結構",
+        "模組責任"
       ],
       "contextual_patterns": [
         "Descriptions of system entities passing data across tiers (clients -> gateway -> workers -> db).",
         "Multi-branch architectural diagrams involving upstream and downstream dependencies.",
         "High-availability clustering and active-passive failover mechanisms."
       ],
-      "recommended_when": "The note details system architecture, component networking, or non-linear routing flows."
+      "recommended_when": "The note details system architecture, component networking, or non-linear routing flows.",
+      "capacity_budget": {
+        "max_nodes": 6,
+        "recommended_nodes": 5,
+        "max_label_length": 15,
+        "max_depth": 4,
+        "overflow_strategy": "split_into_subgraphs_or_isolate_boundary"
+      }
     },
     "mermaid_sequence": {
       "pillar": "Diagrams",
@@ -178,11 +411,29 @@
       "downstream_api": "pretty_mermaid (sequenceDiagram)",
       "semantic_intent": "Visualizing chronological messaging between distinct actors, authentication handshakes, token verification, and RPC/HTTP calls.",
       "trigger_signals": [
-        "API sequence", "handshake", "authentication", "authorization", "JWT", "OAuth",
-        "mTLS", "request-response", "client-server interaction", "webhook callback",
-        "sync vs async call", "payload exchange", "HTTP method", "status code flow", "RPC invocation",
-        "runtime control flow", "execution trace", "call stack",
-        "時序圖", "API 呼叫歷程", "驗證握手", "非同步 callback", "微服務呼叫鏈",
+        "API sequence",
+        "handshake",
+        "authentication",
+        "authorization",
+        "JWT",
+        "OAuth",
+        "mTLS",
+        "request-response",
+        "client-server interaction",
+        "webhook callback",
+        "sync vs async call",
+        "payload exchange",
+        "HTTP method",
+        "status code flow",
+        "RPC invocation",
+        "runtime control flow",
+        "execution trace",
+        "call stack",
+        "時序圖",
+        "API 呼叫歷程",
+        "驗證握手",
+        "非同步 callback",
+        "微服務呼叫鏈",
         "控制流程"
       ],
       "contextual_patterns": [
@@ -190,7 +441,13 @@
         "Security token issuance, session refresh, and credential exchange workflows.",
         "Error status code returns and retry handshake protocols."
       ],
-      "recommended_when": "The primary focus is chronological inter-service communication or protocol validation."
+      "recommended_when": "The primary focus is chronological inter-service communication or protocol validation.",
+      "capacity_budget": {
+        "max_participants": 4,
+        "max_steps": 6,
+        "max_message_length": 20,
+        "overflow_strategy": "split_into_handshake_and_payload_phases"
+      }
     },
     "mermaid_er": {
       "pillar": "Diagrams",
@@ -200,17 +457,42 @@
       "downstream_api": "pretty_mermaid (erDiagram)",
       "semantic_intent": "Documenting relational database structures, entity attributes, primary/foreign key mappings, and table cardinality.",
       "trigger_signals": [
-        "ER diagram", "entity relationship", "database schema", "table structure", "primary key",
-        "foreign key", "PK/FK", "cardinality", "one-to-many", "many-to-many", "relational model",
-        "data dictionary", "schema migration", "foreign table", "audit log schema",
-        "實體關聯圖", "資料庫 schema", "資料表關聯", "主鍵與外鍵", "欄位規格", "一對多關聯", "關聯模型", "schema 變更"
+        "ER diagram",
+        "entity relationship",
+        "database schema",
+        "table structure",
+        "primary key",
+        "foreign key",
+        "PK/FK",
+        "cardinality",
+        "one-to-many",
+        "many-to-many",
+        "relational model",
+        "data dictionary",
+        "schema migration",
+        "foreign table",
+        "audit log schema",
+        "實體關聯圖",
+        "資料庫 schema",
+        "資料表關聯",
+        "主鍵與外鍵",
+        "欄位規格",
+        "一對多關聯",
+        "關聯模型",
+        "schema 變更"
       ],
       "contextual_patterns": [
         "Definitions of tables, schemas, and relational constraints between entities.",
         "Data persistence models specifying fields, data types, and foreign key references.",
         "Audit log schemas showing relationships between user actions and asset tables."
       ],
-      "recommended_when": "The discussion centers on database modeling, data dictionary specs, or entity dependencies."
+      "recommended_when": "The discussion centers on database modeling, data dictionary specs, or entity dependencies.",
+      "capacity_budget": {
+        "max_entities": 4,
+        "max_attributes_per_entity": 5,
+        "max_relation_lines": 6,
+        "overflow_strategy": "isolate_core_domain_entities_only"
+      }
     },
     "bar_chart": {
       "pillar": "Charts",
@@ -220,17 +502,40 @@
       "downstream_api": "builder.build_bar_chart",
       "semantic_intent": "Comparing categorical benchmark statistics, team output volumes, performance percentiles, or variance across units.",
       "trigger_signals": [
-        "bar chart", "categorical comparison", "group comparison", "ranking", "quarterly volume",
-        "distribution by team", "performance benchmarks", "count comparison", "head-to-head metrics",
-        "histogram", "volume variance", "throughput comparison", "incident count by severity",
-        "長條圖", "柱狀圖", "分組比較", "各組比較", "數量排行", "季度統計比較", "benchmark 比較", "各類別分佈"
+        "bar chart",
+        "categorical comparison",
+        "group comparison",
+        "ranking",
+        "quarterly volume",
+        "distribution by team",
+        "performance benchmarks",
+        "count comparison",
+        "head-to-head metrics",
+        "histogram",
+        "volume variance",
+        "throughput comparison",
+        "incident count by severity",
+        "長條圖",
+        "柱狀圖",
+        "分組比較",
+        "各組比較",
+        "數量排行",
+        "季度統計比較",
+        "benchmark 比較",
+        "各類別分佈"
       ],
       "contextual_patterns": [
         "Discrete items compared along a single numeric axis (e.g., Team A: 45 vs. Team B: 80).",
         "Quarterly or monthly metric shifts across predefined categories.",
         "Performance benchmarks comparing throughput across different hardware or software configurations."
       ],
-      "recommended_when": "There are discrete, named categories requiring side-by-side quantitative visual comparison."
+      "recommended_when": "There are discrete, named categories requiring side-by-side quantitative visual comparison.",
+      "capacity_budget": {
+        "max_categories": 5,
+        "recommended_categories": 4,
+        "max_label_length": 10,
+        "overflow_strategy": "aggregate_tail_categories_into_others"
+      }
     },
     "pie_chart": {
       "pillar": "Charts",
@@ -240,17 +545,39 @@
       "downstream_api": "builder.build_pie_chart",
       "semantic_intent": "Visualizing ratio composition, market share proportions, resource quotas, or budget splits that sum up to 100%.",
       "trigger_signals": [
-        "pie chart", "donut chart", "percentage share", "budget allocation", "proportional breakdown",
-        "composition", "market share", "portfolio split", "resource distribution",
-        "segmentation percentage", "100% breakdown", "cost proportion", "spend allocation",
-        "圓餅圖", "甜甜圈圖", "比例分配", "預算佔比", "佔比分佈", "資源配額", "市佔率"
+        "pie chart",
+        "donut chart",
+        "percentage share",
+        "budget allocation",
+        "proportional breakdown",
+        "composition",
+        "market share",
+        "portfolio split",
+        "resource distribution",
+        "segmentation percentage",
+        "100% breakdown",
+        "cost proportion",
+        "spend allocation",
+        "圓餅圖",
+        "甜甜圈圖",
+        "比例分配",
+        "預算佔比",
+        "佔比分佈",
+        "資源配額",
+        "市佔率"
       ],
       "contextual_patterns": [
         "Data components where percentages naturally add up to 100%.",
         "Annual budget allocation split across engineering, operations, and security.",
         "Asset distribution by cloud provider or environment tier."
       ],
-      "recommended_when": "The core message relates to proportional allocation or component shares of a whole."
+      "recommended_when": "The core message relates to proportional allocation or component shares of a whole.",
+      "capacity_budget": {
+        "max_slices": 5,
+        "recommended_slices": 4,
+        "min_slice_percentage": 5,
+        "overflow_strategy": "aggregate_small_slices_into_others"
+      }
     },
     "matrix": {
       "pillar": "Tables",
@@ -260,17 +587,42 @@
       "downstream_api": "build_split_row x 2",
       "semantic_intent": "Classifying tasks or investments into 4 distinct priority quadrants based on dual evaluation axes (e.g., Impact vs. Effort, Urgency vs. Importance).",
       "trigger_signals": [
-        "2x2 matrix", "quadrant", "priority matrix", "impact vs cost", "effort vs impact",
-        "urgency vs importance", "P0", "P1", "P2", "P3", "quick wins", "strategic bets",
-        "money pit", "fill-ins", "decision grid", "prioritization framework", "resource allocation matrix",
-        "四象限", "決策矩陣", "優先順序", "高影響低成本", "策略投資", "資源分配"
+        "2x2 matrix",
+        "quadrant",
+        "priority matrix",
+        "impact vs cost",
+        "effort vs impact",
+        "urgency vs importance",
+        "P0",
+        "P1",
+        "P2",
+        "P3",
+        "quick wins",
+        "strategic bets",
+        "money pit",
+        "fill-ins",
+        "decision grid",
+        "prioritization framework",
+        "resource allocation matrix",
+        "四象限",
+        "決策矩陣",
+        "優先順序",
+        "高影響低成本",
+        "策略投資",
+        "資源分配"
       ],
       "contextual_patterns": [
         "Items categorized across two orthagonal scales (High/Low Impact vs. High/Low Cost).",
         "Strategic backlog grooming allocating resources to Quick Wins vs. Long-term Bets.",
         "Risk matrix categorizing likelihood versus consequence severity."
       ],
-      "recommended_when": "The document requires strategic prioritization or trade-off evaluation across 4 discrete quadrants."
+      "recommended_when": "The document requires strategic prioritization or trade-off evaluation across 4 discrete quadrants.",
+      "capacity_budget": {
+        "quadrants": 4,
+        "max_items_per_quadrant": 3,
+        "max_item_length": 15,
+        "overflow_strategy": "retain_only_p0_and_p1_strategic_items"
+      }
     },
     "zebra_table": {
       "pillar": "Tables",
@@ -280,17 +632,38 @@
       "downstream_api": "builder.build_zebra_table",
       "semantic_intent": "Organizing high-density, multi-column structured logs, compliance comparison matrices, asset registries, or feature specifications.",
       "trigger_signals": [
-        "table", "matrix table", "zebra table", "comparison matrix", "tabular data",
-        "specifications", "multi-column data", "feature matrix", "audit log table",
-        "compliance matrix", "inventory list", "detailed ledger", "attribute comparison",
-        "多欄位對照表", "規格清冊", "資產盤點表", "合規比對矩陣", "功能對照表", "明細表"
+        "table",
+        "matrix table",
+        "zebra table",
+        "comparison matrix",
+        "tabular data",
+        "specifications",
+        "multi-column data",
+        "feature matrix",
+        "audit log table",
+        "compliance matrix",
+        "inventory list",
+        "detailed ledger",
+        "attribute comparison",
+        "多欄位對照表",
+        "規格清冊",
+        "資產盤點表",
+        "合規比對矩陣",
+        "功能對照表",
+        "明細表"
       ],
       "contextual_patterns": [
         "Data naturally organized into 3 or more distinct attribute headers (e.g., Domain | Standard | Status | Target Due Date).",
         "Side-by-side feature compatibility matrices across vendors or solutions.",
         "Formal compliance status records tracking requirements against verification dates."
       ],
-      "recommended_when": "Information contains structured rows and columns requiring clean vertical alignment and high reading density."
+      "recommended_when": "Information contains structured rows and columns requiring clean vertical alignment and high reading density.",
+      "capacity_budget": {
+        "max_columns": 4,
+        "max_rows": 6,
+        "max_cell_length": 25,
+        "overflow_strategy": "filter_to_active_items_or_paginate"
+      }
     }
   }
 }
