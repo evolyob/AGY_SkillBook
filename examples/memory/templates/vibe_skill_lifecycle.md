@@ -27,12 +27,16 @@
 
 ---
 
-## 4. Pre-Delivery 8-Point Cheatsheet
+## 4. Sequential Pre-Delivery Cheatsheet 
+### Phase 1: Spec First  
 - [ ] 1. Non-Goals explicitly defined?
+### Phase 2: Data Structure
 - [ ] 2. Data is flat with zero envelope nesting?
+### Phase 3: Core Script & CLI
 - [ ] 3. Python runs on stdlib only?
-- [ ] 4. Unit tests pass with zero failures?
+- [ ] 4. CLI flags allow one-shot execution?
+### Phase 4: Semantic Test Anchors & Purity
 - [ ] 5. All tools in `SKILL.md` exist?
 - [ ] 6. No prompt-script contradictions?
-- [ ] 7. CLI flags allow one-shot execution?
+- [ ] 7. Unit tests pass with zero failures?
 - [ ] 8. Ambiguous inputs return candidate choices?
