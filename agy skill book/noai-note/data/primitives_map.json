@@ -55,7 +55,9 @@
         "as-is", "to-be", "before", "after", "current state", "future state", "target state",
         "pain points", "remediation", "bottlenecks", "solutions", "defects", "corrective actions",
         "gap analysis", "legacy vs modern", "trade-offs", "problems vs fixes", "challenges vs countermeasures",
-        "現況", "目標", "痛點", "對策", "改善前", "改善後", "問題點", "處置措施", "現行缺失", "目標架構", "紅綠對照"
+        "minimal-diff", "surgical diff", "code comparison", "patch comparison",
+        "現況", "目標", "痛點", "對策", "改善前", "改善後", "問題點", "處置措施", "現行缺失", "目標架構", "紅綠對照",
+        "改前改後", "精確差異", "重構對照", "最小變更"
       ],
       "contextual_patterns": [
         "Direct pairing of problem statements with counteracting solutions.",
@@ -95,7 +97,9 @@
         "governance policy", "overarching principle", "core mandate", "executive statement",
         "mandatory guideline", "formula", "algorithm specification", "architectural standard",
         "single source of truth", "compliance rule", "binding constraint", "baseline directive",
-        "最高治理方針", "核心準則", "法遵要求", "強制規定", "計算公式", "單一真實來源", "決策結論宣告"
+        "pseudocode", "algorithm skeleton", "code-shape sketch",
+        "最高治理方針", "核心準則", "法遵要求", "強制規定", "計算公式", "單一真實來源", "決策結論宣告",
+        "演算法骨架", "判斷邏輯"
       ],
       "contextual_patterns": [
         "A single authoritative policy paragraph that sets the premise for all other blocks.",
@@ -155,7 +159,9 @@
         "architecture topology", "network routing", "microservices", "ingress", "gateway",
         "load balancer", "worker cluster", "event bus", "message queue", "fallback path",
         "branching logic", "failover routing", "infrastructure diagram", "service mesh", "cloud cluster",
-        "系統架構拓撲", "網路路由", "負載平衡", "邊界閘道", "微服務架構", "佇列分派", "備援路徑", "節點拓撲"
+        "call tree", "file tree", "component tree", "directory map", "package layout",
+        "系統架構拓撲", "網路路由", "負載平衡", "邊界閘道", "微服務架構", "佇列分派", "備援路徑", "節點拓撲",
+        "檔案結構", "模組責任"
       ],
       "contextual_patterns": [
         "Descriptions of system entities passing data across tiers (clients -> gateway -> workers -> db).",
@@ -175,7 +181,9 @@
         "API sequence", "handshake", "authentication", "authorization", "JWT", "OAuth",
         "mTLS", "request-response", "client-server interaction", "webhook callback",
         "sync vs async call", "payload exchange", "HTTP method", "status code flow", "RPC invocation",
-        "時序圖", "API 呼叫歷程", "驗證握手", "權杖交換", "客戶端與伺服端互動", "非同步回呼", "微服務呼叫鏈"
+        "runtime control flow", "execution trace", "call stack",
+        "時序圖", "API 呼叫歷程", "驗證握手", "權杖交換", "客戶端與伺服端互動", "非同步回呼", "微服務呼叫鏈",
+        "控制流程"
       ],
       "contextual_patterns": [
         "Chronological dialogue: Actor A sends request -> Actor B validates -> Actor B queries Actor C.",
