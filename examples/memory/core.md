@@ -4,12 +4,17 @@
 
 ---
 
-## 1. System Governance Topic (`topics/` - Security Baselines & Runtime Guardrails)
+## 1. System Governance Topics (`topics/` - Security & Architecture Baselines)
 
 ### 1. Engineering & System Governance
 - **Domain**: Cryptography Baselines (AES-GCM/Ed25519/TLS 1.3), OWASP/CIS, Zero-EOL (Python/Node/Go), Credential Guard, 0-Retry Auth, 7-Step Pause, Pre-Delivery Verification
 - **Path**: `topics/system_governance.md`
 - **Keywords / Triggers**: OWASP, CIS, Cryptography, AES-GCM, TLS 1.3, Zero-EOL, Credential Guard, Anti-Drift, Zero-Leakage, Pre-Delivery Verification
+
+### 2. User Preferences & Task Architecture
+- **Domain**: Knowledge Purity, Compute vs Cognitive Division of Labor, Compact Formatting (Surgical Diffs, ASCII Trees)
+- **Path**: `topics/user_preferences.md`
+- **Keywords / Triggers**: Preferences, Division of Labor, Non-Abstract, Formatting, Diff, ASCII Tree
 
 ---
 
