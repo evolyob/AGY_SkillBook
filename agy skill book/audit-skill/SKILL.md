@@ -1,6 +1,7 @@
 ---
 name: audit-skill
 description: Audits skills and Python scripts against quantitative context-efficiency, Lazy Senior standards, security boundaries, and predictability metrics.
+dependencies: []
 ---
 
 # Senior Skill & Python Code Auditor

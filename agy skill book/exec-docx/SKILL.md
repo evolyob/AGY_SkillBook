@@ -1,6 +1,7 @@
 ---
 name: exec-docx
 description: Create, read, edit, or convert Word documents (.docx/.dotx) with layout analysis and scope verification.
+dependencies: [docx, defusedxml, lxml]
 ---
 
 # Senior DOCX Engineering Assistant

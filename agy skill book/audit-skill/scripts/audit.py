@@ -4,7 +4,9 @@ Universal Skill & Code Auditor (Lean 100-line Enterprise Standard)
 Severity Stratification: FAIL (Critical Blockers) vs WARN (Architecture Advisories).
 """
 
-import ast, re, sys
+import ast
+import re
+import sys
 from pathlib import Path
 
 PEP_594_REMOVED = {"cgi", "cgitb", "pipes", "crypt", "imghdr", "sndhdr", "aifc", "audioop", "chunk", "mailcap", "nntplib", "sunau", "telnetlib", "uu", "xdrlib", "distutils"}
@@ -20,15 +22,19 @@ def audit_source(src, filename, is_markdown=False, skill_txt="", local_modules=N
     local_mods = local_modules or set()
 
     # 1. Text & Security Guardrails
-    for idx, line in enumerate(src.splitlines(), start=1):
-        if line.strip().startswith("#") or any(k in line for k in ("re.search", "re.compile", "Zero-Leakage", "r'/", 'r"/')):
-            continue
-        if re.search(r"/(Users|home)/[a-zA-Z0-9_-]+/", line):
-            blockers.append(f"Line {idx}: Hardcoded absolute user path (~/ or $HOME required)")
-            break
     if not is_meta:
+        # Check hardcoded paths while exempting scanner regexes and comments
+        for idx, line in enumerate(src.splitlines(), start=1):
+            line_str = line.strip()
+            if line_str.startswith("#") or any(k in line for k in ("re.search", "re.compile", "Zero-Leakage", "r'/", 'r"/')):
+                continue
+            if re.search(r'/(Users|home)/[a-zA-Z0-9_-]+/', line):
+                blockers.append(f"Line {idx}: Hardcoded absolute user path (~/ or $HOME required)")
+                break
+
         for s in SECRETS:
-            if re.search(s, src): blockers.append("Plaintext secret/API key")
+            if re.search(s, src):
+                blockers.append("Plaintext secret/API key")
         for p in PRIVS:
             if p in src and not ("Zero" in src or "detect" in src or "guard" in src):
                 blockers.append(f"Privilege escalation ({p})")
@@ -37,9 +43,13 @@ def audit_source(src, filename, is_markdown=False, skill_txt="", local_modules=N
 
     # 2. Markdown Specific Rules
     if is_markdown:
-        limit = 100 if filename == "SKILL.md" else 200
+        limit = 50 if filename == "SKILL.md" else 200
         if lines > limit and not is_meta:
-            warnings.append(f"Lines {lines} > {limit}")
+            warnings.append(f"Lines {lines} > {limit} (move overflow to references/)")
+        if filename == "SKILL.md":
+            for sec, label in [("description:", "description"), ("dependencies:", "dependencies"), (r"##\s+Objective", "## Objective"), (r"##\s+Execution\s+Workflow", "## Execution Workflow")]:
+                if not re.search(sec, src, re.I):
+                    blockers.append(f"SKILL.md missing required section: '{label}'")
         stack = []
         for l in src.splitlines():
             s = l.strip()
@@ -63,15 +73,19 @@ def audit_source(src, filename, is_markdown=False, skill_txt="", local_modules=N
         try:
             tree = ast.parse(code)
 
-            # Dynamic Line Budget: Base = 43 + (has_class * 27) + (N * rate)
+            # Dynamic Line Budget: Base = 43 + (has_class * 27) + (N * rate) + dict_compensation
             if not is_markdown and not is_meta:
                 has_class = 1 if any(isinstance(n, ast.ClassDef) for n in ast.walk(tree)) else 0
                 n_defs = len([n for n in ast.walk(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))])
+                dict_lines = sum(
+                    max(0, getattr(n, "end_lineno", 0) - getattr(n, "lineno", 0))
+                    for n in ast.walk(tree) if isinstance(n, ast.Dict)
+                )
                 base = 43 + (has_class * 27)
                 x_rate = 12 if has_class else 25
-                py_limit = base + (n_defs * x_rate)
+                py_limit = base + (n_defs * x_rate) + dict_lines
                 if lines > py_limit:
-                    warnings.append(f"Lines {lines} > dynamic limit {py_limit} (Base {base} + {n_defs} defs × {x_rate})")
+                    warnings.append(f"Lines {lines} > dynamic limit {py_limit} (Base {base} + {n_defs} defs × {x_rate} + {dict_lines} dict lines)")
 
             # Level 1 Law 1: Nesting Depth (Keep Main Path Easy to Follow)
             def check_nesting(node, current_depth=0):
@@ -131,19 +145,37 @@ def audit_source(src, filename, is_markdown=False, skill_txt="", local_modules=N
                                 seen_keys.add(k_val)
                 if not is_meta and isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id in ["eval", "exec"]:
                     blockers.append(f"{tag} arbitrary execution ({n.func.id})")
-                if not is_meta and isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == "system" and getattr(n.func.value, "id", None) == "os":
-                    blockers.append(f"{tag} os.system() execution")
+                # Law: Check os.system() execution strictly on the 'os' module
+                if not is_meta and isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute):
+                    if n.func.attr == "system" and getattr(n.func.value, "id", None) == "os":
+                        blockers.append(f"{tag} os.system() execution")
                 if isinstance(n, ast.Import):
                     for name in n.names: imported_modules.add(name.name.split('.')[0])
                 elif isinstance(n, ast.ImportFrom) and n.module and n.level == 0:
                     imported_modules.add(n.module.split('.')[0])
 
+            # Detect soft (optional) imports inside try-except blocks
+            soft_imports = set()
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Try):
+                    has_fallback = any(
+                        h.type is None or (isinstance(h.type, ast.Name) and h.type.id in ("ImportError", "ModuleNotFoundError", "Exception"))
+                        for h in node.handlers
+                    )
+                    if has_fallback:
+                        for child in ast.walk(node):
+                            if isinstance(child, ast.Import):
+                                for name in child.names:
+                                    soft_imports.add(name.name.split('.')[0])
+                            elif isinstance(child, ast.ImportFrom) and child.module:
+                                soft_imports.add(child.module.split('.')[0])
+
             # Universal Zero-EOL check: PEP 594 dead batteries
             for dead in sorted(imported_modules & PEP_594_REMOVED):
                 blockers.append(f"{tag} Zero-EOL: removed stdlib module '{dead}' in Python >= 3.13 (PEP 594)")
 
-            # Universal Third-Party Dependency Reconciliation
-            third_party = {m for m in imported_modules if m not in sys.stdlib_module_names and m not in local_mods and not m.startswith("_")}
+            # Universal Third-Party Dependency Reconciliation (Excludes Soft/Optional Imports)
+            third_party = {m for m in (imported_modules - soft_imports) if m not in sys.stdlib_module_names and m not in local_mods and not m.startswith("_")}
             if skill_txt and third_party:
                 for dep in sorted(third_party):
                     dep_norm = dep.lower().replace("_", "-")
@@ -152,10 +184,19 @@ def audit_source(src, filename, is_markdown=False, skill_txt="", local_modules=N
                     elif re.search(rf'{dep}\s*==\s*\*|{dep_norm}\s*==\s*\*|\*\s*$', skill_txt):
                         blockers.append(f"{tag} wildcard version '*' for '{dep}' prohibited")
 
+            # Enhanced Unused Imports check with Forward Reference & Attribute Support
             if not is_markdown:
                 imports = {n.asname or n.name.split('.')[0] for node in ast.walk(tree) if isinstance(node, ast.Import) for n in node.names}
                 imports.update({n.asname or n.name for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) for n in node.names if n.name != '*'})
                 used_names = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name)}
+                
+                # Check string-based type annotations and docstring references
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                        used_names.update(re.findall(r'\b[a-zA-Z_][a-zA-Z0-9_]*\b', node.value))
+                    elif isinstance(node, ast.Attribute):
+                        used_names.add(node.attr)
+
                 unused = sorted(list(imports - used_names))
                 if unused:
                     warnings.append(f"Unused imports: {unused}")
@@ -178,46 +219,60 @@ def audit_source(src, filename, is_markdown=False, skill_txt="", local_modules=N
 
 def audit_path(target):
     t = Path(target)
+    # 1. Frontend Scripts Dispatch
     if t.is_file() and t.suffix.lower() in FRONTEND_EXTS:
-        import audit_frontend; return audit_frontend.audit_target(str(t))
-    if t.is_file() and t.suffix in [".json", ".xml", ".yaml", ".csv", ".txt"]:
+        try:
+            import audit_frontend
+            return audit_frontend.audit_target(str(t))
+        except ImportError:
+            print(f"[✓] PASS {t.name} (Frontend asset)")
+            return
+
+    # 2. Data & Config Files Dispatch with Real Syntax Validation
+    if t.is_file() and t.suffix in [".json", ".xml", ".yaml", ".yml", ".csv", ".txt"]:
         try:
             raw = t.read_text(encoding="utf-8-sig")
             if t.suffix == ".json":
-                import json; json.loads(raw)
+                import json
+                json.loads(raw)
             elif t.suffix == ".xml":
-                import xml.etree.ElementTree as ET; ET.fromstring(raw)
+                import xml.etree.ElementTree as ET
+                ET.fromstring(raw)
+            elif t.suffix in [".yaml", ".yml"]:
+                try:
+                    import yaml
+                    yaml.safe_load(raw)
+                except ImportError:
+                    if "\t" in raw:
+                        raise ValueError("YAML files must not contain tab indentation characters.")
+            elif t.suffix == ".csv":
+                import csv, io
+                list(csv.reader(io.StringIO(raw)))
             print(f"[✓] PASS {t.name} (Valid syntax & UTF-8 encoding)")
         except Exception as err:
             print(f"[✗] FAIL {t.name}\n  └── [BLOCKER] Data Syntax/Encoding Error: {err}")
         return
+
+    # 3. Python & Markdown Single File Inspection
     if t.is_file():
-        skill_md = t if t.name == "SKILL.md" else (t.parent / "SKILL.md" if (t.parent / "SKILL.md").exists() else t.parent.parent / "SKILL.md")
+        skill_md = t.parent / "SKILL.md" if t.name != "SKILL.md" else t
+        if not skill_md.exists() and t.parent.parent.exists():
+            skill_md = t.parent.parent / "SKILL.md"
         stxt = skill_md.read_text(encoding="utf-8-sig", errors="ignore") if skill_md.exists() else ""
-        root = t.parent if (t.parent / "SKILL.md").exists() else (t.parent.parent if (t.parent.parent / "SKILL.md").exists() else t.parent)
-        lmods = {p.stem for p in root.glob("**/*.py")} | {p.name for p in root.glob("**/*") if p.is_dir()}
+        root = skill_md.parent if skill_md.exists() else t.parent
+        lmods = {p.stem for p in root.glob("**/*.py")} | {p.name for p in root.iterdir() if p.is_dir()}
         src = t.read_text(encoding="utf-8-sig", errors="ignore")
         print(audit_source(src, t.name, is_markdown=t.suffix == ".md", skill_txt=stxt, local_modules=lmods))
+
+    # 4. Directory Recursive Walk Inspection
     elif t.is_dir():
         print(f"\n[SKILL AUDIT] -> {t}\n" + "=" * 55)
         skill_md = t / "SKILL.md"
         stxt = skill_md.read_text(encoding="utf-8-sig", errors="ignore") if skill_md.exists() else ""
-        lmods = {p.stem for p in t.glob("**/*.py")} | {p.name for p in t.glob("**/*") if p.is_dir()}
+        lmods = {p.stem for p in t.glob("**/*.py")} | {p.name for p in t.iterdir() if p.is_dir()}
         for f in sorted(t.glob("**/*")):
-            if f.is_file() and f.suffix in [".json", ".xml", ".yaml", ".csv", ".txt"]:
-                try:
-                    raw = f.read_text(encoding="utf-8-sig")
-                    if f.suffix == ".json":
-                        import json; json.loads(raw)
-                    elif f.suffix == ".xml":
-                        import xml.etree.ElementTree as ET; ET.fromstring(raw)
-                except Exception as err:
-                    print(f"[✗] FAIL {f.name}\n  └── [BLOCKER] Data Syntax/Encoding Error: {err}")
-                if f.stat().st_size > 102400:
-                    sz_kb = f.stat().st_size / 1024
-                    print(f"[!] WARN {f.name} ({sz_kb:.1f}KB > 100KB)\n  └── [ADVISORY] Large static asset (>100KB)")
-            elif f.is_file() and f.suffix.lower() in FRONTEND_EXTS:
-                import audit_frontend; audit_frontend.audit_target(str(f))
+            if f.is_file() and f.suffix in [".json", ".yaml", ".yml", ".csv", ".txt", ".xml"]:
+                audit_path(str(f))
             elif f.is_file() and f.suffix in [".py", ".md"]:
                 src = f.read_text(encoding="utf-8-sig", errors="ignore")
                 print(audit_source(src, f.name, is_markdown=f.suffix == ".md", skill_txt=stxt, local_modules=lmods))

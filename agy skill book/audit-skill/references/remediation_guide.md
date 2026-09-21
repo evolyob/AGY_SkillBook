@@ -100,4 +100,4 @@ el.innerHTML = DOMPurify.sanitize(userContent);
 ### 3. Prompt Data Bloat & Decoupling (`Heavy static asset`)
 * **Remediation**: Never inline large lookup tables into prompt or markdown files. Keep data on disk and implement backend fallback resolution so callers only pass intent:
   * **Backend Code**: Read via `Path(__file__).parent / "data.json"`; gracefully fallback to a safe default if unmatched.
-  * **Prompt Boundary**: Keep documentation declarative; callers pass high-level values without reciting the entire catalog.
+  * **Prompt Boundary**: Keep documentation declarative; remove in-context discoverable conventions and pair every prohibition with an actionable alternative.
