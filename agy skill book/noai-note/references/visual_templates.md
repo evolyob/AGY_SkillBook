@@ -1,6 +1,6 @@
 # Visual Blueprint Execution Specifications (`visual_templates.md`)
 
-> **Agent Execution Rule**: Reference `data/primitives_map.json` for canonical proportions. Select 2~3 primitives based on signals and footprint budgets. Deliver user-facing output in Traditional Chinese.
+> **Agent Execution Rule**: Match input against `trigger_signals` in `data/primitives_map.json` to pick the primitive. Enforce element counts and label lengths from `capacity_budget`. On ambiguous input, default to `flowchart`. Deliver user-facing output in Traditional Chinese.
 
 ---
 
@@ -9,10 +9,12 @@
 • `kpi_row` [100% Full Width | Light 4 lines | SLA, %, ms, revenue] ──> `• [Metric]: [Value+Unit] ([Trend ▲/▼ Delta%])`
 • `action_board` [50/50 Split | Medium 6 lines | As-Is, To-Be, pain points] ──> `• ✖ As-Is: [...] vs ✔ To-Be: [...]`
 • `pipeline_flow` [100% Full Width | Light 4 lines | SOP, Phase, Steps, Lifecycle] ──> `• Progression: Phase 01 [...] -> Phase 02 [...] -> Phase 03 [...] -> Phase 04 [...]`
-• `flowchart` [100% Full Width | Heavy 10 lines | Ingress, Topology, Routing] ──> 4~6 line Mermaid flowchart TD block
-• `mermaid_sequence` [50% or 100% | Heavy 10 lines | API, JWT, Handshake, Auth] ──> 4~6 line Mermaid sequenceDiagram block
+• `flowchart` [100% Full Width | Heavy 10 lines | Topology, Routing, File Tree] ──> 4~6 line Mermaid `flowchart LR` block
+• `mermaid_sequence` [50% or 100% | Heavy 10 lines | API, JWT, Handshake, Auth] ──> 4~6 line Mermaid `sequenceDiagram` block
+• `mermaid_er` [100% Full Width | Heavy 10 lines | DB schema, PK/FK, Entity Relationship] ──> 4~6 line Mermaid `erDiagram` block
 • `matrix` [100% Full Width | Heavy 10 lines | P0~P3, Quadrant, Quick Wins] ──> `• [Q1 Quick Wins]: [...] | [Q2 Strategic Bets]: [...]`
 • `zebra_table` [100% Full Width | Medium 6~8 lines | Registry, Specs, Compliance] ──> 3-column Markdown table (`| Domain | Requirement | Status | Due Date |`)
+• `stateDiagram` / `classDiagram` [on-demand only] ──> Only render when input explicitly mentions state/lifecycle or class/interface. No primitives_map key; never auto-select.
 
 ---
 
