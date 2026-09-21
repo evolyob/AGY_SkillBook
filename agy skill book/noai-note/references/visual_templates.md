@@ -6,20 +6,20 @@
 
 ## 1. Universal Primitive Selection Matrix & Output Syntax
 
-• `kpi_row` [100% Full Width | Light 4 lines | SLA, %, ms, revenue] ──> `• [Metric]: [Value+Unit] ([Trend ▲/▼ Delta%])`
-• `action_board` [50/50 Split | Medium 6 lines | As-Is, To-Be, pain points] ──> `• ✖ As-Is: [...] vs ✔ To-Be: [...]`
-• `pipeline_flow` [100% Full Width | Light 4 lines | SOP, Phase, Steps, Lifecycle] ──> `• Progression: Phase 01 [...] -> Phase 02 [...] -> Phase 03 [...] -> Phase 04 [...]`
-• `flowchart` [100% Full Width | Heavy 10 lines | Topology, Routing, File Tree] ──> 4~6 line Mermaid `flowchart LR` block
-• `mermaid_sequence` [50% or 100% | Heavy 10 lines | API, JWT, Handshake, Auth] ──> 4~6 line Mermaid `sequenceDiagram` block
-• `mermaid_er` [100% Full Width | Heavy 10 lines | DB schema, PK/FK, Entity Relationship] ──> 4~6 line Mermaid `erDiagram` block
-• `matrix` [100% Full Width | Heavy 10 lines | P0~P3, Quadrant, Quick Wins] ──> `• [Q1 Quick Wins]: [...] | [Q2 Strategic Bets]: [...]`
-• `zebra_table` [100% Full Width | Medium 6~8 lines | Registry, Specs, Compliance] ──> 3-column Markdown table (`| Domain | Requirement | Status | Due Date |`)
-• `stateDiagram` / `classDiagram` [on-demand only] ──> Only render when input explicitly mentions state/lifecycle or class/interface. No primitives_map key; never auto-select.
+- `kpi_row` [100% Full Width | Light 4 lines | SLA, %, ms, revenue] ──> `• [Metric]: [Value+Unit] ([Trend ▲/▼ Delta%])`
+- `action_board` [50/50 Split | Medium 6 lines | As-Is, To-Be, pain points] ──> `• ✖ As-Is: [...] vs ✔ To-Be: [...]`
+- `pipeline_flow` [100% Full Width | Light 4 lines | SOP, Phase, Steps, Lifecycle] ──> `• Progression: Phase 01 [...] -> Phase 02 [...] -> Phase 03 [...] -> Phase 04 [...]`
+- `flowchart` [100% Full Width | Heavy 10 lines | Topology, Routing, File Tree] ──> 4-6 line Mermaid `flowchart LR` block
+- `mermaid_sequence` [50% or 100% | Heavy 10 lines | API, JWT, Handshake, Auth] ──> 4-6 line Mermaid `sequenceDiagram` block
+- `mermaid_er` [100% Full Width | Heavy 10 lines | DB schema, PK/FK, Entity Relationship] ──> 4-6 line Mermaid `erDiagram` block
+- `matrix` [100% Full Width | Heavy 10 lines | P0-P3, Quadrant, Quick Wins] ──> `• [Q1 Quick Wins]: [...] | [Q2 Strategic Bets]: [...]`
+- `zebra_table` [100% Full Width | Medium 6-8 lines | Registry, Specs, Compliance] ──> 3-column Markdown table (`| Domain | Requirement | Status | Due Date |`)
+- `stateDiagram` / `classDiagram` [on-demand only] ──> Only render when input explicitly mentions state/lifecycle or class/interface. No primitives_map key; never auto-select.
 
 ---
 
 ## 2. Branch B: 16:9 Presentation Slide Deck Outline
-*(Output Spec: Multi-slide deck driven by conclusion-led assertion narrative chain. Each slide snaps 1~2 layers; pure Markdown.)*
+*(Output Spec: Multi-slide deck driven by conclusion-led assertion narrative chain. Each slide snaps 1-2 layers; pure Markdown.)*
 
 ```text
 # [Topic Name] — Presentation Slide Deck
@@ -51,7 +51,7 @@
 *(Output Spec: A4 executive format. Confirm target upfront: 1-Pager or N-Pager.)*
 
 > **A4 Capacity Rules (1 or N)**:
-> • **1-Pager (3 States)**: `<20` lines (Halt: ask user to supplement) | `30~36` lines (Pass: deliver standard) | `>38` lines (Halt: ask user to condense or split).
+> • **1-Pager (3 States)**: `<20` lines (Halt: ask user to supplement) | `30-36` lines (Pass: deliver standard) | `>38` lines (Halt: ask user to condense or split).
 > • **N-Pager (1 Rule)**: Preceding pages maintain full density (~30 lines); Final page concludes organically (bottom whitespace is strictly legal; zero padding fluff).
 
 ```text
