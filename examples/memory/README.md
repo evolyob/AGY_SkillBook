@@ -9,29 +9,29 @@ This directory provides production-grade templates, governance scaffolds, and ar
 The memory system decouples lean index routing from deep governance and concrete execution contracts:
 
 ```mermaid
-flowchart TD
-    subgraph L1 ["Level 1: Master Index (Always Loaded)"]
-        core["core.md<br/>• Lean Index (&lt; 35 lines)<br/>• Keyword Routing &amp; Triggers"]
+flowchart LR
+    classDef l1 fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#fff;
+    classDef l2 fill:#0f172a,stroke:#a78bfa,stroke-width:1.5px,color:#fff;
+    classDef l3 fill:#0f172a,stroke:#34d399,stroke-width:1.5px,color:#fff;
+
+    L1["<b>Level 1: Master Index</b><br/><code>core.md</code> (&lt; 35 lines)"]:::l1
+
+    subgraph L2 ["Level 2: Governance &amp; Task Architecture (topics/)"]
+        direction TB
+        t1["<code>system_governance.md</code><br/>Security Baselines &amp; Guardrails"]:::l2
+        t2["<code>user_preferences.md</code><br/>Compute/Cognition &amp; Formatting"]:::l2
     end
 
-    subgraph L2 ["Level 2: Governance &amp; Task Architecture (Topics - On Demand)"]
-        gov["topics/system_governance.md<br/>• Security &amp; Zero-EOL Baselines<br/>• Anti-Drift Circuit Breakers"]
-        pref["topics/user_preferences.md<br/>• Compute vs Cognition Division<br/>• Non-Abstract Specifications<br/>• Surgical Diffs &amp; ASCII Trees"]
+    subgraph L3 ["Level 3: Implementation Scaffolds (templates/)"]
+        direction TB
+        m1["<code>spec_template.md</code> (Specification Contract)"]:::l3
+        m2["<code>senior_coding_laws.md</code> (Clean Code Radar)"]:::l3
+        m3["<code>SKILL_DATA_SPEC.md</code> (Flat Index &amp; Schema)"]:::l3
+        m4["<code>vibe_skill_lifecycle.md</code> (Lifecycle &amp; Traps)"]:::l3
     end
 
-    subgraph L3 ["Level 3: Implementation Contracts (Templates - Task Scaffolds)"]
-        spec["templates/spec_template.md<br/>• No-Spec-No-Code Contract"]
-        radar["templates/senior_coding_laws.md<br/>• Clean Code 5-Step Radar"]
-        data["templates/SKILL_DATA_SPEC.md<br/>• Flat List &amp; O(1) Indexing"]
-        vibe["templates/vibe_skill_lifecycle.md<br/>• 4-Step Build &amp; 5 Traps"]
-    end
-
-    core ==>|Security Triggers| gov
-    core ==>|Task Architecture| pref
-    core -->|Contract Scaffolds| spec
-    core -->|Refactoring Hygiene| radar
-    core -->|Data Taxonomy| data
-    core -->|Skill Evolution| vibe
+    L1 ==>|Security / Prefs| L2
+    L1 ==>|Task Execution| L3
 ```
 
 ---
