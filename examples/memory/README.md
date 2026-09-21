@@ -1,27 +1,49 @@
 # Antigravity Production Templates & Memory Architecture
 
-This directory provides production-grade templates and governance scaffolds for building deterministic, context-efficient skills and tools in Google Antigravity.
+This directory provides production-grade templates, governance scaffolds, and architectural memory models for building deterministic, context-efficient agentic workflows in Google Antigravity.
 
 ---
 
-## 1. Core Architecture: System Governance & Concrete Templates
+## 1. 3-Tier Memory Hierarchy & Execution Flow
 
-The memory architecture separates system security baselines from implementation scaffolds:
+The memory system decouples lean index routing from deep governance and concrete execution contracts:
 
-1. **System Governance Topic (`topics/system_governance.md`)**:
-   - Single authoritative standard for security (OWASP, AES-GCM/Ed25519/TLS 1.3), Zero-EOL runtimes, credential protection, 0-retry auth protocol, 7-step anti-drift pause, and pre-delivery zero-leakage machine verification.
-2. **Implementation Templates Suite (`templates/*.md`)**:
-   - High-signal scaffolds for building code, schemas, and skills with clear division of labor (Python computes, LLM formats, Spec enforces boundaries).
+```mermaid
+flowchart TD
+    subgraph L1 ["Level 1: Master Index (Always Loaded)"]
+        core["core.md<br/>• Lean Index (&lt; 35 lines)<br/>• Keyword Routing &amp; Triggers"]
+    end
+
+    subgraph L2 ["Level 2: Governance &amp; Task Architecture (Topics - On Demand)"]
+        gov["topics/system_governance.md<br/>• Security &amp; Zero-EOL Baselines<br/>• Anti-Drift Circuit Breakers"]
+        pref["topics/user_preferences.md<br/>• Compute vs Cognition Division<br/>• Non-Abstract Specifications<br/>• Surgical Diffs &amp; ASCII Trees"]
+    end
+
+    subgraph L3 ["Level 3: Implementation Contracts (Templates - Task Scaffolds)"]
+        spec["templates/spec_template.md<br/>• No-Spec-No-Code Contract"]
+        radar["templates/senior_coding_laws.md<br/>• Clean Code 5-Step Radar"]
+        data["templates/SKILL_DATA_SPEC.md<br/>• Flat List &amp; O(1) Indexing"]
+        vibe["templates/vibe_skill_lifecycle.md<br/>• 4-Step Build &amp; 5 Traps"]
+    end
+
+    core ==>|Security Triggers| gov
+    core ==>|Task Architecture| pref
+    core -->|Contract Scaffolds| spec
+    core -->|Refactoring Hygiene| radar
+    core -->|Data Taxonomy| data
+    core -->|Skill Evolution| vibe
+```
 
 ---
 
 ## 2. Component Directory & Responsibilities
 
-### Global System Governance (`topics/`)
+### Global System Governance & Preferences (`topics/`)
 
 | Topic | File | Core Responsibility & Boundary |
 |---|---|---|
-| **System Governance** | [`topics/system_governance.md`](topics/system_governance.md) | **Security & Runtime Guardrails**: OWASP/CIS standards, proven cryptography (AES-GCM, Ed25519, TLS 1.3), Zero-EOL runtimes (Python/Node/Go), credential file blacklist (`.ssh`, `.env`), 0-retry auth pause, 7-step debug pause, and pre-delivery machine verification. |
+| **System Governance** | [`topics/system_governance.md`](topics/system_governance.md) | **Security & Runtime Guardrails**: OWASP/CIS standards, proven cryptography (AES-GCM, Ed25519, TLS 1.3), Zero-EOL runtimes (Python/Node/Go), credential file blacklist (`.ssh`, `.env`), 0-retry auth pause, and pre-delivery machine verification. |
+| **User Preferences** | [`topics/user_preferences.md`](topics/user_preferences.md) | **Task Architecture & Formatting**: Compute vs cognition division of labor (Python computes, LLM formats), non-abstract specification purity, and compact output formatting (surgical diffs, ASCII trees). |
 
 ### Reference Templates (`templates/`)
 
@@ -38,10 +60,11 @@ The memory architecture separates system security baselines from implementation 
 
 ```text
 examples/memory/
-├── README.md               # Architecture overview and usage guide
-├── core.md                 # Lean index & user preferences sample (< 35 lines)
-├── topics/                 # Authoritative system governance & security
-│   └── system_governance.md # Security baselines, runtime EOL, & agent execution brakes
+├── README.md               # Architecture overview and hierarchy guide (Mermaid topology)
+├── core.md                 # Lean index & routing table (< 35 lines)
+├── topics/                 # Authoritative system governance & task architecture
+│   ├── system_governance.md # Security baselines, runtime EOL, & agent execution brakes
+│   └── user_preferences.md # Knowledge purity, compute/cognition division & formatting
 └── templates/              # Concrete implementation scaffolds & contracts
     ├── spec_template.md    # 4+1 item specification contract boilerplate
     ├── senior_coding_laws.md # Clean code 5-step engineering radar
@@ -55,24 +78,24 @@ examples/memory/
 
 ### Step 1: Create Memory Directories
 ```bash
-mkdir -p ~/../memory/topics ~/../memory/templates
+mkdir -p ~/.gemini/memory/topics ~/.gemini/memory/templates
 ```
 
 ### Step 2: Deploy Scaffolds
 ```bash
 # Copy core index sample
-cp examples/memory/core.md ~/../memory/core.md
+cp examples/memory/core.md ~/.gemini/memory/core.md
 
-# Copy system governance topic
-cp examples/memory/topics/system_governance.md ~/../memory/topics/
+# Copy system governance topics
+cp examples/memory/topics/*.md ~/.gemini/memory/topics/
 
 # Copy production templates
-cp examples/memory/templates/*.md ~/../memory/templates/
+cp examples/memory/templates/*.md ~/.gemini/memory/templates/
 ```
 
 ### Step 3: Link in System Instructions (`RULE[user_global]`)
 ```markdown
 Persistent Memory Management:
-  - Scope: Use `~/../memory/core.md` as index; workspace data MUST remain in `<workspace>/.memory/project.md`.
+  - Scope: Use `~/.gemini/memory/core.md` as index; workspace data MUST remain in `<workspace>/.memory/project.md`.
   - Load/Save: Read `core.md` at conversation start. Load governance topic and templates on-demand.
 ```
