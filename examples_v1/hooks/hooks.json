@@ -1,0 +1,72 @@
+{
+  "system-survival-guard": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'if grep -Eqi \"(rm\\s+-[a-zA-Z]*r[a-zA-Z]*f|rm\\s+-[a-zA-Z]*f[a-zA-Z]*r|kubectl\\s+delete|drop\\s+database)\"; then echo \"{\\\"decision\\\": \\\"force_ask\\\", \\\"reason\\\": \\\"Destructive command detected. Manual confirmation required.\\\"}\"; else echo \"{\\\"decision\\\": \\\"allow\\\"}\"; fi'",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  },
+  "secret-leak-guard": {
+    "PreToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.gemini/hooks/secret_leak_guard.py",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  },
+  "anti-blind-mutation-guard": {
+    "PreToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.gemini/hooks/anti_blind_mutation.py",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  },
+  "noai-gate": {
+    "PreToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.gemini/hooks/noai_gate.py",
+            "timeout": 2
+          }
+        ]
+      }
+    ]
+  },
+  "post-tool-quality-guard": {
+    "PostToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.gemini/hooks/post_tool_quality_guard.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "hard_buzzwords_zh": [
+    "落地", "賦能", "閉環", "抓手", "打法", "底層邏輯", "雙刃劍",
+    "顆粒度", "復盤", "助力", "深耕細作", "守住底線", "賦能體系",
+    "打透", "倒逼", "沉澱", "體感", "組合拳", "頂層設計", "鏈路",
+    "飛輪效應", "錨定", "牽引", "對標", "接地氣"
+  ],
+  "tech_terms_zh": {
+    "視頻": "影片",
+    "網絡": "網路",
+    "信息": "資訊",
+    "屏幕": "螢幕",
+    "芯片": "晶片",
+    "軟件": "軟體",
+    "硬件": "硬體",
+    "內存": "記憶體",
+    "默認": "預設",
+    "接口": "介面",
+    "調試": "除錯",
+    "服務器": "伺服器",
+    "數據庫": "資料庫",
+    "算法": "演算法",
+    "登錄": "登入",
+    "用戶": "使用者",
+    "部份": "部分",
+    "成份": "成分",
+    "計劃": "計畫",
+    "借口": "藉口",
+    "憑借": "憑藉",
+    "收迄": "收訖",
+    "投標需知": "投標須知",
+    "答復": "答覆",
+    "賬戶": "帳戶",
+    "結賬": "結帳",
+    "代碼": "程式"
+  },
+  "contextual_whitelists_zh": {
+    "佈局": "(?:CSS|css|網格|版面|介面|UI|畫布|晶片|電路|PCB|layout|Layout)\\s*佈局|佈局\\s*(?:元件|模組|設計|規劃)",
+    "維度": "(?:資料庫|數據|多維度|特徵|向量|空間|分析|報表|指標|維度表)\\s*維度|維度\\s*(?:模型|分析|表|削減)",
+    "打造": "打造\\s*(?:CI/CD|pipeline|系統|環境|工具|架構|模組|平台|測試鏈)"
+  },
+  "formulaic_patterns_zh": [
+    {
+      "label": "破折號（——）",
+      "regex": "—{1,2}|――"
+    },
+    {
+      "label": "自問自答設問句",
+      "regex": "(這意味著什麼|這究竟意味著|這背後意味著|難道不是|何嘗不是)[？?]"
+    },
+    {
+      "label": "刻意對比遞進（不是…而是／不只…更是）",
+      "regex": "不(是|只|僅|僅僅|只是|單是)[^，。！？]{2,25}(而是|更是|還是)|並非[^，。！？]{2,25}而是"
+    },
+    {
+      "label": "深入套話（深入分析／深入挖掘）",
+      "regex": "深入(探討|挖掘|分析|剖析|洞察|了解|研究)"
+    },
+    {
+      "label": "宏大時代開場",
+      "regex": "隨著[^，。]{2,20}(?:發展|進步|普及|崛起|演進)|在(?:當今|這個)[^，。]{2,15}(?:時代|浪潮|背景)|身處[^，。]{2,12}時代"
+    },
+    {
+      "label": "空洞分析收尾",
+      "regex": "(具有|有著)[^，。]{0,6}(重要意義|價值|作用)|(展現|體現|彰顯)了[^，。]{0,8}(重視|決心)|未來(前景)?(可期|大有可為)|標誌著[^，。]{2,15}(?:到來|突破|里程碑)|(?:織就|繪就|譜寫)[^，。]{0,8}(?:畫卷|篇章|圖景|織錦)"
+    },
+    {
+      "label": "宣告式口癖（值得注意的是）",
+      "regex": "值得(注意|一提|關注)的是|需要(注意|指出)的是|不可否認"
+    },
+    {
+      "label": "總結性空話（綜上所述／總的來說）",
+      "regex": "綜上所述|總的來說|總而言之|整體而言|由此可見|簡而言之|(?:機遇與挑戰並存|既是機遇也是挑戰|各有(?:優缺點|利弊)|見仁見智)"
+    }
+  ],
+  "patterns_en": [
+    {
+      "label": "em dash (—)",
+      "regex": "—"
+    },
+    {
+      "label": "canned openings & filler preambles (In today's fast-paced / I hope this email / It is important)",
+      "regex": "\\b(I hope this (email|message) finds you well|look no further( than)?|without further ado)\\b|\\b[Ii]n (today'?s?|this|an?)\\s+(?:(?:fast-paced|rapidly changing|ever-evolving|constantly shifting|interconnected|dynamic|digital|modern)\\s+)+(world|era|landscape|age)\\b|[Ii]t('s| is| should be) ((important|worth|crucial|vital|essential) (to note|noting|mentioning|remembering)|(worth noting|worth mentioning))"
+    },
+    {
+      "label": "LLM corporate overdrive verbs (delve/spearhead/bolster/catalyze/streamline)",
+      "regex": "\\b(delv\\w+|leverag\\w+|underscor\\w+|harness\\w*|foster\\w*|streamlin\\w+|navigat\\w+|utiliz\\w+|facilitat\\w+|empower\\w*|spearhead\\w*|bolster\\w*|catalyz\\w+)\\b"
+    },
+    {
+      "label": "puffery adjectives & buzzword metaphors (pivotal/seamless/multifaceted/paradigm shift/tapestry)",
+      "regex": "\\b(pivotal|seamless|multifaceted|bespoke|holistic|burgeoning|robust)\\b|\\btestament to\\b|\\bbeacon of\\b|\\btapestry\\b|\\bparadigm shift\\b|\\bcornerstone\\b"
+    },
+    {
+      "label": "negative contrast setup (not just X but Y / not merely A but rather B)",
+      "regex": "\\bnot (just|only|merely|simply)\\b[^.;!?]{0,50}\\bbut\\b"
+    }
+  ]
+}
