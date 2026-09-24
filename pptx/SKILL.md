@@ -6,7 +6,10 @@ dependencies: [pptx, PIL, resvg_py, defusedxml, lxml]
 
 # PPTX Creation, Editing, and Visual Analysis
 
-- All layout schemas, theme tables, 2-dimension icon catalogs, decision matrices, and API signatures are consolidated in **`references/pptx_layouts.md`** (DO NOT inspect `scripts/layout_engine.py` source code).
+## Objective
+Provide automated, high-density, and proof-led 16:9 presentation generation and editing using the 9 core visual primitives, ratio solver, and atomic drawing engine.
+
+- All design tokens, ratio scales, and primitive signatures are consolidated in **`references/pptx_layouts.md`** (DO NOT inspect `scripts/layout_engine.py` source code).
 
 ## Execution Workflow (4-Step Pipeline)
 
@@ -18,11 +21,12 @@ dependencies: [pptx, PIL, resvg_py, defusedxml, lxml]
 - **Proof-Led Visuals & Integrity**: 1 Primary Claim per slide → 1~3 Distinct Evidence Points (avoid forcing 3 equal cards) → Proven via 4 Visual Pillars (Cards, Diagrams, Charts, Tables) → Traceable Data (zero fabricated metrics or unbacked causality).
 
 ### Step 3: Semantic Intent, Layout & Icon Mapping
-- Map each slide's business intent to Single-Layer or Multi-Layer composable grid architectures (Flows, Bento Cards, Charts, Image Slots, KPIs, Tables).
+- Map each slide's business intent to one of the 9 Core Visual Primitives (`PPTXPatterns` in `scripts/pptx_patterns.py`) or composable grid layers.
+- For architecture/topology diagrams, load Mermaid archetypes from `scripts/preview_archetypes.json` and embed via `diagram_slide`.
 - Assign intuitive semantic icon keywords (e.g. `icon: "shield"`, `icon: "server"`, `icon: "trend"`, `icon: "database"`) or preserve 1:1 original image assets. The Python engine automatically resolves SVG assets via backend fuzzy mapping and renders physical vector icons via `resvg_py`.
 - Apply standard BMP symbols (e.g. `• ★`, `• ✓`, `• ✖`) strictly as inline auxiliary scan cues (never substituting for physical card icons); 4-byte SMP emojis are strictly prohibited.
 
 ### Step 4: Scripted Generation & Fast QA
-- Run Python generation script via `PPTXLayoutEngine` saving deliverable to `~/Downloads/<deck_name>.pptx`.
+- Run Python generation script via `PPTXLayoutEngine` and `PPTXPatterns` saving deliverable to `~/Downloads/<deck_name>.pptx`.
 - Execute lightweight validation: `python3 <skill_dir>/scripts/office/validate.py <output_path>`.
 - Report the final file link and layout summary to the user.

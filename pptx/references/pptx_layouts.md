@@ -1,6 +1,6 @@
-# PPTX Composable Layout & UI Specification (`pptx_layouts.md`)
+# PPTX Visual Design & Layout Specification (`pptx_layouts.md`)
 
-Single Source of Truth (SSOT) for design tokens, dynamic geometry solver, declarative layout engine, and editorial vector diagram patterns.
+Single Source of Truth (SSOT) for design tokens, typography rules, container ratios, and the 9 core visual primitives.
 
 ---
 
@@ -19,7 +19,7 @@ Loaded centrally from `scripts/themes.json`.
 ---
 
 ## 2. Ratio-Aware Containers & Icons
-Icons load automatically from `assets/icons/` via engine backend semantic mapping (or 1:1 image bytes). AI specifies intuitive icon keywords (`icon: "shield"`, `icon: "server"`).
+Icons load automatically from `assets/icons/` via engine backend semantic mapping. Specify intuitive icon keywords (`icon: "shield"`, `icon: "server"`).
 
 | Aspect Ratio | Dimensions | Morphology | Role / Best For |
 |---|---|---|---|
@@ -30,82 +30,39 @@ Icons load automatically from `assets/icons/` via engine backend semantic mappin
 
 ---
 
-## 3. Core Engine Invocations & Composable Slide API
-
-### 3.1 Lifecycle & Execution Template
+## 3. Execution Template
 
 ```python
 import sys
 from pathlib import Path
 
-# Dynamically resolve <skill_dir>/scripts
-_SCRIPTS_DIR = Path("~/.gemini/config/skills/pptx/scripts").expanduser()
+_SCRIPTS_DIR = Path(__file__).resolve().parent / "scripts"
 if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from layout_engine import PPTXLayoutEngine
+from pptx_patterns import PPTXPatterns
 
-# 1. Initialize Engine (themes: 'dark', 'light', 'yellow')
 engine = PPTXLayoutEngine(theme="dark", font="Noto Sans TC")
+p = PPTXPatterns
 
-# 2. Build Slides Declaratively
-engine.create_slide(
-    title="Main Title (100% Full Width)", subtitle="Subtitle | Project Date",
-    layers=[
-        # Layer 1: Horizontal SOP Flow (height=1.5")
-        {"height": 1.5, "section_tag": "Process Analysis", "content": {"type": "flow", "steps": [
-            {"step": "STEP 01", "title": "Scan Vulnerabilities", "icon": "key", "color": engine.t["a"]},
-            {"step": "STEP 02", "title": "Verify Remediation", "icon": "radar", "color": engine.t["p"]}
-        ]}},
-        # Layer 2: Multimodal Multi-Column Grid (height=3.8")
-        {"height": 3.8, "section_tag": "Remediation & Evidence", "cols": [
-            [card1_dict, card2_dict, card3_dict],               # Col 1: Layer Stack / Tiered Cards
-            {"type": "image", "source": img1, "caption": "..."}, # Col 2: Contain-scaled Image / Vector Slot
-            {"type": "image", "source": img2, "caption": "..."}  # Col 3: Contain-scaled Image / Vector Slot
-        ]}
-    ]
-)
-
-# 3. Save Output Deck
-output_path = engine.save("~/Downloads/presentation_name.pptx")
+# Build slides using the 9 Core Primitives (or raw engine.create_slide for custom geometry)
+p.add_card_grid(engine, title="Title", subtitle="Subtitle", cards=[...])
+engine.save("~/Downloads/presentation_name.pptx")
 ```
 
 ---
 
-## 4. The 4 Core Visual Pillars (Cards, Diagrams, Charts, Tables)
+## 4. The 9 Core Visual Primitives (Implemented in `scripts/pptx_patterns.py`)
 
-All layouts and components in `/pptx` map directly to one of the 4 fundamental visual pillars:
-
-### 4.1 Pillar 1: Cards (Structured Content & Containers)
-Focuses on structured business text, policy clauses, and decision frameworks. Rendered using 100% native editable PowerPoint shapes.
-
-| Card Pattern | Declarative `engine.create_slide(...)` Configuration | Description & Structure |
-|---|---|---|
-| **Executive Bento** | `layers=[{"height": 2.7, "cols": [3 Cards]}, {"height": 2.3, "cols": [2 Metrics]}]` | Top-level management overview: upper strategic pillars + lower quantified big-number metric cards. |
-| **Quadrant Matrix (2x2)** | `layers=[{"height": 2.5, "section_tag": "▲ High Impact", "cols": [p0_card, p1_card]}, {"height": 2.5, "section_tag": "▼ Low Impact", "cols": [p2_card, p3_card]}]` | Strategic 2x2 decision grid: cost vs benefit priority quadrants (P0/P1/P2/P3). |
-| **Split Compare / Layer Stack** | `layers=[{"height": 5.2, "cols": [left_panel, right_panel], "weights": [1.2, 1.0]}]` | Balanced dual containers: Before vs After, Problem vs Solution, or tiered vertical feature stack. |
-
-### 4.2 Pillar 2: Diagrams (Topology, Geometry & Process)
-Focuses on system logic, architectures, and process flows. Rendered following Swiss editorial standards (orthogonal routing, strictly 1-2 focal accents, font size `>= 14.5pt`).
-
-| Diagram Pattern | Declarative Configuration / Pipeline | Description & Visual Rules |
-|---|---|---|
-| **Editorial Tree** | `layers=[{"height": 5.2, "cols": [{"type": "image", "source": tree_vector, "caption": "..."}]}]` | Structural hierarchy: top root node + orthogonal 90° T-split branches + leaf detail cards. |
-| **Editorial Timeline** | `layers=[{"height": 5.2, "cols": [{"type": "image", "source": timeline_vector, "caption": "..."}]}]` | Temporal evolution: central horizontal baseline + alternating milestone cards. |
-| **SOP Pipeline** | `layers=[{"content": {"type": "flow", "steps": [...]}}]` | Linear operational procedure: horizontal pipeline steps, status indicators, and transition arrows. |
-
-### 4.3 Pillar 3: Charts (Quantitative Metrics & Gauges)
-Focuses on data comparisons, SLA completion rates, and quantified scorecards.
-
-| Chart Pattern | Declarative Slot Configuration | Description & Visual Rules |
-|---|---|---|
-| **KPI Big Numbers** | `{"type": "kpi", "label": "...", "val": "2.4M", "chg": "▲ +12%", "icon": "gauge"}` | High-level 24~28pt quantified metrics with trend cues and auxiliary notes. |
-| **Bento Bars** | `{"type": "bars", "bars": [["Group A", 98.5], ["Group B", 92.0]], "insight": "..."}` | Comparative horizontal value bars with insight callout badge. |
-| **Donut & Progress Gauges** | `{"type": "donut", "val": 96.5, "icon": "shield-check"}` / `{"type": "progress", "val": 85}` | Circular percentage completion rings and linear progress bars. |
-
-### 4.4 Pillar 4: Tables (Two-Dimensional Matrices & Structured Logs)
-Focuses on feature comparisons, status summaries, and operational registries with zebra striping.
-
-| Table Pattern | Declarative Slot Configuration | Description & Visual Rules |
-|---|---|---|
-| **Zebra Data Matrix** | `{"type": "table", "headers": ["Col 1", "Col 2"], "rows": [["A1", "B1"], ["A2", "B2"]], "zebra": True}` | Clean multi-column matrix with auto-aligned alternating row fills. |
+| # | Primitive | `PPTXPatterns` Function | Description & Slot Requirements |
+|---|---|---|---|
+| 1 | **KPI Row** | `p.add_kpi_row(engine, ...)` | 3 metric badges with delta indicators. (`metrics=[{"label", "val", "chg", "icon", "note"}]`) |
+| 2 | **Card Grid** | `p.add_card_grid(engine, ...)` | 3 or 4 column pillar capability cards. (`cards=[{"title", "tag", "icon", "body"}]`) |
+| 3 | **Split Row** | `p.add_split_row(engine, ...)` | 50/50 comparison & boundary isolation. (`left_card={...}, right_card={...}`) |
+| 4 | **Anchor Card** | `p.add_anchor_card(engine, ...)` | Top central mandate + bottom modular cards. (`anchor_card={...}, sub_cards=[...]`) |
+| 5 | **Pipeline Flow** | `p.add_pipeline_flow(engine, ...)` | 4 horizontal sequential SOP steps. (`steps=[{"step", "title", "icon", "color"}]`) |
+| 6 | **Checklist Grid** | `p.add_checklist_grid(engine, ...)` | Dual-gate verification readiness. (`left_gate={...}, right_gate={...}`) |
+| 7 | **Matrix** | `p.add_matrix(engine, ...)` | 2x2 impact vs cost decision quadrants. (`high_impact_cards=[...], low_impact_cards=[...]`) |
+| 8 | **Table Slide** | `p.add_table_slide(engine, ...)` | Structured registry with zebra striping. (`headers=[...], rows=[...], zebra=True`) |
+| 9 | **Diagram Slide** | `p.add_diagram_slide(engine, ...)` | Dedicated slot for Mermaid vector diagrams. (`image_source="...", caption="..."`) |
