@@ -70,9 +70,11 @@ class PPTXPatterns:
         return engine.create_slide(title=title, subtitle=subtitle, layers=[{"height": layer_height, "section_tag": high_tag, "weights": w, "cols": high_impact_cards}, {"height": layer_height, "section_tag": low_tag, "weights": w, "cols": low_impact_cards}])
 
     @staticmethod
-    def add_table_slide(engine: PPTXLayoutEngine, title: str, subtitle: str, headers: List[str], rows: List[List[Any]], zebra: bool = True, height: float = 5.0) -> Any:
-        """8. table_slide: Structured two-dimensional data matrix with optional zebra striping."""
-        return engine.create_slide(title=title, subtitle=subtitle, layers=[{"height": height, "cols": [{"type": "table", "headers": headers, "rows": rows, "zebra": zebra}]}])
+    def add_table_slide(engine: PPTXLayoutEngine, title: str, subtitle: str, headers: List[str], rows: List[List[Any]], col_weights: Optional[List[float]] = None, zebra: bool = True, height: float = 5.0) -> Any:
+        """8. table_slide: Structured two-dimensional data matrix with optional col_weights & zebra striping."""
+        tbl: Dict[str, Any] = {"type": "table", "headers": headers, "rows": rows, "zebra": zebra}
+        if col_weights: tbl["col_weights"] = col_weights
+        return engine.create_slide(title=title, subtitle=subtitle, layers=[{"height": height, "content": tbl}])
 
     @staticmethod
     def add_diagram_slide(engine: PPTXLayoutEngine, title: str, subtitle: str, image_source: Union[str, Path, bytes], caption: str = "", height: float = 5.2) -> Any:
@@ -161,6 +163,7 @@ def build_demo_deck(theme: str = "dark", output_path: Optional[Path] = None) -> 
             ["Vulnerability", "CVSS 9.0+ hotpatch within 48 hours", "Active Monitoring", "2026-Q2"],
             ["Disaster Recovery", "Daily backup with quarterly drill verification", "Passed Verification", "2026-Q3"]
         ],
+        col_weights=[1.2, 3.2, 1.6, 1.2],
         zebra=True
     )
 
