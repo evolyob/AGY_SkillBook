@@ -3,18 +3,23 @@ name: noai-note
 description: Two-phase executive assistant tool for meeting notes, executive briefs, presentation outlines (PPTX), revision comparison tables, and 1-pager visual blueprints (PDF/DOCX) with Shift-Left Anti-AI filtering.
 metadata:
   task_type: open-ended
+dependencies: []
 ---
 
-# NoAI Note — Universal Executive Assistant & Revision Tool
+# NoAI Note: Universal Executive Assistant & Revision Tool
 
-Two-state pipeline (Phase 1 Collection -> Phase 2 Executive Output).
+## Objective
+Two-state executive pipeline (Phase 1 Collection -> Phase 2 Executive Output) with Shift-Left Anti-AI filtering.
 
 ---
 
-## Control Flow & Pipeline
+## Execution Workflow
 
 ### Phase 1: Zero-Analysis Collection
 - **Default State**: Set `current_state = 'collection'`.
+- **Multi-File & Transcript Ingestion**: For multi-file inputs (.xlsx, .pdf, .docx, .html, .md, .txt) or long transcripts, run:
+  `python3 scripts/ingest.py file1.xlsx file2.pdf -o scratch/stream.txt`
+  to strip formatting noise, table padding, and speech fillers into an ephemeral text stream before analysis.
 - **Execution Rules**: Parse explicit facts only (zero extrapolation). Omit missing fields without placeholders.
 - **Workflow**: Append key points chronologically and render **Collection Template** from `[templates.md](references/templates.md)`.
 
