@@ -122,84 +122,56 @@ def report_detox(res: Dict[str, Any]) -> str:
 
 # --- 2. Gate 1 Standup Test Engine ---
 
-TECHNICAL_WHITELISTS = {
-    "佈局": [r"(?:CSS|css|網格|版面|介面|UI|畫布|晶片|電路|PCB|layout|Layout)\s*佈局", r"佈局\s*(?:元件|模組|設計|規劃)"],
-    "維度": [r"(?:資料庫|數據|多維度|特徵|向量|空間|分析|報表|指標|維度表)\s*維度", r"維度\s*(?:模型|分析|表|削減)"],
-    "打造": [r"打造\s*(?:CI/CD|pipeline|系統|環境|工具|架構|模組|平台|測試鏈)"],
-}
+def is_whitelisted(term: str, text: str, whitelists: Dict[str, List[str]] = None) -> bool:
+    if whitelists is None:
+        whitelists = load_rules("zhtw").get("technical_whitelists", {})
+    return any(re.search(pat, text, re.I) for pat in whitelists.get(term, []))
 
 
-def is_whitelisted(term: str, text: str) -> bool:
-    if term not in TECHNICAL_WHITELISTS:
-        return False
-    for pattern in TECHNICAL_WHITELISTS[term]:
-        if re.search(pattern, text, re.I):
-            return True
-    return False
-
-
-def run_gate1(title_or_assertion: str) -> Dict[str, Any]:
+def run_gate1(title_or_assertion: str, rules: Dict[str, Any] = None) -> Dict[str, Any]:
     text = title_or_assertion.strip()
     circuit_broken, reasons = False, []
+    rules = rules or load_rules("zhtw")
+    g1 = rules.get("gate1_rules", {})
+    whitelists = rules.get("technical_whitelists", {})
 
     # 1. PR Formula Pattern checks
-    pr_patterns = [
-        (r"以.+搭配.+落實", "對稱式公關口號（以...搭配...落實...）"),
-        (r"透過.+旨在.+進而", "公關遞進套話（透過...旨在...進而...）"),
-        (r"全面(提升|打造|推動|深化|落實|賦能)", "空洞公關動詞（全面...）"),
-        (r"[？?]|這意味著什麼", "自問自答反問句"),
-    ]
-    for pattern, desc in pr_patterns:
-        if re.search(pattern, text):
-            reasons.append(f"發現{desc}")
+    for item in g1.get("pr_patterns", []):
+        if re.search(item["regex"], text):
+            reasons.append(f"發現{item['desc']}")
             circuit_broken = True
 
-    # 破折號動態預算：單一破折號可作為合法副標題或附註，僅阻斷 2 組以上過度使用
-    dashes = len(re.findall(r"—{1,2}|――", text))
-    if dashes >= 2:
-        reasons.append("發現過度使用破折號（≥2 組，易流於公關套路炫技）")
+    # 破折號動態預算：單一破折號可作為合法副標題或附註，僅阻斷超過門檻之使用
+    dash_limit = g1.get("dash_threshold", 2)
+    if len(re.findall(r"—{1,2}|――", text)) >= dash_limit:
+        reasons.append(f"發現過度使用破折號（≥{dash_limit} 組，易流於公關套路炫技）")
         circuit_broken = True
 
-    # 2. Strict Buzzwords (Always unacceptable in executive/engineering notes)
-    strict_banned = ["賦能", "閉環", "打法", "抓手", "賦能體系", "守住底線", "深耕細作"]
-    found_strict = [b for b in strict_banned if b in text]
+    # 2. Strict Buzzwords
+    found_strict = [b for b in g1.get("strict_banned", []) if b in text]
     if found_strict:
         reasons.append(f"包含空洞公關詞彙 [{', '.join(found_strict)}]")
         circuit_broken = True
 
-    # 3. Contextual Buzzwords (Checked against technical whitelist)
-    contextual_banned = ["痛點", "心智", "壁壘", "佈局", "維度", "打造"]
-    found_contextual = []
-    for term in contextual_banned:
-        if term in text and not is_whitelisted(term, text):
-            found_contextual.append(term)
-    if found_contextual:
-        reasons.append(f"包含易流於空泛的詞彙（若屬技術專有名詞請明確標示上下文）[{', '.join(found_contextual)}]")
+    # 3. Contextual Buzzwords (Checked against technical whitelist from SSOT JSON)
+    found_ctx = [
+        term for term in g1.get("contextual_banned", [])
+        if term in text and not is_whitelisted(term, text, whitelists)
+    ]
+    if found_ctx:
+        reasons.append(f"包含易流於空泛的詞彙（若屬技術專有名詞請明確標示上下文）[{', '.join(found_ctx)}]")
         circuit_broken = True
 
-    # 4. Metric Check (Discriminate performance/operational metrics from calendar timestamps)
-    metric_regex = (
-        r"(?:\d+(?:\.\d+)?\s*(?:%|倍|ms|毫秒|秒|QPS|TPS|GB|TB|MB|KB|筆|次|件|元|萬|億)"
-        r"|(?<!\b19\d\d)(?<!\b20\d\d)(?:縮短|耗時|節省|提升|降低)\s*\d+\s*(?:天|日|小時|分|週|個月)"
-        r"|SLA|KPI|P99|P95|P50|ROI|MTTR|MTBF)"
-    )
-    has_metric = bool(re.search(metric_regex, text, re.I))
-
-    # 5. Action Check (Broadened across Engineering, Architecture, DevOps, Governance, and Operations)
-    action_regex = (
-        r"修復|遷移|重構|隔離|部署|替換|上線|降低|減少|縮短|提升|限制|攔截|阻斷|消除|清理|收斂|整併|監控|"
-        r"核准|裁決|簽署|驗收|採購|預算|撥款|調配|發布|定案|修訂|終止|展延|合規|審查|盤點|交付|"
-        r"取消|廢止|改由|導入|轉移|重寫|剔除|升級|解耦|重組|實作|整合|對齊|抽換|切換|啟用|停用|優化|快取|調校|歸檔|備份"
-    )
-    has_action = bool(re.search(action_regex, text))
+    # 4. Metric & Action Checks
+    has_metric = bool(re.search(g1.get("metric_regex", ""), text, re.I)) if g1.get("metric_regex") else False
+    has_action = bool(re.search(g1.get("action_regex", ""), text)) if g1.get("action_regex") else False
 
     if not has_metric and not has_action and not circuit_broken:
         reasons.append("缺乏明確決策/工程動作或量化驗證數據，建議補充具體成果。")
 
-    passed = not circuit_broken and (has_metric or has_action)
     return {
         "text": text,
-        "passed": passed,
+        "passed": not circuit_broken and (has_metric or has_action),
         "circuit_broken": circuit_broken,
         "has_metric": has_metric,
         "has_action": has_action,
