@@ -1,0 +1,235 @@
+#!/usr/bin/env python3
+"""Unified Ingester for deep-mod: Read -> Clean -> Chunk -> Output (Streamlined)."""
+import argparse, html, json, re, sys, unicodedata, urllib.request, zipfile
+import xml.etree.ElementTree as ET
+from urllib.parse import urlparse
+from pathlib import Path
+
+RULES_FILE = Path(__file__).resolve().parent.parent / "data" / "chapter_rules.json"
+if not RULES_FILE.exists(): RULES_FILE = Path(__file__).resolve().parent / "chapter_rules.json"
+RULES_DATA = json.loads(RULES_FILE.read_text(encoding="utf-8")) if RULES_FILE.exists() else {}
+
+SANITIZATION = RULES_DATA.get("sanitization", {})
+CLEAN_PATTERN = re.compile(f"{SANITIZATION.get('invisibles', '')}|{SANITIZATION.get('pages', '')}", re.MULTILINE)
+
+LIMITS = RULES_DATA.get("limits", {})
+SUPPORTED_EXTS = set(LIMITS.get("supported_exts", [".docx", ".pdf", ".md", ".txt", ".xlsx", ".html"]))
+CHUNK_LINES = LIMITS.get("chunk_lines", 800)
+CHUNK_STEP = LIMITS.get("chunk_step", 750)
+MAX_STREAM_TOKENS = LIMITS.get("max_stream_tokens", 10000)
+
+CHAPTER_PATTERN = re.compile(RULES_DATA.get("pattern", r'^(?:#\s+|第\s*\d+\s*章\s*|Chapter\s+\d+[:\s]+)(.+)$'), re.MULTILINE | re.IGNORECASE)
+TAXONOMY = RULES_DATA.get("taxonomy", {})
+INDEXING = RULES_DATA.get("indexing", {})
+KEY_PATTERNS = [re.compile(p) for p in INDEXING.get("key_elements_patterns", [])]
+MAX_KEY_ELEMENTS = INDEXING.get("max_key_elements_per_chunk", 8)
+SUMMARY_LINES = INDEXING.get("summary_lines", 3)
+
+
+def parse_html(raw: str) -> str:
+    """Strip web clutter and elevate headings to Markdown anchors."""
+    t = re.sub(r'<(script|style|nav|header|footer)[^>]*>.*?</\1>', '', raw, flags=re.DOTALL | re.IGNORECASE)
+    t = re.sub(r'<h[1-6][^>]*>(.*?)</h[1-6]>', r'\n# \1\n', t, flags=re.DOTALL | re.IGNORECASE)
+    return html.unescape(re.sub(r'<[^>]+>', ' ', t))
+
+
+def read_raw(p: Path) -> str:
+    """Format ingestion with explicit EPUB rejection and batch resilience."""
+    ext = p.suffix.lower()
+    if ext == ".epub":
+        raise ValueError(f"EPUB format is not supported: {p.name}")
+    if ext == ".docx":
+        with zipfile.ZipFile(p) as z:
+            tree = ET.fromstring(z.read("word/document.xml"))
+            ns = {"w": "http" + chr(58) + chr(47) + chr(47) + "schemas.openxmlformats.org/wordprocessingml/2006/main"}
+            return "\n".join("".join(t.text for t in n.findall(".//w:t", ns) if t.text) for n in tree.findall(".//w:p", ns))
+    if ext == ".xlsx":
+        try:
+            import openpyxl
+            wb = openpyxl.load_workbook(p, data_only=True, read_only=True)
+            lines = [f"# Sheet: {s}\n" + "\n".join(" | ".join(str(v).strip() for v in r if v is not None and str(v).strip()) for r in wb[s].iter_rows(values_only=True) if any(r)) for s in wb.sheetnames]
+            return "\n".join(lines)
+        except ImportError:
+            sys.stderr.write("Warning: openpyxl not installed. Skipping XLSX parsing.\n")
+            return ""
+    if ext == ".pdf":
+        try:
+            import pypdf
+            return "\n".join(pg.extract_text() or "" for pg in pypdf.PdfReader(str(p)).pages)
+        except Exception as e:
+            sys.stderr.write(f"Warning: Failed to extract PDF {p.name}: {e}\n")
+            return ""
+    if ext in (".md", ".txt", ".html"):
+        content = p.read_text(encoding="utf-8-sig", errors="replace")
+        return parse_html(content) if ext == ".html" else content
+    return ""
+
+
+def clean_text(raw: str) -> str:
+    """Single-pass sanitization: NFKC normalization, hyphen rejoining, and noise removal."""
+    if not raw: return ""
+    text = re.sub(r'(\b[A-Za-z]+)-\n([A-Za-z]+\b)', r'\1\2', unicodedata.normalize("NFKC", raw))
+    return "\n".join(line.strip() for line in CLEAN_PATTERN.sub("", text).splitlines() if line.strip())
+
+
+def extract_index_metadata(content: str) -> tuple[str, list[str]]:
+    """Extract summary line and unique key elements for progressive disclosure."""
+    lines = [ln.strip() for ln in content.splitlines() if ln.strip() and not ln.strip().startswith("#")]
+    summary = " ".join(lines[:SUMMARY_LINES])[:200]
+    keys: list[str] = []
+    for pat in KEY_PATTERNS:
+        matches = [m.group(1).strip() for m in pat.finditer(content) if m.group(1).strip()]
+        for k in matches:
+            if k not in keys: keys.append(k)
+            if len(keys) >= MAX_KEY_ELEMENTS: break
+        if len(keys) >= MAX_KEY_ELEMENTS: break
+    return summary, keys
+
+
+def chunk_sliding_window(text: str, source: str) -> list[dict]:
+    """Fallback chunking with 800-line window and 50-line overlap for unsegmented texts."""
+    lines = text.splitlines()
+    total = len(lines)
+    if total <= CHUNK_LINES:
+        summary, keys = extract_index_metadata(text)
+        return [{"source": source, "chapter": "Full Document", "content": text, "start_line": 1, "end_line": total, "id": "part_01", "aliases": ["Full Document"], "summary": summary, "key_elements": keys}]
+    chunks = []
+    for idx, start_idx in enumerate(range(0, total, CHUNK_STEP), 1):
+        end_idx = min(start_idx + CHUNK_LINES, total)
+        c_text = "\n".join(lines[start_idx:end_idx])
+        summary, keys = extract_index_metadata(c_text)
+        chunks.append({
+            "source": source, "chapter": f"Part {idx:02d} (Lines {start_idx+1}-{end_idx})",
+            "content": c_text, "start_line": start_idx + 1, "end_line": end_idx,
+            "id": f"part_{idx:02d}", "aliases": [f"Part {idx}", f"第{idx}批次"],
+            "summary": summary, "key_elements": keys
+        })
+        if end_idx >= total: break
+    return chunks
+
+
+def resolve_taxonomy(title: str, idx: int) -> tuple[str, list[str]]:
+    """Match title against TAXONOMY to assign semantic ID and aliases."""
+    for keyword, meta in TAXONOMY.items():
+        if keyword.lower() in title.lower():
+            prefix = meta["prefix"]
+            aliases = [title] + [a.format(idx=idx) for a in meta.get("aliases", [])]
+            return f"{prefix}_{idx:02d}", list(dict.fromkeys(aliases))
+    return f"ch_{idx:02d}", [title, f"Chapter {idx}", f"第{idx}單元"]
+
+
+def chunk_chapters(text: str, source: str) -> tuple[list[dict], bool]:
+    """Segment text by dynamic patterns or fallback to sliding window."""
+    matches = list(CHAPTER_PATTERN.finditer(text))
+    if not matches:
+        return chunk_sliding_window(text, source), False
+
+    chunks = []
+    for i, m in enumerate(matches, 1):
+        start = m.end()
+        end = matches[i].start() if i < len(matches) else len(text)
+        title = m.group(0).strip("# ").strip()
+        body = text[start:end].strip()
+        cid, aliases = resolve_taxonomy(title, i)
+        summary, keys = extract_index_metadata(body)
+        chunks.append({
+            "source": source, "chapter": title, "content": body,
+            "start_line": text[:m.start()].count("\n") + 1, "end_line": text[:end].count("\n") + 1,
+            "id": cid, "aliases": aliases, "summary": summary, "key_elements": keys
+        })
+    return chunks, True
+
+
+
+def safe_collect_files(inp: Path) -> list[Path]:
+    """Collect valid files with directory traversal guard."""
+    if inp.is_file():
+        if inp.suffix.lower() == ".epub": raise ValueError(f"EPUB format is not supported: {inp.name}")
+        return [inp] if inp.suffix.lower() in SUPPORTED_EXTS else []
+    return [p for p in sorted(inp.rglob("*")) if p.is_file() and p.suffix.lower() in SUPPORTED_EXTS] if inp.is_dir() else []
+
+
+def main():
+    p = argparse.ArgumentParser(description="Parse, clean, and chunk documents for deep-mod")
+    p.add_argument("input", help="Target file, directory, or URL")
+    p.add_argument("--format", choices=["stream", "json"], default="stream")
+    p.add_argument("-o", "--output", help="Destination file path")
+    p.add_argument("--split-dir", help="Directory to export chapter files")
+    p.add_argument("--list-only", action="store_true", help="List chapters and tokens only")
+    args = p.parse_args()
+
+    inp_str = args.input.strip()
+    u = urlparse(inp_str)
+    if u.scheme == "http":
+        sys.exit("Error: Insecure HTTP is prohibited; only https is allowed.")
+    if u.scheme == "https":
+        req = urllib.request.Request(inp_str, headers={"User-Agent": "deep-mod/1.0"})
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                raw = parse_html(resp.read().decode("utf-8", errors="replace"))
+            records, all_matched = chunk_chapters(clean_text(raw), inp_str)
+        except Exception as e:
+            sys.exit(f"Error fetching HTTPS URL: {e}")
+    else:
+        inp = Path(inp_str).resolve()
+        try:
+            files = safe_collect_files(inp)
+        except ValueError as err:
+            sys.exit(f"Error: {err}")
+        if not files: sys.exit(f"No valid documents found in: {inp}")
+
+        records, all_matched = [], True
+        for f in files:
+            try:
+                if not (raw := read_raw(f)): continue
+                chunks, matched = chunk_chapters(clean_text(raw), f.name)
+                if not matched: all_matched = False
+                records.extend(chunks)
+            except Exception as e:
+                sys.stderr.write(f"Warning: Skipping unreadable file {f.name}: {e}\n")
+    if not records: sys.exit("Error: No content could be extracted from input files.")
+
+    total_chars = sum(len(r["content"]) for r in records)
+    est_tokens = total_chars // 3
+
+    catalog = [
+        {"index": i, "id": r.get("id", f"part_{i:02d}"), "title": r["chapter"], "file": f"{i:02d}_{re.sub(r'[\\\\/*?:\"<>|#\\s]+', '_', r['chapter']).strip('_')}.md",
+         "aliases": r.get("aliases", []), "summary": r.get("summary", ""), "key_elements": r.get("key_elements", []),
+         "lines": r["content"].count("\n") + 3,
+         "source_start_line": r.get("start_line", 1), "source_end_line": r.get("end_line", 1),
+         "est_tokens": len(r["content"]) // 3}
+        for i, r in enumerate(records, 1)
+    ]
+
+    # Priority 1: Export individual files and index.json
+    if args.split_dir:
+        dest_dir = Path(args.split_dir).resolve()
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        for c, r in zip(catalog, records):
+            (dest_dir / c["file"]).write_text(f"# {r['chapter']}\n\n{r['content']}\n", encoding="utf-8-sig")
+        (dest_dir / "data").mkdir(exist_ok=True)
+        (dest_dir / "data" / "index.json").write_text(json.dumps({
+            "total_chunks": len(records), "chunk_mode": "chapter_matched" if all_matched else "sliding_window_overlap",
+            "overlap_lines": 0 if all_matched else (CHUNK_LINES - CHUNK_STEP), "chunks": catalog
+        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"Exported {len(records)} chunks and data/index.json to {dest_dir}")
+        return
+
+    # Priority 2: Large document circuit breaker or list-only flag
+    if args.list_only or est_tokens > MAX_STREAM_TOKENS:
+        if not args.list_only:
+            sys.stderr.write(f"[NOTICE] Large document ({est_tokens} est. tokens > {MAX_STREAM_TOKENS}). Outputting chapter list. Use --split-dir to export.\n")
+        print(json.dumps({"total_est_tokens": est_tokens, "chapters": catalog}, ensure_ascii=False, indent=2))
+        return
+
+    out = json.dumps(records, ensure_ascii=False, indent=2) if args.format == "json" else "\n\n".join(f"=== [SOURCE: {r['source']} | CHAPTER: {r['chapter']}] ===\n{r['content']}" for r in records)
+    if args.output:
+        dest = Path(args.output).resolve()
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(out, encoding="utf-8-sig")
+    else:
+        print(out)
+
+
+if __name__ == "__main__":
+    main()

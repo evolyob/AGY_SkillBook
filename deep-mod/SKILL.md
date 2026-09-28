@@ -1,33 +1,32 @@
 ---
 name: deep-mod
-description: Universal interactive deep research, architecture visualization, and surgical diff review pipeline with Anti-AI enforcement.
+description: Universal interactive deep research, architecture visualization, and surgical skill extraction pipeline with Anti-AI enforcement.
 metadata:
   task_type: open-ended
 dependencies: []
 ---
 
-# Deep Mod: Universal Research, Architecture & Code Review Pipeline
+# Deep Mod: Universal Research, Architecture & Skill Pipeline
 
 ## Objective
-Execute domain-agnostic interactive research, architecture visualization, and code review with Shift-Left Anti-AI enforcement.
+Execute domain-agnostic interactive research, architecture visualization, and skill distillation with Shift-Left Anti-AI enforcement.
 
 ## Execution Workflow
 
-### Step 1: Intake & Intent Routing
-- If input contains review keywords (`diff`, `review`, `架構圖`, `重構`):
-  Execute **Fast-Track**: Ask ONE boundary question, freeze scope, and proceed directly to Step 3 (Branch 2).
-- Otherwise, execute default **Deep Research**:
-  Proceed sequentially through Phase 1 to Phase 3 (ONE Socratic question per turn).
+### Stage 1: Universal Intake (Gate 0)
+- Pre-flight scan via `python3 scripts/ingest.py <input> --list-only` (zero-I/O tokens and chapters).
+- **Fast-Track** (keywords: `diff`, `review`, `架構圖`, `重構`): Stream clean text via `python3 scripts/ingest.py <input> --format stream`, ask ONE boundary question, then jump to Stage 3 Branch 1.
+- For all other requests (including `轉技能`, `提取技能`, or research), proceed to Stage 2.
 
-### Step 2: Investigation (Default Mode Only)
-- Phase 1: Socratic Requirement Clarification (`references/socratic_protocol.md`).
-- Phase 2: Systematic Data Collection & Source Review (`references/search_protocol.md`).
-- Phase 3: Evidence-Based Fact-Checking (`references/fact_check_rules.md`).
+### Stage 2: Universal Clarification Gate (`references/common_gate.md`)
+Execute 3-tier sequential clarification with dynamic recommendations before branching:
+1. **Domain Alignment**: Lock technical/business domain using detected taxonomy and key elements.
+2. **Workflow Clarification**: Clarify runtime lifecycle, procedures, or analysis sequence.
+3. **Delivery Routing**: Route to **Branch 1 (Research & Architecture)** or **Branch 2 (Skill Pipeline)**.
 
-### Step 3: Phase 4 Finalized Output
-Deliver finalized content directly to `~/agy/download/` with Anti-AI verification (`references/synthesis_rules.md`):
-- **Branch 1 (Deep Research)**: Cross-Department Synthesis & Gap Audit Report.
-- **Branch 2 (Architecture & Review)**: Auto-routed sub-track (`references/visual_archetypes.md`):
-  - **B1 (Explore)**: Mermaid topology, sequence diagram, ASCII directory tree, or pseudocode.
-  - **B2 (Diff)**: Before vs After Minimal-Diff + drop-in replacement block.
-  - **B3 (Explain)**: Visual diagram + 3~5 sentence plain-language walkthrough.
+### Stage 3: Finalized Output
+Write deliverables with Anti-AI verification:
+- **Branch 1: Research & Architecture Review** (`references/type_a_research.md`):
+  Verify report via `python3 scripts/noai_gate.py ~/agy/download/<report>.md`.
+- **Branch 2: Agent Skill Directory** (`references/type_b_skill.md`):
+  Partition via `python3 scripts/ingest.py <input> --split-dir <target_dir>`, then audit with `noai_gate.py` and `tests/audit.py`.

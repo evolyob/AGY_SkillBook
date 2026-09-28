@@ -1,0 +1,34 @@
+{
+  "pattern": "^(?:#\\s+|第\\s*[0-9一二三四五六七八九十百\\d]+\\s*[章課節講篇回領域]\\s*[:：\\s]*|(?:Domain|Chapter|Lesson|Lecture|Section|Unit|Module|Part|Task|Case)\\s+\\d+[:：\\s]*|(?:領域|單元|模組|任務|案例)\\s*[0-9一二三四五六七八九十百\\d]+[:：\\s]*)(.+)$",
+  "taxonomy": {
+    "Domain": {"prefix": "domain", "aliases": ["領域 {idx}", "Domain {idx}", "第{idx}領域"]},
+    "領域": {"prefix": "domain", "aliases": ["領域 {idx}", "Domain {idx}", "第{idx}領域"]},
+    "課": {"prefix": "lesson", "aliases": ["第{idx}課", "Lesson {idx}"]},
+    "Lesson": {"prefix": "lesson", "aliases": ["第{idx}課", "Lesson {idx}"]},
+    "講": {"prefix": "lecture", "aliases": ["第{idx}講", "Lecture {idx}"]},
+    "Lecture": {"prefix": "lecture", "aliases": ["第{idx}講", "Lecture {idx}"]},
+    "Task": {"prefix": "task", "aliases": ["任務 {idx}", "Task {idx}"]},
+    "任務": {"prefix": "task", "aliases": ["任務 {idx}", "Task {idx}"]},
+    "Case": {"prefix": "case", "aliases": ["案例 {idx}", "Case {idx}"]},
+    "案例": {"prefix": "case", "aliases": ["案例 {idx}", "Case {idx}"]}
+  },
+  "sanitization": {
+    "invisibles": "[\\u200b-\\u200d\\ufeff\\u2060\\u202a-\\u202e\\u2066-\\u2069\\u000b\\u000c\\u000e-\\u001f\\u007f]|[\\U000e0000-\\U000e007f]|\\ufffd|\\(cid:[0-9]+\\)",
+    "pages": "^\\s*(?:[-—~]*\\s*\\d+\\s*[-—~]*|Page\\s+\\d+(?:\\s*(?:of|/)\\s*\\d+)?|\\d+\\s*/\\s*\\d+)\\s*$"
+  },
+  "limits": {
+    "chunk_lines": 800,
+    "chunk_step": 750,
+    "max_stream_tokens": 10000,
+    "supported_exts": [".docx", ".pdf", ".md", ".txt", ".xlsx", ".html"]
+  },
+  "indexing": {
+    "summary_lines": 3,
+    "key_elements_patterns": [
+      "\\*\\*([^*]{2,30})\\*\\*",
+      "`([^`]{2,30})`",
+      "(?:定義|架構|法則|模式|原則|機制)[：:]\\s*([^\\n,，。]{2,20})"
+    ],
+    "max_key_elements_per_chunk": 8
+  }
+}
