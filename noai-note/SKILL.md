@@ -39,4 +39,4 @@ Triggered ONLY on explicit finalization commands (options 2~5 or keywords `хоЪчи
    Execute `python3 scripts/scan.py --text "<finalized_text>"`. If flagged, follow the script's prescription to rewrite the offending sentence/paragraph. Never load JSON rule files.
 
 3. **Delivery & Chat Summary**:
-   Write documents to `~/agy/download/[filename]` (UTF-8/UTF-16). In chat, output ONLY a concise executive decision summary and relative path `download/[filename]`.
+   Write documents to `~/Downloads/[filename]` (UTF-8/UTF-16). In chat, output ONLY a concise executive decision summary and relative path `Downloads/[filename]`.
