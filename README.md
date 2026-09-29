@@ -10,7 +10,7 @@ The following skills are available in this repository:
 
 | Skill | Category | Primary Mission & Scope | Core Tools & Technologies |
 | :--- | :--- | :--- | :--- |
-| **[`audit-skill`](audit-skill/)** | Governance & Quality | 12-Gate automated AST static code and skill auditor (<20ms). Enforces coding standards, dynamic line budgets, and security guardrails. | Python AST, Regex, Static Analysis |
+| **[`audit-skill_v1`](audit-skill_v1/)** | Governance & Quality | 12-Gate automated AST static code and skill auditor (<20ms). Enforces coding standards, dynamic line budgets, and security guardrails. | Python AST, Regex, Static Analysis |
 | **[`exec-docx`](exec-docx/)** | Document Engineering | High-fidelity Word (.docx) generation, structured tables, and ISO/IEC 29500 OpenXML redlining validation. | `python-docx`, ISO XSD Validators |
 | **[`exec-xlsx`](exec-xlsx/)** | Spreadsheet Engineering | Enterprise Excel (.xlsx/.csv) layout engine with Noto Sans TC typography, KPI cards, CJK auto-width, lossless `<extLst>` XML patching, and headless formula recalculation. | `openpyxl`, `xml_patcher`, LibreOffice (`soffice`) |
 | **[`pptx`](pptx/)** | Presentation Engineering | Declarative layout engine for modern slide decks with dynamic grid solvers, WCAG auto-contrast, and polymorphic card slots. | `python-pptx`, `resvg-py`, `Pillow` |
