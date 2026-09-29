@@ -66,7 +66,7 @@ Input Sources ──▶ scripts/ingest.py (Sanitization & Tagging)
                         ├─▶ Evidence Verification (L1/L2/L3)
                         │
                         ▼
-                Executive Decision Report (~/agy/download/*.md)
+                Executive Decision Report (~/Downloads/*.md)
 ```
 
 ### 4. KPI Badges (Quantified Metric Deltas)
@@ -79,8 +79,8 @@ Input Sources ──▶ scripts/ingest.py (Sanitization & Tagging)
   - **Filter**: Isolate items flagged with `[uncertain]` from primary conclusions; group them into an explicit "Pending Human Verification" section.
   - **Assemble**: Compile `[BASE-xx]` requirements and arbitrated `[CONF-xx]` items into Native Markdown Tables and Action Checklists, binding exact Evidence Levels (`L1/L2/L3`).
 - **Deliverable Export**:
-  - Export the final Markdown report to `~/agy/download/<report_filename>.md` using `utf-8-sig` encoding.
+  - Export the final Markdown report to `~/Downloads/<report_filename>.md` using `utf-8-sig` encoding.
 - **Automated Verification**:
   - Run the scanner before presenting output:
-    `python3 scripts/noai_gate.py ~/agy/download/<report_filename>.md` (or `python3 scripts/noai_gate.py --text "<snippet>"` for inline Fast-Track text).
+    `python3 scripts/noai_gate.py ~/Downloads/<report_filename>.md` (or `python3 scripts/noai_gate.py --text "<snippet>"` for inline Fast-Track text).
   - Ensure zero Mermaid diagrams, zero formulaic AI patterns, and zero prohibited buzzwords. Halt and revise if errors are flagged.

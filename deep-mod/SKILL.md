@@ -27,6 +27,6 @@ Execute 3-tier sequential clarification with dynamic recommendations before bran
 ### Stage 3: Finalized Output
 Write deliverables with Anti-AI verification:
 - **Branch 1: Research & Architecture Review** (`references/type_a_research.md`):
-  Verify report via `python3 scripts/noai_gate.py ~/downloads/<report>.md`.
+  Verify report via `python3 scripts/noai_gate.py ~/Downloads/<report>.md`.
 - **Branch 2: Agent Skill Directory** (`references/type_b_skill.md`):
   Partition via `python3 scripts/ingest.py <input> --split-dir <target_dir>`, then audit with `noai_gate.py` and `tests/audit.py`.

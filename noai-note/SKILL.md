@@ -3,23 +3,18 @@ name: noai-note
 description: Two-phase executive assistant tool for meeting notes, executive briefs, presentation outlines (PPTX), revision comparison tables, and 1-pager visual blueprints (PDF/DOCX) with Shift-Left Anti-AI filtering.
 metadata:
   task_type: open-ended
-dependencies: []
 ---
 
-# NoAI Note: Universal Executive Assistant & Revision Tool
+# NoAI Note — Universal Executive Assistant & Revision Tool
 
-## Objective
-Two-state executive pipeline (Phase 1 Collection -> Phase 2 Executive Output) with Shift-Left Anti-AI filtering.
+Two-state pipeline (Phase 1 Collection -> Phase 2 Executive Output).
 
 ---
 
-## Execution Workflow
+## Control Flow & Pipeline
 
 ### Phase 1: Zero-Analysis Collection
 - **Default State**: Set `current_state = 'collection'`.
-- **Multi-File & Transcript Ingestion**: For multi-file inputs (.xlsx, .pdf, .docx, .html, .md, .txt) or long transcripts, run:
-  `python3 scripts/ingest.py file1.xlsx file2.pdf -o scratch/stream.txt`
-  to strip formatting noise, table padding, and speech fillers into an ephemeral text stream before analysis.
 - **Execution Rules**: Parse explicit facts only (zero extrapolation). Omit missing fields without placeholders.
 - **Workflow**: Append key points chronologically and render **Collection Template** from `[templates.md](references/templates.md)`.
 
@@ -39,4 +34,4 @@ Triggered ONLY on explicit finalization commands (options 2~5 or keywords `定�
    Execute `python3 scripts/scan.py --text "<finalized_text>"`. If flagged, follow the script's prescription to rewrite the offending sentence/paragraph. Never load JSON rule files.
 
 3. **Delivery & Chat Summary**:
-   Write documents to `~/agy/download/[filename]` (UTF-8/UTF-16). In chat, output ONLY a concise executive decision summary and relative path `download/[filename]`.
+   Write documents to `~/Downloads/[filename]` (UTF-8/UTF-16). In chat, output ONLY a concise executive decision summary and relative path `Downloads/[filename]`.
