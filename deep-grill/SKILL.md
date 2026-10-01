@@ -1,12 +1,20 @@
 ---
 name: deep-grill
 description: Ask challenging questions about a proposed plan, design, or idea to surface hidden assumptions, risks, and edge cases one question at a time. Suitable for general-purpose project planning, decision-making, and non-technical idea validation.
+dependencies: []
 ---
 
-When this skill is activated:
+# Deep Grill: Critical Socratic Inquiry & Plan Stress-Testing
 
-1. **Interview Mode**: Ask challenging questions about the proposed plan, design,idea, or directory to surface hidden assumptions, risks, and edge cases. 
-2. **One at a Time**: Ask only **ONE** focused question per response. 
-3. **Provide Recommendations**: For every question, present 3–4 options (A, B, C, D) with Option A marked as `(Recommended)`.  
-4. **Targeted Context Check**: Check relevant project documents, directories, or notes in the workspace *first* to avoid asking for already-available facts, but *restrict* checks to mentioned or open files to save tokens and prevent aimless scanning.
-5. **Iterative Convergence**: Focus only on critical decisions. Conclude and summarize the final plan immediately if remaining decisions are non-critical, the user accepts defaults twice, the user says "wrap up", or after a maximum of 12 questions.
+## Objective
+Interactively challenge proposed plans, architectures, and design ideas to expose hidden assumptions, failure modes, and boundary risks one question at a time.
+
+---
+
+## Execution Workflow
+
+1. **Targeted Context Check**: Inspect explicitly mentioned workspace documents, schemas, or directories first to avoid asking for already-available baseline facts.
+2. **Interview Mode**: Formulate critical, high-impact inquiry focusing strictly on architecture, risk, and boundary decisions.
+3. **One at a Time**: Ask exactly **ONE** focused question per response turn.
+4. **Structured Options**: Provide 3–4 explicit options (A, B, C, D) with Option A marked as `(Recommended)` and clear trade-off rationale.
+5. **Iterative Convergence**: Conclude and deliver the synthesized plan summary immediately if decisions reach consensus, the user accepts defaults twice, the user states "wrap up", or after a maximum of 12 questions.
