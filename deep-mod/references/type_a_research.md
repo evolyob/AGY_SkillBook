@@ -7,7 +7,11 @@ Execute deep multi-source research, evidence synthesis, and decision matrix deli
 
 ## 1. Phase 1: Multi-Source Tagging & Categorization
 - **Intake Modes**:
-  - **File Ingest**: Ingest documents via `python3 scripts/ingest.py <input> --format stream` (or `-o <path>` for raw cleaned exports; read auto-exported `/tmp/deep_mod_work/` for large docs) and preserve source tags (`[Source: File | Chapter]`).
+  - **Standard Ingest**: Ingest documents via `python3 scripts/ingest.py <input> --format stream` (or `-o <path>` for raw cleaned exports) and preserve source tags (`[Source: File | Chapter]`).
+  - **Large Document Map-Reduce Mode (`pages > 25` or `est_tokens > 6,500` or Multi-Chapter Books)**:
+    1. **Step 1 (Physical Slicing)**: Execute `python3 scripts/ingest.py <input> --split-dir /tmp/type_a_work/` with TOC guard to export chapter slices and `data/index.json`.
+    2. **Step 2 (Parallel Map via Subagents)**: Group chapters into batches of 4~5 (<= 15k tokens/batch). Invoke parallel subagents using `view_file` to extract structured chapter micro-summaries (`3 core findings + 1 decision point`).
+    3. **Step 3 (Master Reduce & Cleanup)**: Synthesize micro-summaries into a unified chapter-by-chapter executive brief in `~/Downloads/<report>.md`, then prune `/tmp/type_a_work/`.
   - **Oral Intake**: If no documents exist, use single-question Socratic inquiry to elicit constraints, tagging inputs as `[Source: Oral | Interview]`.
 - **Three-Way Partition Schema**:
   - `[BASE-xx]`: Baseline Requirements (Core non-negotiable specs).

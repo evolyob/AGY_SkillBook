@@ -6,10 +6,13 @@ Distill multi-source documents into structured, production-ready Agent Skill dir
 ---
 
 ## 1. Pure Rule Extraction Discipline (chapters/)
-- **Deterministic Partitioning**: Run `python3 scripts/ingest.py <input> --split-dir <generated_skill_dir>` to deterministically generate chapter files and `data/index.json`.
-- **Filter Narrative Fillers**: Discard historical stories, introductory anecdotes, author background, and conversational padding.
-- **Extract Core Entities**: Retain strictly Named Frameworks, Conditional Rules (`When X do Y`), and Anti-Patterns.
-- **Payload Budget**: Restrict per-chapter files (`chapters/*.md`) to 800 tokens maximum.
+- **Input Ingestion & Chunking**: When processing large source documents (> 10,000 tokens / > 800 lines), use `python3 scripts/ingest.py <input> --split-dir <generated_skill_dir>` to segment inputs into 800-line parallel processing chunks.
+- **Output Synthesized Chapter Budget**: Target **120 ~ 170 lines** per synthesized chapter file (`chapters/*.md`), strictly below the 200-line audit limit.
+- **Mandatory 3-Section Chapter Backbone**:
+  1. **Statutory Baseline & Technical Control Matrix**: Core legal obligations mapped to architectural standards and quantitative telemetry (KPI/KRI/KCI).
+  2. **Production Incident & Remediation Architecture**: End-to-end operational failure walk-through (Context -> Root-Cause Defect -> Architecture Fix).
+  3. **Exam Question Bank & Distractor Forensics**: 3 to 4 complete practice questions (`FIRST`, `BEST/MOST`, `NEXT`, `PRIMARY/EXCEPT`) with complete 4-option distractor analysis for every single choice.
+- **Single Source of Truth Rule**: Directly embed all domain-specific scenarios, advanced methods, and question banks inside the canonical chapter files. Prohibit scattering orphan fragments across `references/`.
 - **Socratic Ambiguity Gate**: If undefined terms or conflicting rules arise, pause and issue ONE targeted question before generating the file.
 
 ---

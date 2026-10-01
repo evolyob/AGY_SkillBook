@@ -6,24 +6,18 @@ metadata:
 dependencies: []
 ---
 
-# NoAI Note: Universal Executive Assistant & Revision Tool
+# NoAI Note — Universal Executive Assistant & Revision Tool
 
 ## Objective
-Two-state executive pipeline (Phase 1 Collection -> Phase 2 Executive Output) with Shift-Left Anti-AI filtering.
-
----
+Two-state pipeline (Phase 1 Collection -> Phase 2 Executive Output) for meeting minutes and executive blueprints with deterministic Anti-AI scanning.
 
 ## Execution Workflow
 
 ### Phase 1: Zero-Analysis Collection
 - **Default State**: Set `current_state = 'collection'`.
-- **Multi-File & Transcript Ingestion**: For multi-file inputs (.xlsx, .pdf, .docx, .html, .md, .txt) or long transcripts, run:
-  `python3 scripts/ingest.py file1.xlsx file2.pdf -o scratch/stream.txt`
-  to strip formatting noise, table padding, and speech fillers into an ephemeral text stream before analysis.
 - **Execution Rules**: Parse explicit facts only (zero extrapolation). Omit missing fields without placeholders.
 - **Workflow**: Append key points chronologically and render **Collection Template** from `[templates.md](references/templates.md)`.
-
----
+- **Large Input Circuit Breaker**: For inputs `> 25 pages` or `> 6,500 tokens`, execute `python3 scripts/ingest.py <input> --split-dir /tmp/meeting_work/` for parallel processing.
 
 ### Phase 2: Finalized Executive Output
 Triggered ONLY on explicit finalization commands (options 2~5 or keywords `定稿`/`finalize`).
@@ -36,7 +30,7 @@ Triggered ONLY on explicit finalization commands (options 2~5 or keywords `定�
    - **Branch D (1-Pager Blueprint) [Option 5]**: Reference `[visual_templates.md: Section 3](references/visual_templates.md)`.
 
 2. **Deterministic Script Gate**:
-   Execute `python3 scripts/scan.py --text "<finalized_text>"`. If flagged, follow the script's prescription to rewrite the offending sentence/paragraph. Never load JSON rule files.
+   Execute `python3 scripts/scan.py --text "<finalized_text>"`. If flagged, follow prescription to rewrite.
 
 3. **Delivery & Chat Summary**:
-   Write documents to `~/Downloads/[filename]` (UTF-8/UTF-16). In chat, output ONLY a concise executive decision summary and relative path `Downloads/[filename]`.
+   Write deliverables to `~/Downloads/[filename]`.

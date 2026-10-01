@@ -1,14 +1,20 @@
-# Security & Access Boundary
+# Security Policy: deep-mod
 
 ## Scope
-- Read Scope: Local workspace and user-specified documents (.docx, .pdf, .md, .txt, .xlsx).
-- Prohibitions: Zero network egress (no telemetry), zero execution outside declared scripts, zero access to sensitive files (.env, keys).
+This skill provides universal interactive deep research, architecture visualization, and surgical skill extraction pipeline with anti-ai enforcement. It operates on local files or declared network targets provided via arguments. It does not collect telemetry, run silent daemons, or mutate unauthorized paths.
 
 ## Dependencies
-- Standard Library: Python 3.10+ (`argparse`, `json`, `re`, `pathlib`, `xml.etree.ElementTree`, `zipfile`, `unicodedata`, `sys`).
-- Optional Parser: `openpyxl` (XLSX reading), `pypdf` (PDF text reading).
+- Standard library prioritized (Python >= 3.10).
+- Declared dependencies: `[]`.
 - Zero silent background installations: package installs require explicit user confirmation.
 
 ## Execution
-- Invocation: Local deterministic scripts via `run_command` (`python3 scripts/ingest.py`).
-- Performance: Single-shot ephemeral CLI (< 2s). In-memory execution with zero background daemons.
+Single-shot ephemeral CLI (< 2s). In-memory execution with explicit outputs directed to designated targets.
+- Validated execution flags:
+  - `--format`: Execution option.
+  - `--list-only`: Execution option.
+  - `--output`: Execution option.
+  - `--split-dir`: Execution option.
+  - `--page-range`: Execution option.
+  - `--check`: Execution option.
+  - `--text`: Execution option.

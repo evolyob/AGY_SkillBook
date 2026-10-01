@@ -1,13 +1,20 @@
-# Security & Access Boundary
+# Security Policy: noai-note
 
 ## Scope
-- Read Scope: Local workspace and user-specified documents (.docx, .pdf, .md, .txt).
-- Prohibitions: Zero network egress (no telemetry), zero execution outside declared scripts, zero access to sensitive files (.env, keys).
+This skill provides two-phase executive assistant tool for meeting notes, executive briefs, presentation outlines (pptx), revision comparison tables, and 1-pager visual blueprints (pdf/docx) with shift-left anti-ai filtering. It operates on local files or declared network targets provided via arguments. It does not collect telemetry, run silent daemons, or mutate unauthorized paths.
 
 ## Dependencies
-- Standard Library: Python 3.13+ (`argparse`, `json`, `re`, `pathlib`, `xml.etree.ElementTree`, `zipfile`).
-- Zero external package dependencies.
+- Standard library prioritized (Python >= 3.10).
+- Declared dependencies: `[]`.
+- Zero silent background installations: package installs require explicit user confirmation.
 
 ## Execution
-- Invocation: Local deterministic scripts via `run_command` (`python3 scripts/ingest.py`, `python3 scripts/scan.py`).
-- Security Posture: Static analysis only; sandboxed file operations within declared scope.
+Single-shot ephemeral CLI (< 2s). In-memory execution with explicit outputs directed to designated targets.
+- Validated execution flags:
+  - `--format`: Execution option.
+  - `--mode`: Execution option.
+  - `--output`: Execution option.
+  - `--split-dir`: Execution option.
+  - `--list-only`: Execution option.
+  - `--check`: Execution option.
+  - `--text`: Execution option.

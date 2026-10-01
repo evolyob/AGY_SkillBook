@@ -1,5 +1,5 @@
 {
-  "pattern": "^(?:#\\s+|第\\s*[0-9一二三四五六七八九十百\\d]+\\s*[章課節講篇回領域]\\s*[:：\\s]*|(?:Domain|Chapter|Lesson|Lecture|Section|Unit|Module|Part|Task|Case)\\s+\\d+[:：\\s]*|(?:領域|單元|模組|任務|案例)\\s*[0-9一二三四五六七八九十百\\d]+[:：\\s]*)(.+)$",
+  "pattern": "^(?:#\\s+|第\\s*[0-9一二三四五六七八九十百\\d]+\\s*[章課節講篇回領域條款]\\s*[:：\\s]*|(?:Domain|Chapter|Lesson|Lecture|Section|Unit|Module|Part|Task|Case)\\s+\\d+[:：\\s]*|(?:領域|單元|模組|任務|案例)\\s*[0-9一二三四五六七八九十百\\d]+[:：\\s]*|(?:§+|¶+)\\s*[0-9]+(?:\\.[0-9]+)*[:：\\s]*)(.+)$",
   "taxonomy": {
     "Domain": {"prefix": "domain", "aliases": ["領域 {idx}", "Domain {idx}", "第{idx}領域"]},
     "領域": {"prefix": "domain", "aliases": ["領域 {idx}", "Domain {idx}", "第{idx}領域"]},
@@ -10,7 +10,11 @@
     "Task": {"prefix": "task", "aliases": ["任務 {idx}", "Task {idx}"]},
     "任務": {"prefix": "task", "aliases": ["任務 {idx}", "Task {idx}"]},
     "Case": {"prefix": "case", "aliases": ["案例 {idx}", "Case {idx}"]},
-    "案例": {"prefix": "case", "aliases": ["案例 {idx}", "Case {idx}"]}
+    "案例": {"prefix": "case", "aliases": ["案例 {idx}", "Case {idx}"]},
+    "Section": {"prefix": "sec", "aliases": ["第{idx}節", "Section {idx}", "§{idx}"]},
+    "節": {"prefix": "sec", "aliases": ["第{idx}節", "Section {idx}", "§{idx}"]},
+    "條": {"prefix": "art", "aliases": ["第{idx}條", "Article {idx}"]},
+    "§": {"prefix": "sec", "aliases": ["條款 {idx}", "Section {idx}", "§{idx}"]}
   },
   "sanitization": {
     "invisibles": "[\\u200b-\\u200d\\ufeff\\u2060\\u202a-\\u202e\\u2066-\\u2069\\u000b\\u000c\\u000e-\\u001f\\u007f]|[\\U000e0000-\\U000e007f]|\\ufffd|\\(cid:[0-9]+\\)",
@@ -19,7 +23,8 @@
   "limits": {
     "chunk_lines": 800,
     "chunk_step": 750,
-    "max_stream_tokens": 10000,
+    "max_stream_tokens": 6500,
+    "max_stream_pages": 25,
     "supported_exts": [".docx", ".pdf", ".md", ".txt", ".xlsx", ".html"]
   },
   "indexing": {
@@ -27,7 +32,8 @@
     "key_elements_patterns": [
       "\\*\\*([^*]{2,30})\\*\\*",
       "`([^`]{2,30})`",
-      "(?:定義|架構|法則|模式|原則|機制)[：:]\\s*([^\\n,，。]{2,20})"
+      "(?:定義|架構|法則|模式|原則|機制)[：:]\\s*([^\\n,，。]{2,20})",
+      "(§\\s*[0-9]+(?:\\.[0-9]+)*)"
     ],
     "max_key_elements_per_chunk": 8
   }

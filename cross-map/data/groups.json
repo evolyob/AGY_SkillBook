@@ -1,0 +1,213 @@
+{
+  "signals": {
+    "negation_prefixes": [
+      "不要", "不需要", "勿", "不", "skip", "do not", "don't"
+    ],
+    "action_families": {
+      "audit": ["audit", "scan", "check", "inspect", "檢驗", "掃描", "稽核", "審查", "調查"],
+      "build": ["generate", "create", "build", "format", "render", "產出", "建立", "製作", "生成"],
+      "sync": ["sync", "update", "refresh", "recalc", "同步", "更新", "重算"],
+      "polish": ["polish", "humanize", "detox", "denoise", "潤稿", "降噪", "排毒"]
+    },
+    "strong_patterns": {
+      "managed_goal": ["cross-repo", "resumable", "milestone", "跨專案", "跨儲存庫", "長週期", "里程碑"],
+      "phased": ["then", "after", "next", "finally", "先", "再", "接著", "然後", "最後"]
+    }
+  },
+  "scenarios": [
+    {
+      "id": "security_policy_enforcement",
+      "work_mode": "phased",
+      "tags": ["security_audit", "security_md", "valid_flags", "ast_check", "zero_blockers"],
+      "label": "Security Boundary Enforcement & Policy Audit",
+      "description": "Audit skills, validate AST parameter hygiene, and establish compliant SECURITY.md policy contracts",
+      "utterance_triggers": [
+        "Audit skill security boundaries",
+        "Establish compliant SECURITY.md policies",
+        "Verify AST parameter whitelist and line budgets",
+        "批次檢驗技能安全契約與邊界"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "skill": "audit-skill",
+          "action": "audit",
+          "intent": "code_security_and_ast_audit",
+          "flags": ["--security", "--ast"],
+          "slot": "[target_path]",
+          "exit_gate": "zero_ast_and_security_violations"
+        },
+        {
+          "step": 2,
+          "skill": "cross-map",
+          "action": "sync",
+          "intent": "sync_skills_registry",
+          "flag": "--sync",
+          "slot": "[skills_root]",
+          "exit_gate": "registry_synced"
+        }
+      ]
+    },
+    {
+      "id": "external_source_review",
+      "work_mode": "phased",
+      "tags": ["external_repo", "security_review", "github_audit", "url_investigation"],
+      "label": "External Source Security Investigation",
+      "description": "Inspect external GitHub repositories, packages, or web sources against threat intel and quality gates",
+      "utterance_triggers": [
+        "Audit external GitHub repository",
+        "Investigate domain reputation and safety",
+        "Review open source dependency security",
+        "審查外部來源與開源套件安全性"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "skill": "sec-intel",
+          "action": "audit",
+          "intent": "domain_reputation_probe",
+          "flag": "--domain",
+          "slot": "[URL/Domain]",
+          "exit_gate": "domain_reputation_verified"
+        },
+        {
+          "step": 2,
+          "skill": "audit-skill",
+          "action": "audit",
+          "intent": "code_security_and_ast_audit",
+          "flags": ["--security", "--ast"],
+          "slot": "[target_path]",
+          "exit_gate": "source_code_audited"
+        },
+        {
+          "step": 3,
+          "skill": "noai-note",
+          "action": "polish",
+          "intent": "doc_detox_gate",
+          "flag": "--text",
+          "slot": "[content]",
+          "exit_gate": "notes_detoxed"
+        }
+      ]
+    },
+    {
+      "id": "codebase_hardening",
+      "work_mode": "phased",
+      "tags": ["code_hardening", "ast_quality", "clean_code", "refactoring", "subtractive"],
+      "label": "Codebase Hardening & Subtractive Refactor",
+      "description": "Audit outdated dependencies, eliminate bloat, and enforce zero hardcoded paths",
+      "utterance_triggers": [
+        "Perform subtractive refactoring on bloated scripts",
+        "Audit code hygiene and eliminate nested blocks",
+        "Harden script suite against EOL dependencies",
+        "重構精簡腳本並加固控制流程"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "skill": "audit-skill",
+          "action": "audit",
+          "intent": "ast_quality_audit",
+          "flag": "--ast",
+          "slot": "[target_path]",
+          "exit_gate": "ast_hygiene_confirmed"
+        },
+        {
+          "step": 2,
+          "skill": "env-audit",
+          "action": "sync",
+          "intent": "host_dependency_audit",
+          "flag": "--linux",
+          "slot": "[system]",
+          "exit_gate": "os_dependencies_upgraded"
+        }
+      ]
+    },
+    {
+      "id": "incident_response_drill",
+      "work_mode": "phased",
+      "tags": ["incident_response", "playbook_execution", "threat_containment", "dair_lifecycle"],
+      "label": "Incident Response Drill & Playbook Execution",
+      "description": "Execute dynamic incident response lifecycle with containment verification and evidence logging",
+      "utterance_triggers": [
+        "Execute ransomware incident response drill",
+        "Perform cloud storage exfiltration containment",
+        "Conduct OT/ICS security response verification",
+        "執行資安事件應變演練與處置驗證"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "skill": "dair-ir",
+          "action": "audit",
+          "intent": "query_stage_and_playbook",
+          "flags": ["--stage", "--playbook"],
+          "slot": "[incident_type]",
+          "exit_gate": "containment_and_blast_radius_verified"
+        },
+        {
+          "step": 2,
+          "skill": "sec-intel",
+          "action": "audit",
+          "intent": "intel_lookup",
+          "flags": ["--ip", "--cve"],
+          "slot": "[target_entity]",
+          "exit_gate": "threat_indicators_enriched"
+        },
+        {
+          "step": 3,
+          "skill": "noai-note",
+          "action": "build",
+          "intent": "post_incident_debrief",
+          "flag": "--format json",
+          "slot": "[incident_data]",
+          "exit_gate": "debrief_report_assembled"
+        }
+      ]
+    },
+    {
+      "id": "asset_risk_threat_modeling",
+      "work_mode": "phased",
+      "tags": ["asset_risk", "threat_modeling", "vulnerability_pairing", "hardening_plan"],
+      "label": "Asset Risk Assessment & Threat Modeling",
+      "description": "Categorize information assets, map threats/vulnerabilities, and verify host security",
+      "utterance_triggers": [
+        "Categorize critical information assets",
+        "Map asset threats and vulnerability pairs",
+        "Audit host environment for unpatched CVEs",
+        "評估資訊資產風險並建立加固清單"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "skill": "asset-risk",
+          "action": "audit",
+          "intent": "asset_categorization",
+          "flag": "--batch",
+          "slot": "[asset_list]",
+          "exit_gate": "asset_threat_matrix_mapped"
+        },
+        {
+          "step": 2,
+          "skill": "env-audit",
+          "action": "audit",
+          "intent": "cve_vulnerability_scan",
+          "flag": "--json",
+          "slot": "[system]",
+          "exit_gate": "host_vulnerabilities_identified"
+        }
+      ]
+    }
+  ],
+  "stop_words": [
+    "and", "with", "for", "the", "from", "that", "this", "into", "using",
+    "when", "then", "have", "been", "only", "also", "will", "your", "more", "each", "both"
+  ],
+  "headers": {
+    "registry": ["Skill Name", "Core Responsibility", "Readiness", "Execution Channel", "Declared Flags", "Security Contract"],
+    "routing": ["User Scenario", "Intent & Trigger Keywords", "Target Skill / Plugin", "Execution Channel", "Local Security Contract"],
+    "matrix": ["Skill", "Intent", "Keywords, Slots & Flags", "Example Utterances"],
+    "groups": ["Composite Scenario", "Work Mode", "Trigger Events", "Routed Pipeline", "Stage Flags, Slots & Exit Gate"],
+    "collisions": ["Keyword", "Sharing Skills", "Disambiguation & Resolution"]
+  }
+}
