@@ -106,7 +106,7 @@ def strip_reference_blocks(text: str) -> str:
 
 
 def clean_text(raw: str) -> str:
-    """Deterministic sanitization: NFKC normalization, hyphen rejoining, defanging, and noise removal."""
+    """Deterministic sanitization: NFKC normalization, hyphen rejoining, defanging, noise removal, and prose unwrapping."""
     if not raw:
         return ""
     text = re.sub(r'(\b[A-Za-z]+)-\n([A-Za-z]+\b)', r'\1\2', unicodedata.normalize("NFKC", raw))
@@ -114,7 +114,18 @@ def clean_text(raw: str) -> str:
     text = re.sub(r'^Source:\s+PDF\s+Pages?\s+.*$', '', text, flags=re.M | re.I)
     text = strip_reference_blocks(text)
     text = defang_urls(text)
-    return "\n".join(line.strip() for line in CLEAN_PATTERN.sub("", text).splitlines() if line.strip())
+    lines, out = [ln.strip() for ln in CLEAN_PATTERN.sub("", text).splitlines() if ln.strip()], []
+    for ln in lines:
+        is_struct = any(ln.startswith(p) for p in ("#", ">", "|", "```", "---", "***")) or bool(re.match(r'^(?:[-*+]|\d+[\.\)])\s+', ln))
+        prev = out[-1] if out else ""
+        prev_struct = any(prev.startswith(p) for p in ("#", ">", "|", "```", "---")) or bool(re.match(r'^(?:[-*+]|\d+[\.\)])\s+', prev))
+        can_join = out and not is_struct and not prev_struct and not prev.endswith((".", ":", "!", "?", ";", "。", "！", "？", "；", "：")) and (ln[0].islower() or prev.endswith("-") or (len(prev) >= 35 and "\u4e00" <= ln[0] <= "\u9fff"))
+        if can_join:
+            is_cjk = "\u4e00" <= prev[-1] <= "\u9fff" and "\u4e00" <= ln[0] <= "\u9fff"
+            out[-1] += ("" if is_cjk else " ") + ln
+        else:
+            out.append(ln)
+    return "\n".join(out)
 
 
 def extract_index_metadata(content: str) -> tuple[str, list[str]]:

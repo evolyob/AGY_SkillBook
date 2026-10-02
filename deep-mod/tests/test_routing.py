@@ -140,6 +140,24 @@ class TestDeepModRouting(unittest.TestCase):
         self.assertIn("hxxps://attacker[.]example[.]com/c2/payload.ps1", cleaned)
         self.assertIn("hxxp://test[.]org:8080/api", cleaned)
 
+    def test_prose_unwrapping(self):
+        sample = (
+            "# Chapter 20\n"
+            "This chapter aligns\n"
+            "the complete DAIR framework\n"
+            "with NIST CSF 2.0 categories.\n\n"
+            "- **Item 1**: First bullet\n"
+            "- **Item 2**: Second bullet\n\n"
+            "| Col 1 | Col 2 |\n"
+            "| :--- | :--- |\n"
+            "| Val 1 | Val 2 |\n"
+        )
+        cleaned = clean_text(sample)
+        self.assertIn("This chapter aligns the complete DAIR framework with NIST CSF 2.0 categories.", cleaned)
+        self.assertIn("- **Item 1**: First bullet\n- **Item 2**: Second bullet", cleaned)
+        self.assertIn("| Col 1 | Col 2 |\n| :--- | :--- |\n| Val 1 | Val 2 |", cleaned)
+
 
 if __name__ == "__main__":
     unittest.main()
+
