@@ -55,10 +55,21 @@ def read_raw(p: Path) -> tuple[str, int]:
 
 
 def clean_text(raw: str) -> str:
-    """Single-pass sanitization: NFKC normalization + noise removal."""
+    """Single-pass sanitization: NFKC normalization, noise removal, and meeting-aware prose unwrapping."""
     if not raw: return ""
     text = re.sub(r'(\b[A-Za-z]+)-\n([A-Za-z]+\b)', r'\1\2', unicodedata.normalize("NFKC", raw))
-    return "\n".join(L.strip() for L in CLEAN_PATTERN.sub("", text).splitlines() if L.strip())
+    lines, out = [ln.strip() for ln in CLEAN_PATTERN.sub("", text).splitlines() if ln.strip()], []
+    for ln in lines:
+        is_struct = any(ln.startswith(p) for p in ("#", ">", "|", "```", "---", "***")) or bool(re.match(r'^(?:[-*+]|\d+[\.\)])\s+', ln)) or bool(MEETING_PATTERN.match(ln))
+        prev = out[-1] if out else ""
+        prev_struct = any(prev.startswith(p) for p in ("#", ">", "|", "```", "---")) or bool(re.match(r'^(?:[-*+]|\d+[\.\)])\s+', prev)) or bool(MEETING_PATTERN.match(prev))
+        can_join = out and not is_struct and not prev_struct and not prev.endswith((".", ":", "!", "?", ";", "。", "！", "？", "；", "：")) and (ln[0].islower() or prev.endswith("-") or (len(prev) >= 35 and "\u4e00" <= ln[0] <= "\u9fff"))
+        if can_join:
+            is_cjk = "\u4e00" <= prev[-1] <= "\u9fff" and "\u4e00" <= ln[0] <= "\u9fff"
+            out[-1] += ("" if is_cjk else " ") + ln
+        else:
+            out.append(ln)
+    return "\n".join(out)
 
 
 def chunk_content(text: str, source: str) -> list[dict]:
