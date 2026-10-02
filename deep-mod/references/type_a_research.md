@@ -54,7 +54,7 @@ Execute deep multi-source research, evidence synthesis, and decision matrix deli
   | Tier | Layer Name | Core Components & Responsibilities |
   |:---:|---|---|
   | **Tier 3** | **Presentation Tier** | • Native Markdown Tables & Unicode Rails |
-  | **Tier 2** | **Verification Tier** | • `scripts/noai_gate.py` Linter & L1/L2/L3 Evidence |
+  | **Tier 2** | **Verification Tier** | • `tests/noai_gate.py` Linter & L1/L2/L3 Evidence |
   | **Tier 1** | **Ingestion Tier** | • `scripts/ingest.py` & `references/common_gate.md` |
 
 ### 2. Action Checklist (Defect Auditing & Readiness)
@@ -86,5 +86,5 @@ Input Sources ──▶ scripts/ingest.py (Sanitization & Tagging)
   - Export the final Markdown report to `~/Downloads/<report_filename>.md` using `utf-8-sig` encoding.
 - **Automated Verification**:
   - Run the scanner before presenting output:
-    `python3 scripts/noai_gate.py ~/Downloads/<report_filename>.md` (or `python3 scripts/noai_gate.py --text "<snippet>"` for inline Fast-Track text).
+    `python3 tests/noai_gate.py ~/Downloads/<report_filename>.md` (or `python3 tests/noai_gate.py --text "<snippet>"` for inline Fast-Track text).
   - Ensure zero Mermaid diagrams, zero formulaic AI patterns, and zero prohibited buzzwords. Halt and revise if errors are flagged.

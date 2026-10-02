@@ -59,6 +59,6 @@ Distill multi-source documents into structured, production-ready Agent Skill dir
 ---
 
 ## 6. Verification & Quality Gates
-- **Gate 1 (Anti-AI Baseline)**: Run self-contained scanner `python3 scripts/noai_gate.py <generated_skill_dir>` to guarantee zero AI buzzwords or formulaic patterns.
+- **Gate 1 (Anti-AI Baseline)**: Run self-contained scanner `python3 tests/noai_gate.py <generated_skill_dir>` to guarantee zero AI buzzwords or formulaic patterns.
 - **Gate 2 (Script AST & Safety Audit)**: Run self-contained script auditor `python3 tests/audit.py <generated_skill_dir>/scripts` to verify 13 AST hygiene, safety, and dynamic line budget rules.
 - **Gate 3 (Circuit Breaker)**: If any blocking issue or prohibited pattern is detected, output the failure report and halt for user confirmation.

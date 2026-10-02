@@ -27,7 +27,7 @@ class TestDeepModRouting(unittest.TestCase):
         self.assertTrue(self.type_a_md.exists(), "type_a_research.md must exist")
         self.assertTrue(self.type_b_md.exists(), "type_b_skill.md must exist")
         self.assertTrue(self.ingest_py.exists(), "scripts/ingest.py must exist")
-        self.assertTrue((self.base_dir / "scripts" / "noai_gate.py").exists(), "scripts/noai_gate.py must exist")
+        self.assertTrue((self.base_dir / "tests" / "noai_gate.py").exists(), "tests/noai_gate.py must exist")
         self.assertTrue((self.base_dir / "data" / "rules_gate.json").exists(), "data/rules_gate.json must exist")
         self.assertTrue((self.base_dir / "data" / "chapter_rules.json").exists(), "data/chapter_rules.json must exist")
         self.assertTrue((self.base_dir / "tests" / "audit.py").exists(), "tests/audit.py must exist")
