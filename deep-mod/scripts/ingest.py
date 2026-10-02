@@ -48,7 +48,7 @@ def read_raw(p: Path, page_range: tuple[int, int] | None = None) -> str:
     if ext == ".docx":
         with zipfile.ZipFile(p) as z:
             tree = ET.fromstring(z.read("word/document.xml"))
-            ns = {"w": "http" + chr(58) + chr(47) + chr(47) + "schemas.openxmlformats.org/wordprocessingml/2006/main"}
+            ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
             return "\n".join("".join(t.text for t in n.findall(".//w:t", ns) if t.text) for n in tree.findall(".//w:p", ns))
     if ext == ".xlsx":
         try:
@@ -106,7 +106,7 @@ def strip_reference_blocks(text: str) -> str:
 
 
 def clean_text(raw: str) -> str:
-    """Single-pass sanitization: NFKC normalization, hyphen rejoining, defanging, and noise removal."""
+    """Deterministic sanitization: NFKC normalization, hyphen rejoining, defanging, and noise removal."""
     if not raw:
         return ""
     text = re.sub(r'(\b[A-Za-z]+)-\n([A-Za-z]+\b)', r'\1\2', unicodedata.normalize("NFKC", raw))
@@ -185,22 +185,42 @@ def split_large_chunk_semantically(chunk: dict) -> list[dict]:
             sub_idx = len(sub_chunks) + 1
             parent_id = chunk.get("id", "ch_01")
             summary, keys = extract_index_metadata(sub_body)
-            sub_chunks.append({"source": chunk.get("source", ""), "chapter": f"{chunk['chapter']} - {sub_title}", "content": sub_body, "start_line": chunk.get("start_line", 1) + body[:start].count("\n"), "end_line": chunk.get("start_line", 1) + body[:end].count("\n"), "id": f"{parent_id}-{sub_idx}", "aliases": chunk.get("aliases", []) + [sub_title, f"Part {sub_idx}"], "summary": summary, "key_elements": keys})
+            sub_chunks.append({
+                "source": chunk.get("source", ""),
+                "chapter": f"{chunk['chapter']} - {sub_title}",
+                "content": sub_body,
+                "start_line": chunk.get("start_line", 1) + body[:start].count("\n"),
+                "end_line": chunk.get("start_line", 1) + body[:end].count("\n"),
+                "id": f"{parent_id}-{sub_idx}",
+                "aliases": chunk.get("aliases", []) + [sub_title, f"Part {sub_idx}"],
+                "summary": summary,
+                "key_elements": keys,
+            })
     if not sub_chunks:
         lines = body.splitlines()
         total_lines = len(lines)
         target_step = 400
-        for idx, start_idx in enumerate(range(0, total_lines, target_step), 1):
-            end_idx = min(start_idx + target_step, total_lines)
+        cursor, idx = 0, 1
+        while cursor < total_lines:
+            end_idx = min(cursor + target_step, total_lines)
             while end_idx < total_lines and lines[end_idx].strip() != "":
                 end_idx += 1
-            c_text = "\n".join(lines[start_idx:end_idx]).strip()
-            if not c_text:
-                continue
-            summary, keys = extract_index_metadata(c_text)
-            sub_chunks.append({"source": chunk.get("source", ""), "chapter": f"{chunk['chapter']} (Part {idx})", "content": c_text, "start_line": chunk.get("start_line", 1) + start_idx, "end_line": chunk.get("start_line", 1) + end_idx, "id": f"{chunk.get('id', 'ch_01')}-{idx}", "aliases": chunk.get("aliases", []) + [f"Part {idx}"], "summary": summary, "key_elements": keys})
-            if end_idx >= total_lines:
-                break
+            c_text = "\n".join(lines[cursor:end_idx]).strip()
+            if c_text:
+                summary, keys = extract_index_metadata(c_text)
+                sub_chunks.append({
+                    "source": chunk.get("source", ""),
+                    "chapter": f"{chunk['chapter']} (Part {idx})",
+                    "content": c_text,
+                    "start_line": chunk.get("start_line", 1) + cursor,
+                    "end_line": chunk.get("start_line", 1) + end_idx,
+                    "id": f"{chunk.get('id', 'ch_01')}-{idx}",
+                    "aliases": chunk.get("aliases", []) + [f"Part {idx}"],
+                    "summary": summary,
+                    "key_elements": keys,
+                })
+                idx += 1
+            cursor = end_idx
     return sub_chunks if sub_chunks else [chunk]
 
 
@@ -254,8 +274,12 @@ def main():
     page_range = None
     if args.page_range:
         parts = args.page_range.split("-")
-        if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
-            page_range = (int(parts[0]), int(parts[1]))
+        if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit():
+            sys.exit(f"Error: Invalid page range format '{args.page_range}', expected 'start-end' (e.g. '1-50')")
+        start_p, end_p = int(parts[0]), int(parts[1])
+        if start_p > end_p:
+            sys.exit(f"Error: Invalid page range '{args.page_range}' (start > end)")
+        page_range = (start_p, end_p)
 
     inp_str = args.input.strip()
     u = urlparse(inp_str)
@@ -293,7 +317,22 @@ def main():
 
     total_chars = sum(len(r["content"]) for r in records)
     est_tokens = total_chars // 3
-    catalog = [{"index": i, "id": r.get("id", f"part_{i:02d}"), "title": r["chapter"], "file": f"{i:02d}_{re.sub(r'[\\\\/*?:\"<>|#\\s]+', '_', r['chapter']).strip('_')}.md", "aliases": r.get("aliases", []), "summary": r.get("summary", ""), "key_elements": r.get("key_elements", []), "lines": r["content"].count("\n") + 3, "source_start_line": r.get("start_line", 1), "source_end_line": r.get("end_line", 1), "est_tokens": len(r["content"]) // 3} for i, r in enumerate(records, 1)]
+    catalog = [
+        {
+            "index": i,
+            "id": r.get("id", f"part_{i:02d}"),
+            "title": r["chapter"],
+            "file": f"{i:02d}_{re.sub(r'[\\\\/*?:\"<>|#\\s]+', '_', r['chapter']).strip('_')}.md",
+            "aliases": r.get("aliases", []),
+            "summary": r.get("summary", ""),
+            "key_elements": r.get("key_elements", []),
+            "lines": r["content"].count("\n") + 3,
+            "source_start_line": r.get("start_line", 1),
+            "source_end_line": r.get("end_line", 1),
+            "est_tokens": len(r["content"]) // 3,
+        }
+        for i, r in enumerate(records, 1)
+    ]
 
     if args.split_dir:
         dest_dir = Path(args.split_dir).resolve()
@@ -301,7 +340,15 @@ def main():
         for c, r in zip(catalog, records):
             (dest_dir / c["file"]).write_text(f"# {r['chapter']}\n\n{r['content']}\n", encoding="utf-8-sig")
         (dest_dir / "data").mkdir(exist_ok=True)
-        (dest_dir / "data" / "index.json").write_text(json.dumps({"total_chunks": len(records), "chunk_mode": "chapter_matched" if all_matched else "sliding_window_overlap", "overlap_lines": 0 if all_matched else (CHUNK_LINES - CHUNK_STEP), "chunks": catalog}, ensure_ascii=False, indent=2), encoding="utf-8")
+        index_data = {
+            "total_chunks": len(records),
+            "chunk_mode": "chapter_matched" if all_matched else "sliding_window_overlap",
+            "overlap_lines": 0 if all_matched else (CHUNK_LINES - CHUNK_STEP),
+            "chunks": catalog,
+        }
+        (dest_dir / "data" / "index.json").write_text(
+            json.dumps(index_data, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
         print(f"Exported {len(records)} chunks and data/index.json to {dest_dir}")
         return
 
