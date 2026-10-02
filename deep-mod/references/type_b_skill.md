@@ -6,10 +6,11 @@ Distill multi-source documents into structured, production-ready Agent Skill dir
 ---
 
 ## 1. Pure Rule Extraction Discipline (chapters/)
-- **Input Ingestion & Chunking**: When processing large source documents (> 10,000 tokens / > 800 lines), use `python3 scripts/ingest.py <input> --split-dir <generated_skill_dir>` to segment inputs into 800-line parallel processing chunks.
-- **Output Synthesized Chapter Budget**: Target **120 ~ 170 lines** per synthesized chapter file (`chapters/*.md`), strictly below the 200-line audit limit.
+- **Zero Detail Loss Mandate**: Strictly prohibit aggressive over-summarization, dropping sub-clauses, or omitting technical parameters/matrices to artificially fit line budgets. All statutory articles, engineering controls, and technical specifications MUST be preserved in full technical depth.
+- **Semantic-Boundary Modular Partitioning**: When source chapters or topic domains exceed the single-shot I/O budget (> 40 KB / > 10,000 tokens), hierarchically segment them into standalone semantic sub-modules (e.g. `chapter_XX-1_*.md`, `chapter_XX-2_*.md`) based on functional themes rather than rigid mechanical line splits.
+- **Single-Shot Tool I/O Budget**: Target **25 KB ~ 45 KB (approx. 250 ~ 600 lines)** per synthesized chapter file (`chapters/*.md`), strictly fitting within the agent `view_file` single-read limit (46,080 bytes) to enable zero-pagination, surgical O(1) ingestion.
 - **Mandatory 3-Section Chapter Backbone**:
-  1. **Statutory Baseline & Technical Control Matrix**: Core legal obligations mapped to architectural standards and quantitative telemetry (KPI/KRI/KCI).
+  1. **Statutory Baseline & Technical Control Matrix**: Core legal/technical obligations mapped to architectural standards and quantitative telemetry (KPI/KRI/KCI).
   2. **Production Incident & Remediation Architecture**: End-to-end operational failure walk-through (Context -> Root-Cause Defect -> Architecture Fix).
   3. **Exam Question Bank & Distractor Forensics**: 3 to 4 complete practice questions (`FIRST`, `BEST/MOST`, `NEXT`, `PRIMARY/EXCEPT`) with complete 4-option distractor analysis for every single choice.
 - **Single Source of Truth Rule**: Directly embed all domain-specific scenarios, advanced methods, and question banks inside the canonical chapter files. Prohibit scattering orphan fragments across `references/`.

@@ -146,8 +146,80 @@ def filter_valid_chapter_matches(text: str) -> list[re.Match]:
     return valid
 
 
+MAX_SINGLE_CHUNK_BYTES = 38000  # ~38 KB target to stay well within 46,080 tool limit
+SUB_HEADING_PATTERN = re.compile(r'^(?:#{2,4}\s+|(?:\d+\.\d+|\b[A-Z]{2,3}-\d+)\s+)(.+)$', re.MULTILINE)
+
+
+def split_large_chunk_semantically(chunk: dict) -> list[dict]:
+    """Hierarchically split oversized chapter chunks along semantic sub-headings or safe blank lines."""
+    body = chunk["content"]
+    if len(body.encode("utf-8")) <= MAX_SINGLE_CHUNK_BYTES:
+        return [chunk]
+
+    # Find sub-headings within body
+    sub_matches = list(SUB_HEADING_PATTERN.finditer(body))
+    sub_chunks = []
+    
+    if len(sub_matches) >= 2:
+        # Partition along sub-headings
+        for i, sm in enumerate(sub_matches):
+            start = sm.start()
+            end = sub_matches[i + 1].start() if i + 1 < len(sub_matches) else len(body)
+            sub_title = sm.group(0).strip("# ").strip()
+            sub_body = body[start:end].strip()
+            if len(sub_body) < MIN_CHUNK_CHAR_LENGTH and i + 1 < len(sub_matches):
+                continue
+            
+            sub_idx = len(sub_chunks) + 1
+            parent_id = chunk.get("id", "ch_01")
+            sub_id = f"{parent_id}-{sub_idx}"
+            summary, keys = extract_index_metadata(sub_body)
+            sub_chunks.append({
+                "source": chunk.get("source", ""),
+                "chapter": f"{chunk['chapter']} - {sub_title}",
+                "content": sub_body,
+                "start_line": chunk.get("start_line", 1) + body[:start].count("\n"),
+                "end_line": chunk.get("start_line", 1) + body[:end].count("\n"),
+                "id": sub_id,
+                "aliases": chunk.get("aliases", []) + [sub_title, f"Part {sub_idx}"],
+                "summary": summary,
+                "key_elements": keys
+            })
+    
+    # Fallback: Partition along safe blank lines if no subheadings or still too large
+    if not sub_chunks:
+        lines = body.splitlines()
+        total_lines = len(lines)
+        target_step = 400  # ~400 lines per sub-chunk
+        for idx, start_idx in enumerate(range(0, total_lines, target_step), 1):
+            end_idx = min(start_idx + target_step, total_lines)
+            # Snap to blank line
+            while end_idx < total_lines and lines[end_idx].strip() != "":
+                end_idx += 1
+            c_text = "\n".join(lines[start_idx:end_idx]).strip()
+            if not c_text:
+                continue
+            summary, keys = extract_index_metadata(c_text)
+            parent_id = chunk.get("id", "ch_01")
+            sub_chunks.append({
+                "source": chunk.get("source", ""),
+                "chapter": f"{chunk['chapter']} (Part {idx})",
+                "content": c_text,
+                "start_line": chunk.get("start_line", 1) + start_idx,
+                "end_line": chunk.get("start_line", 1) + end_idx,
+                "id": f"{parent_id}-{idx}",
+                "aliases": chunk.get("aliases", []) + [f"Part {idx}"],
+                "summary": summary,
+                "key_elements": keys
+            })
+            if end_idx >= total_lines:
+                break
+
+    return sub_chunks if sub_chunks else [chunk]
+
+
 def chunk_chapters(text: str, source: str) -> tuple[list[dict], bool]:
-    """Segment text by dynamic patterns with TOC guard and minimum length threshold."""
+    """Segment text by dynamic patterns with TOC guard, semantic sub-partitioning, and minimum threshold."""
     matches = filter_valid_chapter_matches(text)
     if not matches:
         return chunk_sliding_window(text, source), False
@@ -165,11 +237,15 @@ def chunk_chapters(text: str, source: str) -> tuple[list[dict], bool]:
 
         cid, aliases = resolve_taxonomy(title, len(raw_chunks) + 1)
         summary, keys = extract_index_metadata(body)
-        raw_chunks.append({
+        base_chunk = {
             "source": source, "chapter": title, "content": body,
             "start_line": text[:m.start()].count("\n") + 1, "end_line": text[:end].count("\n") + 1,
             "id": cid, "aliases": aliases, "summary": summary, "key_elements": keys
-        })
+        }
+        
+        # Hierarchical semantic split if oversized
+        refined = split_large_chunk_semantically(base_chunk)
+        raw_chunks.extend(refined)
 
     if not raw_chunks:
         return chunk_sliding_window(text, source), False
@@ -188,7 +264,7 @@ def safe_collect_files(inp: Path) -> list[Path]:
 
 def main():
     p = argparse.ArgumentParser(description="Parse, clean, and chunk documents for deep-mod with TOC filter")
-    p.add_argument("input", help="Target file, directory, or URL")
+    p.add_argument("input", nargs="?", default="", help="Target file, directory, or URL")
     p.add_argument("--format", choices=["stream", "json"], default="stream")
     p.add_argument("-o", "--output", help="Destination file path")
     p.add_argument("--split-dir", help="Directory to export chapter files")
@@ -198,8 +274,12 @@ def main():
     args = p.parse_args()
 
     if args.check:
-        print("[OK] deep-mod ingester is Ready with TOC guard and page-range filter.")
+        print("[OK] deep-mod ingester is Ready with semantic sub-partitioning and page-range filter.")
         return
+
+    if not args.input:
+        p.print_help()
+        sys.exit(1)
 
     page_range = None
     if args.page_range:
