@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unified Ingester for deep-mod: Read -> Clean -> Chunk -> Output with TOC Guard & Offset."""
+"""Unified Ingester for deep-mod: Read -> Clean -> Chunk -> Output with Semantic Partitioning."""
 import argparse, html, json, re, sys, unicodedata, zipfile
 import xml.etree.ElementTree as ET
 from urllib.parse import urlparse
@@ -23,6 +23,8 @@ MAX_STREAM_TOKENS = LIMITS.get("max_stream_tokens", 10000)
 CHAPTER_PATTERN = re.compile(RULES_DATA.get("pattern", r'^(?:#\s+|第\s*\d+\s*章\s*|Chapter\s+\d+[:\s]+)(.+)$'), re.MULTILINE | re.IGNORECASE)
 TOC_DOT_LEADER_PATTERN = re.compile(r'(?:\.{3,}|(?:\.\s*){3,}|\·{3,}|…{2,})\s*\d+$')
 MIN_CHUNK_CHAR_LENGTH = 200
+MAX_SINGLE_CHUNK_BYTES = 38000
+SUB_HEADING_PATTERN = re.compile(r'^(?:#{2,4}\s+|(?:\d+\.\d+|\b[A-Z]{2,3}-\d+)\s+)(.+)$', re.MULTILINE)
 
 TAXONOMY = RULES_DATA.get("taxonomy", {})
 INDEXING = RULES_DATA.get("indexing", {})
@@ -52,8 +54,7 @@ def read_raw(p: Path, page_range: tuple[int, int] | None = None) -> str:
         try:
             import openpyxl
             wb = openpyxl.load_workbook(p, data_only=True, read_only=True)
-            lines = [f"# Sheet: {s}\n" + "\n".join(" | ".join(str(v).strip() for v in r if v is not None and str(v).strip()) for r in wb[s].iter_rows(values_only=True) if any(r)) for s in wb.sheetnames]
-            return "\n".join(lines)
+            return "\n".join(f"# Sheet: {s}\n" + "\n".join(" | ".join(str(v).strip() for v in r if v is not None and str(v).strip()) for r in wb[s].iter_rows(values_only=True) if any(r)) for s in wb.sheetnames)
         except ImportError:
             sys.stderr.write("Warning: openpyxl not installed. Skipping XLSX parsing.\n")
             return ""
@@ -63,9 +64,7 @@ def read_raw(p: Path, page_range: tuple[int, int] | None = None) -> str:
             reader = pypdf.PdfReader(str(p))
             total = len(reader.pages)
             start_p, end_p = (1, total) if not page_range else page_range
-            start_idx = max(0, start_p - 1)
-            end_idx = min(total, end_p)
-            return "\n".join(reader.pages[i].extract_text() or "" for i in range(start_idx, end_idx))
+            return "\n".join(reader.pages[i].extract_text() or "" for i in range(max(0, start_p - 1), min(total, end_p)))
         except Exception as e:
             sys.stderr.write(f"Warning: Failed to extract PDF {p.name}: {e}\n")
             return ""
@@ -89,9 +88,9 @@ def extract_index_metadata(content: str) -> tuple[str, list[str]]:
     summary = " ".join(lines[:SUMMARY_LINES])[:200]
     keys: list[str] = []
     for pat in KEY_PATTERNS:
-        matches = [m.group(1).strip() for m in pat.finditer(content) if m.group(1).strip()]
-        for k in matches:
-            if k not in keys:
+        for m in pat.finditer(content):
+            k = m.group(1).strip()
+            if k and k not in keys:
                 keys.append(k)
             if len(keys) >= MAX_KEY_ELEMENTS:
                 break
@@ -101,7 +100,7 @@ def extract_index_metadata(content: str) -> tuple[str, list[str]]:
 
 
 def chunk_sliding_window(text: str, source: str) -> list[dict]:
-    """Fallback chunking with 800-line window and 50-line overlap for unsegmented texts."""
+    """Fallback chunking with safe window snapping for unsegmented texts."""
     lines = text.splitlines()
     total = len(lines)
     if total <= CHUNK_LINES:
@@ -112,12 +111,7 @@ def chunk_sliding_window(text: str, source: str) -> list[dict]:
         end_idx = min(start_idx + CHUNK_LINES, total)
         c_text = "\n".join(lines[start_idx:end_idx])
         summary, keys = extract_index_metadata(c_text)
-        chunks.append({
-            "source": source, "chapter": f"Part {idx:02d} (Lines {start_idx+1}-{end_idx})",
-            "content": c_text, "start_line": start_idx + 1, "end_line": end_idx,
-            "id": f"part_{idx:02d}", "aliases": [f"Part {idx}", f"第{idx}批次"],
-            "summary": summary, "key_elements": keys
-        })
+        chunks.append({"source": source, "chapter": f"Part {idx:02d} (Lines {start_idx+1}-{end_idx})", "content": c_text, "start_line": start_idx + 1, "end_line": end_idx, "id": f"part_{idx:02d}", "aliases": [f"Part {idx}", f"第{idx}批次"], "summary": summary, "key_elements": keys})
         if end_idx >= total:
             break
     return chunks
@@ -135,19 +129,7 @@ def resolve_taxonomy(title: str, idx: int) -> tuple[str, list[str]]:
 
 def filter_valid_chapter_matches(text: str) -> list[re.Match]:
     """Filter out TOC lines with dot-leaders and duplicate/empty fragments."""
-    candidates = list(CHAPTER_PATTERN.finditer(text))
-    valid = []
-    for m in candidates:
-        line = m.group(0).strip()
-        # Drop if line has dot leaders (e.g. Chapter 1 ... 3)
-        if TOC_DOT_LEADER_PATTERN.search(line):
-            continue
-        valid.append(m)
-    return valid
-
-
-MAX_SINGLE_CHUNK_BYTES = 38000  # ~38 KB target to stay well within 46,080 tool limit
-SUB_HEADING_PATTERN = re.compile(r'^(?:#{2,4}\s+|(?:\d+\.\d+|\b[A-Z]{2,3}-\d+)\s+)(.+)$', re.MULTILINE)
+    return [m for m in CHAPTER_PATTERN.finditer(text) if not TOC_DOT_LEADER_PATTERN.search(m.group(0).strip())]
 
 
 def split_large_chunk_semantically(chunk: dict) -> list[dict]:
@@ -155,13 +137,9 @@ def split_large_chunk_semantically(chunk: dict) -> list[dict]:
     body = chunk["content"]
     if len(body.encode("utf-8")) <= MAX_SINGLE_CHUNK_BYTES:
         return [chunk]
-
-    # Find sub-headings within body
     sub_matches = list(SUB_HEADING_PATTERN.finditer(body))
     sub_chunks = []
-    
     if len(sub_matches) >= 2:
-        # Partition along sub-headings
         for i, sm in enumerate(sub_matches):
             start = sm.start()
             end = sub_matches[i + 1].start() if i + 1 < len(sub_matches) else len(body)
@@ -169,52 +147,25 @@ def split_large_chunk_semantically(chunk: dict) -> list[dict]:
             sub_body = body[start:end].strip()
             if len(sub_body) < MIN_CHUNK_CHAR_LENGTH and i + 1 < len(sub_matches):
                 continue
-            
             sub_idx = len(sub_chunks) + 1
             parent_id = chunk.get("id", "ch_01")
-            sub_id = f"{parent_id}-{sub_idx}"
             summary, keys = extract_index_metadata(sub_body)
-            sub_chunks.append({
-                "source": chunk.get("source", ""),
-                "chapter": f"{chunk['chapter']} - {sub_title}",
-                "content": sub_body,
-                "start_line": chunk.get("start_line", 1) + body[:start].count("\n"),
-                "end_line": chunk.get("start_line", 1) + body[:end].count("\n"),
-                "id": sub_id,
-                "aliases": chunk.get("aliases", []) + [sub_title, f"Part {sub_idx}"],
-                "summary": summary,
-                "key_elements": keys
-            })
-    
-    # Fallback: Partition along safe blank lines if no subheadings or still too large
+            sub_chunks.append({"source": chunk.get("source", ""), "chapter": f"{chunk['chapter']} - {sub_title}", "content": sub_body, "start_line": chunk.get("start_line", 1) + body[:start].count("\n"), "end_line": chunk.get("start_line", 1) + body[:end].count("\n"), "id": f"{parent_id}-{sub_idx}", "aliases": chunk.get("aliases", []) + [sub_title, f"Part {sub_idx}"], "summary": summary, "key_elements": keys})
     if not sub_chunks:
         lines = body.splitlines()
         total_lines = len(lines)
-        target_step = 400  # ~400 lines per sub-chunk
+        target_step = 400
         for idx, start_idx in enumerate(range(0, total_lines, target_step), 1):
             end_idx = min(start_idx + target_step, total_lines)
-            # Snap to blank line
             while end_idx < total_lines and lines[end_idx].strip() != "":
                 end_idx += 1
             c_text = "\n".join(lines[start_idx:end_idx]).strip()
             if not c_text:
                 continue
             summary, keys = extract_index_metadata(c_text)
-            parent_id = chunk.get("id", "ch_01")
-            sub_chunks.append({
-                "source": chunk.get("source", ""),
-                "chapter": f"{chunk['chapter']} (Part {idx})",
-                "content": c_text,
-                "start_line": chunk.get("start_line", 1) + start_idx,
-                "end_line": chunk.get("start_line", 1) + end_idx,
-                "id": f"{parent_id}-{idx}",
-                "aliases": chunk.get("aliases", []) + [f"Part {idx}"],
-                "summary": summary,
-                "key_elements": keys
-            })
+            sub_chunks.append({"source": chunk.get("source", ""), "chapter": f"{chunk['chapter']} (Part {idx})", "content": c_text, "start_line": chunk.get("start_line", 1) + start_idx, "end_line": chunk.get("start_line", 1) + end_idx, "id": f"{chunk.get('id', 'ch_01')}-{idx}", "aliases": chunk.get("aliases", []) + [f"Part {idx}"], "summary": summary, "key_elements": keys})
             if end_idx >= total_lines:
                 break
-
     return sub_chunks if sub_chunks else [chunk]
 
 
@@ -223,34 +174,19 @@ def chunk_chapters(text: str, source: str) -> tuple[list[dict], bool]:
     matches = filter_valid_chapter_matches(text)
     if not matches:
         return chunk_sliding_window(text, source), False
-
     raw_chunks = []
     for i, m in enumerate(matches):
         start = m.end()
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
         title = m.group(0).strip("# ").strip()
         body = text[start:end].strip()
-
-        # Discard empty chunks or TOC residuals (< MIN_CHUNK_CHAR_LENGTH)
         if len(body) < MIN_CHUNK_CHAR_LENGTH and i + 1 < len(matches):
             continue
-
         cid, aliases = resolve_taxonomy(title, len(raw_chunks) + 1)
         summary, keys = extract_index_metadata(body)
-        base_chunk = {
-            "source": source, "chapter": title, "content": body,
-            "start_line": text[:m.start()].count("\n") + 1, "end_line": text[:end].count("\n") + 1,
-            "id": cid, "aliases": aliases, "summary": summary, "key_elements": keys
-        }
-        
-        # Hierarchical semantic split if oversized
-        refined = split_large_chunk_semantically(base_chunk)
-        raw_chunks.extend(refined)
-
-    if not raw_chunks:
-        return chunk_sliding_window(text, source), False
-
-    return raw_chunks, True
+        base_chunk = {"source": source, "chapter": title, "content": body, "start_line": text[:m.start()].count("\n") + 1, "end_line": text[:end].count("\n") + 1, "id": cid, "aliases": aliases, "summary": summary, "key_elements": keys}
+        raw_chunks.extend(split_large_chunk_semantically(base_chunk))
+    return (raw_chunks, True) if raw_chunks else (chunk_sliding_window(text, source), False)
 
 
 def safe_collect_files(inp: Path) -> list[Path]:
@@ -276,7 +212,6 @@ def main():
     if args.check:
         print("[OK] deep-mod ingester is Ready with semantic sub-partitioning and page-range filter.")
         return
-
     if not args.input:
         p.print_help()
         sys.exit(1)
@@ -307,7 +242,6 @@ def main():
             sys.exit(f"Error: {err}")
         if not files:
             sys.exit(f"No valid documents found in: {inp}")
-
         records, all_matched = [], True
         for f in files:
             try:
@@ -324,31 +258,18 @@ def main():
 
     total_chars = sum(len(r["content"]) for r in records)
     est_tokens = total_chars // 3
+    catalog = [{"index": i, "id": r.get("id", f"part_{i:02d}"), "title": r["chapter"], "file": f"{i:02d}_{re.sub(r'[\\\\/*?:\"<>|#\\s]+', '_', r['chapter']).strip('_')}.md", "aliases": r.get("aliases", []), "summary": r.get("summary", ""), "key_elements": r.get("key_elements", []), "lines": r["content"].count("\n") + 3, "source_start_line": r.get("start_line", 1), "source_end_line": r.get("end_line", 1), "est_tokens": len(r["content"]) // 3} for i, r in enumerate(records, 1)]
 
-    catalog = [
-        {"index": i, "id": r.get("id", f"part_{i:02d}"), "title": r["chapter"], "file": f"{i:02d}_{re.sub(r'[\\\\/*?:\"<>|#\\s]+', '_', r['chapter']).strip('_')}.md",
-         "aliases": r.get("aliases", []), "summary": r.get("summary", ""), "key_elements": r.get("key_elements", []),
-         "lines": r["content"].count("\n") + 3,
-         "source_start_line": r.get("start_line", 1), "source_end_line": r.get("end_line", 1),
-         "est_tokens": len(r["content"]) // 3}
-        for i, r in enumerate(records, 1)
-    ]
-
-    # Priority 1: Export individual files and index.json
     if args.split_dir:
         dest_dir = Path(args.split_dir).resolve()
         dest_dir.mkdir(parents=True, exist_ok=True)
         for c, r in zip(catalog, records):
             (dest_dir / c["file"]).write_text(f"# {r['chapter']}\n\n{r['content']}\n", encoding="utf-8-sig")
         (dest_dir / "data").mkdir(exist_ok=True)
-        (dest_dir / "data" / "index.json").write_text(json.dumps({
-            "total_chunks": len(records), "chunk_mode": "chapter_matched" if all_matched else "sliding_window_overlap",
-            "overlap_lines": 0 if all_matched else (CHUNK_LINES - CHUNK_STEP), "chunks": catalog
-        }, ensure_ascii=False, indent=2), encoding="utf-8")
+        (dest_dir / "data" / "index.json").write_text(json.dumps({"total_chunks": len(records), "chunk_mode": "chapter_matched" if all_matched else "sliding_window_overlap", "overlap_lines": 0 if all_matched else (CHUNK_LINES - CHUNK_STEP), "chunks": catalog}, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Exported {len(records)} chunks and data/index.json to {dest_dir}")
         return
 
-    # Priority 2: Large document circuit breaker or list-only flag
     if args.list_only or est_tokens > MAX_STREAM_TOKENS:
         if not args.list_only:
             sys.stderr.write(f"[NOTICE] Large document ({est_tokens} est. tokens > {MAX_STREAM_TOKENS}). Outputting chapter list. Use --split-dir to export.\n")
