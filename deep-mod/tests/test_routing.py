@@ -82,7 +82,7 @@ class TestDeepModRouting(unittest.TestCase):
         self.assertEqual(chunks[0]["chapter"], "Full Document")
 
         # Matched text returns matched=True
-        chapter_text = "# 第一章 核心架構\n\n內容說明\n\n# 第二章 實作細節\n\n實作內容"
+        chapter_text = "# 第一章 核心架構\n\n本章節詳細說明系統之核心模組架構設計原則與相關安全防禦技術措施，涵蓋通訊協定、日誌審計與資料流程規範，確保整體架構具備高度防禦彈性與合規要求。本章節進一步提供各模組間介面規格說明。\n\n# 第二章 實作細節\n\n本章節進一步探討具體程式碼之實作方式與測試驗證流程，確保系統符合各項安全與品質指標，並完整涵蓋單元測試與整合測試各項情境。\n"
         chunks, matched = chunk_chapters(chapter_text, "book.md")
         self.assertTrue(matched, "Markdown headings should flag matched=True")
         self.assertEqual(len(chunks), 2)

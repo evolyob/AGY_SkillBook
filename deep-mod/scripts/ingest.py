@@ -22,7 +22,7 @@ MAX_STREAM_TOKENS = LIMITS.get("max_stream_tokens", 10000)
 
 CHAPTER_PATTERN = re.compile(RULES_DATA.get("pattern", r'^(?:#\s+|第\s*\d+\s*章\s*|Chapter\s+\d+[:\s]+)(.+)$'), re.MULTILINE | re.IGNORECASE)
 TOC_DOT_LEADER_PATTERN = re.compile(r'(?:\.{3,}|(?:\.\s*){3,}|\·{3,}|…{2,})\s*\d+$')
-MIN_CHUNK_CHAR_LENGTH = 200
+MIN_CHUNK_CHAR_LENGTH = 90
 MAX_SINGLE_CHUNK_BYTES = 38000
 SUB_HEADING_PATTERN = re.compile(r'^(?:#{2,4}\s+|(?:\d+\.\d+|\b[A-Z]{2,3}-\d+)\s+)(.+)$', re.MULTILINE)
 
