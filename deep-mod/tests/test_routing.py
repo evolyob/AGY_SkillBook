@@ -120,5 +120,26 @@ class TestDeepModRouting(unittest.TestCase):
             if tmp_txt.exists(): tmp_txt.unlink()
 
 
+    def test_defang_and_reference_stripping(self):
+        sample = (
+            "Incident Response | Chapter 1 | 123\n"
+            "Source: PDF Pages 45-48\n"
+            "Here is an IoC: https://attacker.example.com/c2/payload.ps1\n"
+            "Here is http://test.org:8080/api\n"
+            "## References\n"
+            "[1] Author, A. (2025). Paper Title. https://doi.org/10.1234/5678\n"
+            "[2] Standards Org. (2024). Guideline. https://example.org/guideline.pdf\n"
+        )
+        cleaned = clean_text(sample)
+        self.assertNotIn("Incident Response | Chapter 1 | 123", cleaned)
+        self.assertNotIn("Source: PDF Pages", cleaned)
+        self.assertNotIn("## References", cleaned)
+        self.assertNotIn("[1] Author", cleaned)
+        self.assertNotIn("https://", cleaned)
+        self.assertNotIn("http://", cleaned)
+        self.assertIn("hxxps://attacker[.]example[.]com/c2/payload.ps1", cleaned)
+        self.assertIn("hxxp://test[.]org:8080/api", cleaned)
+
+
 if __name__ == "__main__":
     unittest.main()

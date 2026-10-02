@@ -74,11 +74,46 @@ def read_raw(p: Path, page_range: tuple[int, int] | None = None) -> str:
     return ""
 
 
+def defang_urls(text: str) -> str:
+    """Defang all active URLs to prevent accidental clicks in threat/CTI documents."""
+    def _defang(m: re.Match) -> str:
+        u = m.group(0).replace("http://", "hxxp://").replace("https://", "hxxps://")
+        parts = u.split("/")
+        if len(parts) >= 3:
+            parts[2] = parts[2].replace(".", "[.]")
+            return "/".join(parts)
+        return u.replace(".", "[.]")
+    return re.sub(r'https?://[^\s)\]\"\'\`<>]+', _defang, text)
+
+
+def strip_reference_blocks(text: str) -> str:
+    """Filter out trailing citation blocks and reference sections."""
+    lines, out, in_ref = text.splitlines(), [], False
+    for l in lines:
+        s = l.strip()
+        if re.match(r'^#{1,4}\s*(?:References?|參考文獻|參考資料|Sources?|文獻來源)\s*$', s, re.I):
+            in_ref = True
+            continue
+        if in_ref:
+            if s.startswith("#") and not re.match(r'^#{1,4}\s*(?:References?|參考文獻|參考資料)', s, re.I):
+                in_ref = False
+            else:
+                continue
+        if re.match(r'^\s*\[\d+\]\s+[A-Z\"][a-zA-Z0-9\s,\-\.\'\":/]+', s) or re.match(r'^\s*\[\d+\]\s*$', s):
+            continue
+        out.append(l)
+    return "\n".join(out)
+
+
 def clean_text(raw: str) -> str:
-    """Single-pass sanitization: NFKC normalization, hyphen rejoining, and noise removal."""
+    """Single-pass sanitization: NFKC normalization, hyphen rejoining, defanging, and noise removal."""
     if not raw:
         return ""
     text = re.sub(r'(\b[A-Za-z]+)-\n([A-Za-z]+\b)', r'\1\2', unicodedata.normalize("NFKC", raw))
+    text = re.sub(r'^[A-Za-z0-9\s,\-\._/]+\s+\|\s+Chapter\s+\d+\s+\|\s+\d+\s*$', '', text, flags=re.M)
+    text = re.sub(r'^Source:\s+PDF\s+Pages?\s+.*$', '', text, flags=re.M | re.I)
+    text = strip_reference_blocks(text)
+    text = defang_urls(text)
     return "\n".join(line.strip() for line in CLEAN_PATTERN.sub("", text).splitlines() if line.strip())
 
 
