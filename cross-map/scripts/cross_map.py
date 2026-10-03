@@ -1,45 +1,52 @@
 #!/usr/bin/env python3
 """Cross-Skill Semantic Mapping & Registry Engine (`cross-map`)."""
 
-import argparse, ast, importlib.util, json, re, shutil, sys
+import argparse, ast, json, re, sys
+from importlib.util import find_spec
 from pathlib import Path
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "data" / "groups.json"
+SCENARIOS_FILE = Path(__file__).resolve().parent.parent / "data" / "scenarios.example.json"
 DEFAULT_ROOT = Path(__file__).resolve().parents[2]
-VALID_FLAGS = {"--sync", "--json", "--check"}
 
 
 def load_config() -> dict:
-    return json.loads(DATA_FILE.read_text(encoding="utf-8-sig")) if DATA_FILE.exists() else {}
+    cfg = json.loads(DATA_FILE.read_text(encoding="utf-8-sig")) if DATA_FILE.exists() else {}
+    if SCENARIOS_FILE.exists():
+        try:
+            sc_cfg = json.loads(SCENARIOS_FILE.read_text(encoding="utf-8-sig"))
+            cfg["scenarios"] = sc_cfg.get("scenarios", [])
+        except Exception:
+            pass
+    return cfg
+
+
+def _extract_imported_pkgs(tree: ast.AST) -> list[str]:
+    pkgs = []
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Import):
+            pkgs.extend(a.name.split('.')[0] for a in n.names)
+        elif isinstance(n, ast.ImportFrom) and n.module:
+            pkgs.append(n.module.split('.')[0])
+    return pkgs
 
 
 def check_readiness(p: Path) -> str:
     sdir = p / "scripts"
     if not sdir.exists():
         return "`Ready`"
-    missing = []
     stdlib = sys.stdlib_module_names
     local_modules = {f.stem for f in sdir.glob("*.py")} | {d.name for d in sdir.iterdir() if d.is_dir()}
+    missing = []
     for f in sdir.glob("*.py"):
-        src = f.read_text(encoding="utf-8-sig", errors="replace")
         try:
-            tree = ast.parse(src)
-            for n in ast.walk(tree):
-                if isinstance(n, ast.Import):
-                    for a in n.names:
-                        pkg = a.name.split('.')[0]
-                        if pkg not in stdlib and pkg not in sys.builtin_module_names and pkg not in local_modules and not importlib.util.find_spec(pkg):
-                            missing.append(pkg)
-                elif isinstance(n, ast.ImportFrom):
-                    if n.module:
-                        pkg = n.module.split('.')[0]
-                        if pkg not in stdlib and pkg not in sys.builtin_module_names and pkg not in local_modules and not importlib.util.find_spec(pkg):
-                            missing.append(pkg)
+            tree = ast.parse(f.read_text(encoding="utf-8-sig", errors="replace"))
         except SyntaxError:
-            pass
-    if missing:
-        return f"`Missing: {', '.join(sorted(set(missing))[:2])}`"
-    return "`Ready`"
+            continue
+        for pkg in _extract_imported_pkgs(tree):
+            if pkg not in stdlib and pkg not in sys.builtin_module_names and pkg not in local_modules and not find_spec(pkg):
+                missing.append(pkg)
+    return f"`Missing: {', '.join(sorted(set(missing))[:2])}`" if missing else "`Ready`"
 
 
 def parse_skill_meta(p: Path) -> dict:
@@ -52,7 +59,8 @@ def parse_skill_meta(p: Path) -> dict:
     intents = re.findall(r"^###?\s+(?:Step\s+\d+:|Phase\s+\d+:|Branch\s+[A-Z]:?)\s*(.+)$", txt, re.M)
     if not intents:
         intents = [x.strip() for x in re.findall(r"^##\s+Objective\s*\n+([^#\n]+)", txt, re.M)]
-    matches = re.findall(r"「([^」]+)」|'([^']+)'|\"([^\"]+)\"", txt)
+    body = re.sub(r"^---.*?---\s*", "", txt, flags=re.DOTALL)
+    matches = re.findall(r"「([^」]+)」|'([^']+)'|\"([^\"]+)\"", body)
     utts = [next(i for i in t if i).strip("•- \t'\"") for t in matches if any(t)]
     return {
         "name": name.group(1).strip() if name else p.name,
@@ -84,11 +92,13 @@ def parse_scripts(p: Path) -> dict:
         src = f.read_text(encoding="utf-8-sig", errors="replace")
         flags = set(re.findall(r'["\'](--[a-zA-Z0-9_-]+)["\']', src))
         try:
-            for n in ast.walk(ast.parse(src)):
+            tree = ast.parse(src)
+        except SyntaxError:
+            tree = None
+        if tree:
+            for n in ast.walk(tree):
                 if isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "add_argument":
                     flags.update(a.value for a in n.args if isinstance(a, ast.Constant) and isinstance(a.value, str) and a.value.startswith("--"))
-        except SyntaxError:
-            pass
         sflags[f.name] = sorted(flags - {"--help"})
     return sflags
 
@@ -99,8 +109,10 @@ def scan_skill(p: Path) -> dict:
         "skill": m["name"], "path": str(p), "description": m["description"], "intents": m["intents"],
         "flags": sorted(set(s["flags"]) | {x for fl in scr.values() for x in fl}),
         "slots": s["slots"], "scripts": scr, "channel": s["channel"], "utterances": m["utterances"],
+        "has_sec": (p / "SECURITY.md").exists(),
         "readiness": check_readiness(p)
     }
+
 
 
 def render_table(headers: list[str], rows: list[list[str]]) -> str:
@@ -110,7 +122,18 @@ def render_table(headers: list[str], rows: list[list[str]]) -> str:
 
 def generate_skills_doc(profs: list[dict], cfg: dict) -> str:
     h = cfg.get("headers", {})
-    r_rows = [[f"**`{p['skill']}`**", p["description"].split(".")[0] if p["description"] else p["skill"], p["readiness"], p["channel"].split(".")[0], ", ".join(f"`{f}`" for f in p["flags"][:3]) or "*(Module / API)*", f"[`SECURITY.md`](./{p['skill']}/SECURITY.md)"] for p in profs]
+    installed = {p["skill"] for p in profs}
+    r_rows = [
+        [
+            f"**`{p['skill']}`**",
+            p["description"].split(".")[0] if p["description"] else p["skill"],
+            p["readiness"],
+            p["channel"].split(".")[0],
+            ", ".join(f"`{f}`" for f in p["flags"][:3]) or "*(Module / API)*",
+            f"[`SECURITY.md`](./{p['skill']}/SECURITY.md)" if p.get("has_sec") else "*(Standard)*"
+        ]
+        for p in profs
+    ]
     m_rows = []
     for p in profs:
         sf = " ".join([f"`{f}`" for f in p["flags"][:2]] + [f"`{s}`" for s in p["slots"][:2]]) or "`[path]`"
@@ -119,15 +142,31 @@ def generate_skills_doc(profs: list[dict], cfg: dict) -> str:
             m_rows.append([f"**`{p['skill']}`**" if idx == 0 else "", f"`{it}`", sf, utts if idx == 0 else ""])
     g_rows = []
     for g in cfg.get("scenarios", []):
+        pipe_steps = g.get("pipeline", [])
+        matched_pipeline = []
+        is_satisfiable = True
+        for s in pipe_steps:
+            candidates = s.get("suggested_skills", [s["skill"]] if "skill" in s else [])
+            matched = next((c for c in candidates if c in installed), None)
+            if not matched:
+                is_satisfiable = False
+                break
+            matched_pipeline.append((s, matched))
+        if not is_satisfiable or not matched_pipeline:
+            continue
         w_mode = f"`{g.get('work_mode', 'phased')}`"
         utts = "<br>".join(f"• \"{t}\"" for t in g.get("utterance_triggers", [])[:2])
-        pipe_skills = "<br>".join(f"**Step {s['step']}**: `{s['skill']}`" for s in g.get("pipeline", []))
+        p_skills = "<br>".join(f"**Step {s['step']}**: `{matched}`" for s, matched in matched_pipeline)
         pipe_details = "<br>".join(
             f"**Step {s['step']}**: `{(', '.join(s['flags']) if 'flags' in s else s.get('flag', ''))}` `{s.get('slot', '')}`<br>*(Gate: `{s.get('exit_gate', 'done')}`)*"
-            for s in g.get("pipeline", [])
+            for s, _ in matched_pipeline
         )
-        g_rows.append([f"**{g['label']}**<br>*({g['id']})*", w_mode, utts, pipe_skills, pipe_details])
-    return f"# Global Skills Registry & Intent Index (`SKILLS.md`)\n\n> Authoritative capability registry, 4-facet intent matrix, and scenario pipelines for all active skills under this directory.\n> Automatically generated and synchronized via `cross-map`.\n\n---\n\n## 1. Skill Registry & Security Contracts\n\n{render_table(h.get('registry', []), r_rows)}\n\n---\n\n## 2. 4-Facet Intent & Semantic Routing Matrix\n\n{render_table(h.get('matrix', []), m_rows)}\n\n---\n\n## 3. Multi-Skill Scenario Pipelines\n\n{render_table(h.get('groups', []), g_rows)}\n"
+        g_rows.append([f"**{g['label']}**<br>*({g['id']})*", w_mode, utts, p_skills, pipe_details])
+    
+    table_3 = render_table(h.get('groups', []), g_rows) if g_rows else "*(No composite scenario pipelines available for currently installed skills)*"
+    return f"# Global Skills Registry & Intent Index (`SKILLS.md`)\n\n> Authoritative capability registry, 4-facet intent matrix, and scenario pipelines for all active skills under this directory.\n> Automatically generated and synchronized via `cross-map`.\n\n---\n\n## 1. Skill Registry & Security Contracts\n\n{render_table(h.get('registry', []), r_rows)}\n\n---\n\n## 2. 4-Facet Intent & Semantic Routing Matrix\n\n{render_table(h.get('matrix', []), m_rows)}\n\n---\n\n## 3. Multi-Skill Scenario Pipelines\n\n{table_3}\n"
+
+
 
 
 def main():
