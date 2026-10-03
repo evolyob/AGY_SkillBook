@@ -12,23 +12,23 @@
 ---
 
 ## 2. Dispatch Proposal Format (Presented to User)
-At the conclusion of a grilling and spec freeze session, present the following structured dispatch proposal:
+At the conclusion of a grilling and spec freeze session, dynamically evaluate the DAG and present a concrete, non-abstract dispatch proposal:
 
 ```markdown
-### 🚀 建議派工方案 (Subagents Dispatch Proposal)
+### 🚀 Subagents Dispatch Proposal
 
-本任務評估可拆分為 **N 個獨立子任務**，建議並行派工：
+The task has been decomposed into **N independent subtasks** for parallel execution:
 
-1. **Subagent 1（[角色名稱]）**
-   * **負責檔案**：`scripts/xxx.py` + `tests/test_xxx.py`
-   * **任務內容**：實作 [具體邏輯]。
-   * **驗收指令**：`python3 -m unittest tests/test_xxx.py`
+1. **Subagent 1 ([Concrete Role Name])**
+   * **Allowed Paths**: `scripts/target_module.py`, `tests/test_target_module.py`
+   * **Responsibility**: [Exact function/class to implement or refactor, avoiding vague summaries]
+   * **Verification**: `python3 -m unittest tests/test_target_module.py`
 
-2. **Subagent 2（[角色名稱]）**
-   * **負責檔案**：`scripts/yyy.py` + `tests/test_yyy.py`
-   * **任務內容**：實作 [具體邏輯]。
-   * **驗收指令**：`python3 -m unittest tests/test_yyy.py`
+2. **Subagent 2 ([Concrete Role Name])**
+   * **Allowed Paths**: `scripts/cli_interface.py`, `tests/test_cli_interface.py`
+   * **Responsibility**: [Exact CLI flags and output formatting to add]
+   * **Verification**: `python3 -m unittest tests/test_cli_interface.py`
 
 ---
-> 💡 是否直接依照上述方案派發 Subagents 進行實作？
+> 💡 Proceed with parallel subagent dispatch based on this proposal?
 ```
