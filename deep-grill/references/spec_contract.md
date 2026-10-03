@@ -4,12 +4,17 @@
 
 ---
 
-## 1. Goal & Non-Goals Firewall
-- **Goal**: Concrete, single-sentence deliverable solving an exact technical or architectural problem.
-- **Non-Goals (CRITICAL Scope Firewall)**:
-  - PROHIBITED: Unapproved third-party dependencies or external connections.
-  - PROHIBITED: Speculative abstractions or wrapper layers without empirical benchmark backing.
-  - PROHIBITED: Modifying any file outside the declared *Allowed Paths*.
+## 1. Goal & Non-Goals Firewall (Integrated MISSION Rules)
+
+### Goal (Concrete Deliverable)
+- **Concrete Outcome (Why)**: Single-sentence observable outcome solving an exact technical or architectural problem.
+- **Anti-Abstract Mandate**: Strictly prohibit vague verbs like "understand", "support", or "improve". Mandate concrete deliverables (e.g. standalone CLI script, pure parser).
+- **Observable Success**: Explicit state or metric that proves completion (e.g. 100% tests pass, latency $\le$ 20ms).
+
+### Non-Goals (Scope Firewall & Out-of-Scope Isolation)
+- **Adjacent Isolation**: Explicitly list high-temptation adjacent modules or files that MUST NOT be touched.
+- **Dependency Quarantine**: Strictly prohibit unapproved third-party packages or speculative wrapper layers.
+- **Perimeter Lockdown**: Strictly block modifications to any file outside the declared *Allowed Paths*.
 
 ---
 
