@@ -1,0 +1,645 @@
+﻿{
+  "scenarios": [
+    {
+      "id": "executive_and_sales_deck_reporting",
+      "work_mode": "phased",
+      "tags": [
+        "mbr_prep",
+        "weekly_sales",
+        "kpi_aggregation",
+        "pptx_generation"
+      ],
+      "label": "Executive MBR & Weekly Sales Deck Automation",
+      "description": "Aggregate multi-source Excel sheets or CSV transactions, distill executive brief narratives, and compile WCAG compliant dynamic PPTX decks",
+      "utterance_triggers": [
+        "彙整營運 Excel 報表與當週交易數據，產出經營會議或業務週報 PPTX",
+        "Aggregate operational Excel reports and generate executive board meeting slides",
+        "提取財務營運 KPI 並產製高對比度業務進度簡報",
+        "整理本週銷售 CSV 並自動生成週會投影片"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "role": "spreadsheet_engine",
+          "requires_capability": "excel_cjk_recalc",
+          "suggested_skills": [
+            "exec-xlsx",
+            "excel-tool",
+            "sheet-parser"
+          ],
+          "action": "build",
+          "flags": [
+            "--recalc",
+            "--kpi"
+          ],
+          "slot": "[excel_or_csv_files]",
+          "exit_gate": "kpi_metrics_extracted"
+        },
+        {
+          "step": 2,
+          "role": "narrative_polisher",
+          "requires_capability": "text_detox_and_brief",
+          "suggested_skills": [
+            "noai-note",
+            "doc-cleaner",
+            "text-polisher"
+          ],
+          "action": "polish",
+          "flag": "--text",
+          "slot": "[kpi_data]",
+          "exit_gate": "executive_brief_ready"
+        },
+        {
+          "step": 3,
+          "role": "presentation_generator",
+          "requires_capability": "pptx_grid_compilation",
+          "suggested_skills": [
+            "pptx",
+            "slide-deck",
+            "presentation-engine"
+          ],
+          "action": "build",
+          "flags": [
+            "--template",
+            "--wcag"
+          ],
+          "slot": "[executive_narrative]",
+          "exit_gate": "slide_deck_compiled"
+        }
+      ]
+    },
+    {
+      "id": "market_and_client_intelligence",
+      "work_mode": "phased",
+      "tags": [
+        "market_research",
+        "competitor_analysis",
+        "client_briefing",
+        "one_pager_pdf"
+      ],
+      "label": "Deep Market & Client Intelligence Pipeline",
+      "description": "Conduct deep competitor research or client background investigation, verify facts, and compile publication-grade A4 briefing PDF",
+      "utterance_triggers": [
+        "對競爭對手或潛在客戶進行深度背景調研，產出包含數據儀表板的 A4 分析報告 PDF",
+        "Conduct deep competitor research and compile publication-grade PDF report",
+        "拜訪重要客戶前進行背景調查並產出一頁式作戰藍圖 PDF",
+        "蒐集目標企業情資並生成出版級研究報告"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "role": "deep_researcher",
+          "requires_capability": "evidence_fact_checking",
+          "suggested_skills": [
+            "deep-mod",
+            "deep-research",
+            "web-investigator"
+          ],
+          "action": "build",
+          "flags": [
+            "--research",
+            "--evidence"
+          ],
+          "slot": "[research_topic_or_client]",
+          "exit_gate": "evidence_and_data_collected"
+        },
+        {
+          "step": 2,
+          "role": "narrative_polisher",
+          "requires_capability": "text_detox_and_brief",
+          "suggested_skills": [
+            "noai-note",
+            "doc-cleaner",
+            "text-polisher"
+          ],
+          "action": "polish",
+          "flag": "--text",
+          "slot": "[research_notes]",
+          "exit_gate": "market_brief_polished"
+        },
+        {
+          "step": 3,
+          "role": "pdf_typesetter",
+          "requires_capability": "reportlab_pdf_layout",
+          "suggested_skills": [
+            "pdf",
+            "report-generator",
+            "pdf-engine"
+          ],
+          "action": "build",
+          "flags": [
+            "-o",
+            "--theme"
+          ],
+          "slot": "[market_brief]",
+          "exit_gate": "a4_pdf_report_compiled"
+        }
+      ]
+    },
+    {
+      "id": "enterprise_sop_and_minutes",
+      "work_mode": "phased",
+      "tags": [
+        "sop_generation",
+        "meeting_minutes",
+        "iso_compliance",
+        "docx_formatting"
+      ],
+      "label": "Enterprise SOP & Official Document Compilation",
+      "description": "Transform field memos, interview notes, and process drafts into structured Markdown blueprints and compile ISO compliant Word documents",
+      "utterance_triggers": [
+        "將零散的會議草稿或拜訪速記彙整，排版成符合公司格式的標準 SOP 或公文 Word 檔",
+        "Format meeting notes into enterprise ISO compliant SOP docx",
+        "客戶會議速記去雜音並排版為標準訪談紀錄",
+        "彙整作業流程草稿並發布標準化 SOP 規範"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "role": "blueprint_structurer",
+          "requires_capability": "text_detox_and_markdown",
+          "suggested_skills": [
+            "noai-note",
+            "doc-cleaner",
+            "spec-formatter"
+          ],
+          "action": "polish",
+          "flag": "--text",
+          "slot": "[draft_or_minutes]",
+          "exit_gate": "structured_blueprint_ready"
+        },
+        {
+          "step": 2,
+          "role": "word_document_typesetter",
+          "requires_capability": "iso_openxml_docx",
+          "suggested_skills": [
+            "exec-docx",
+            "word-formatter",
+            "docx-engine"
+          ],
+          "action": "build",
+          "flags": [
+            "--template",
+            "--iso"
+          ],
+          "slot": "[structured_blueprint]",
+          "exit_gate": "enterprise_docx_generated"
+        }
+      ]
+    },
+    {
+      "id": "rfp_and_quotation_traceability",
+      "work_mode": "phased",
+      "tags": [
+        "rfp_parsing",
+        "quotation_generation",
+        "compliance_matrix",
+        "headless_formula"
+      ],
+      "label": "RFP Tender Parsing & Quotation Traceability Matrix",
+      "description": "Parse RFP tenders or RFQ screenshot specifications with OCR, extract structured requirements, and generate CJK Excel tracking matrix with recalculation",
+      "utterance_triggers": [
+        "拆解 50 頁 PDF 招標文件或客戶詢價規格，產出 Excel 需求追蹤表與標準報價試算單",
+        "Parse RFP tender specification and export Excel compliance tracking matrix",
+        "將客戶詢價規格截圖轉換為標準報價單並重算折扣稅額",
+        "分析投標需求文件並生成需求追蹤矩陣"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "role": "document_ocr_parser",
+          "requires_capability": "pdf_ocr_extraction",
+          "suggested_skills": [
+            "pdf",
+            "document-parser",
+            "ocr-reader"
+          ],
+          "action": "audit",
+          "flags": [
+            "--extract",
+            "--ocr"
+          ],
+          "slot": "[rfp_pdf_or_rfq_image]",
+          "exit_gate": "specs_text_extracted"
+        },
+        {
+          "step": 2,
+          "role": "requirement_analyzer",
+          "requires_capability": "socratic_clarification",
+          "suggested_skills": [
+            "deep-mod",
+            "spec-analyzer",
+            "req-classifier"
+          ],
+          "action": "guide",
+          "flags": [
+            "--schema",
+            "--matrix"
+          ],
+          "slot": "[raw_specs_text]",
+          "exit_gate": "requirements_categorized"
+        },
+        {
+          "step": 3,
+          "role": "spreadsheet_engine",
+          "requires_capability": "excel_cjk_recalc",
+          "suggested_skills": [
+            "exec-xlsx",
+            "excel-tool",
+            "sheet-parser"
+          ],
+          "action": "build",
+          "flags": [
+            "--recalc",
+            "--cjk",
+            "--format table"
+          ],
+          "slot": "[structured_requirements]",
+          "exit_gate": "rfp_matrix_xlsx_generated"
+        }
+      ]
+    },
+    {
+      "id": "deep_grill_spec_alignment",
+      "work_mode": "phased",
+      "tags": [
+        "deep_grill",
+        "spec_clarification",
+        "lean_specification",
+        "state_machine"
+      ],
+      "label": "Deep Grill Interview & Lean Specification Alignment",
+      "description": "Execute interactive Socratic interview, clarify ambiguous feature boundaries, and output lean specification contracts",
+      "utterance_triggers": [
+        "執行 deep-grill 訪談並產出規格書",
+        "對齊模組需求架構並拆解狀態機",
+        "Conduct Socratic interview to resolve design ambiguities and formalize spec"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "role": "socratic_interviewer",
+          "requires_capability": "interactive_spec_interview",
+          "suggested_skills": [
+            "deep-grill",
+            "socratic-guide",
+            "spec-interviewer"
+          ],
+          "action": "guide",
+          "flag": "--grill",
+          "slot": "[target_feature]",
+          "exit_gate": "specification_clarified"
+        },
+        {
+          "step": 2,
+          "role": "spec_scaffolder",
+          "requires_capability": "state_machine_modeling",
+          "suggested_skills": [
+            "deep-mod",
+            "spec-architect",
+            "state-modeler"
+          ],
+          "action": "build",
+          "flag": "--schema",
+          "slot": "[feature_spec]",
+          "exit_gate": "modules_and_state_defined"
+        },
+        {
+          "step": 3,
+          "role": "narrative_polisher",
+          "requires_capability": "text_detox_and_brief",
+          "suggested_skills": [
+            "noai-note",
+            "doc-cleaner",
+            "text-polisher"
+          ],
+          "action": "polish",
+          "flag": "--text",
+          "slot": "[raw_spec]",
+          "exit_gate": "spec_ready_to_implement"
+        }
+      ]
+    },
+    {
+      "id": "external_source_security_review",
+      "work_mode": "phased",
+      "tags": [
+        "external_repo",
+        "security_review",
+        "github_audit",
+        "url_investigation"
+      ],
+      "label": "External Source Security & Quality Investigation",
+      "description": "Inspect external GitHub repositories, packages, or web sources against threat intel and quality gates",
+      "utterance_triggers": [
+        "Audit external GitHub repository",
+        "Investigate domain reputation and safety",
+        "Review open source dependency security",
+        "檢驗外部來源與開源套件安全性"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "role": "threat_intel_probe",
+          "requires_capability": "domain_cve_intel",
+          "suggested_skills": [
+            "sec-intel",
+            "threat-probe",
+            "osint-scanner"
+          ],
+          "action": "audit",
+          "flag": "--domain",
+          "slot": "[URL/Domain]",
+          "exit_gate": "domain_reputation_verified"
+        },
+        {
+          "step": 2,
+          "role": "code_security_auditor",
+          "requires_capability": "ast_security_audit",
+          "suggested_skills": [
+            "audit-skill",
+            "code-auditor",
+            "ast-linter"
+          ],
+          "action": "audit",
+          "flags": [
+            "--security",
+            "--ast"
+          ],
+          "slot": "[target_path]",
+          "exit_gate": "source_code_audited"
+        },
+        {
+          "step": 3,
+          "role": "narrative_polisher",
+          "requires_capability": "text_detox_and_brief",
+          "suggested_skills": [
+            "noai-note",
+            "doc-cleaner",
+            "text-polisher"
+          ],
+          "action": "polish",
+          "flag": "--text",
+          "slot": "[content]",
+          "exit_gate": "notes_detoxed"
+        }
+      ]
+    },
+    {
+      "id": "security_policy_and_registry_sync",
+      "work_mode": "phased",
+      "tags": [
+        "security_audit",
+        "security_md",
+        "ast_check",
+        "registry_sync"
+      ],
+      "label": "Security Boundary Enforcement & Registry Sync",
+      "description": "Audit skills, validate AST parameter hygiene, enforce SECURITY.md contracts, and synchronize global SKILLS.md registry",
+      "utterance_triggers": [
+        "Audit skill security boundaries",
+        "Establish compliant SECURITY.md policies",
+        "Verify AST parameter whitelist and sync skills registry",
+        "批次檢驗技能安全契約並同步註冊表"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "role": "code_security_auditor",
+          "requires_capability": "ast_security_audit",
+          "suggested_skills": [
+            "audit-skill",
+            "code-auditor",
+            "ast-linter"
+          ],
+          "action": "audit",
+          "flags": [
+            "--security",
+            "--ast"
+          ],
+          "slot": "[target_path]",
+          "exit_gate": "zero_ast_and_security_violations"
+        },
+        {
+          "step": 2,
+          "role": "registry_synchronizer",
+          "requires_capability": "semantic_registry_mapping",
+          "suggested_skills": [
+            "cross-map",
+            "registry-sync",
+            "skill-indexer"
+          ],
+          "action": "sync",
+          "flag": "--sync",
+          "slot": "[skills_root]",
+          "exit_gate": "registry_synced"
+        }
+      ]
+    },
+    {
+      "id": "asset_risk_and_environment_audit",
+      "work_mode": "phased",
+      "tags": [
+        "asset_risk",
+        "threat_modeling",
+        "env_audit",
+        "eol_lts"
+      ],
+      "label": "Asset Risk Assessment & Environment Hygiene Audit",
+      "description": "Categorize critical information assets, map asset threats, and audit host environment EOL/LTS package lifecycles",
+      "utterance_triggers": [
+        "Categorize critical information assets and audit host environment",
+        "Map asset threats and check EOL package lifecycles",
+        "盤點資訊資產風險並體檢主機環境過期套件"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "role": "asset_risk_modeler",
+          "requires_capability": "threat_asset_modeling",
+          "suggested_skills": [
+            "asset-risk",
+            "threat-modeler",
+            "asset-inventory"
+          ],
+          "action": "audit",
+          "flags": [
+            "--batch",
+            "--threat"
+          ],
+          "slot": "[asset_list]",
+          "exit_gate": "asset_threat_matrix_mapped"
+        },
+        {
+          "step": 2,
+          "role": "environment_lifecycle_auditor",
+          "requires_capability": "host_eol_package_audit",
+          "suggested_skills": [
+            "env-audit",
+            "sys-checker",
+            "eol-auditor"
+          ],
+          "action": "audit",
+          "flags": [
+            "--json",
+            "--eol"
+          ],
+          "slot": "[system]",
+          "exit_gate": "host_vulnerabilities_identified"
+        }
+      ]
+    },
+    {
+      "id": "incident_response_and_dr_drill",
+      "work_mode": "phased",
+      "tags": [
+        "incident_response",
+        "playbook_drill",
+        "cve_alignment",
+        "dr_plan"
+      ],
+      "label": "Incident Response Drill & 8-Step DR Alignment Pipeline",
+      "description": "Execute incident response containment drill, enrich threat indicators via CVE intel, align with internal asset risks, and formulate 8-step DR drill plan",
+      "utterance_triggers": [
+        "執行資安事件應變演練並對齊外部 CVE 情資與 8-Step 災防計畫",
+        "Execute ransomware incident response drill and align with asset risk",
+        "主管詢問外部重大資安新聞與災防應變演練",
+        "Align external CVE alert to internal asset risk and generate 8-step DR drill debrief"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "role": "incident_responder",
+          "requires_capability": "containment_playbook_drill",
+          "suggested_skills": [
+            "dair-ir",
+            "incident-handler",
+            "soc-responder"
+          ],
+          "action": "audit",
+          "flags": [
+            "--stage",
+            "--playbook"
+          ],
+          "slot": "[incident_type]",
+          "exit_gate": "containment_and_blast_radius_verified"
+        },
+        {
+          "step": 2,
+          "role": "threat_intel_probe",
+          "requires_capability": "domain_cve_intel",
+          "suggested_skills": [
+            "sec-intel",
+            "threat-probe",
+            "osint-scanner"
+          ],
+          "action": "audit",
+          "flags": [
+            "--ip",
+            "--cve"
+          ],
+          "slot": "[target_entity]",
+          "exit_gate": "threat_indicators_enriched"
+        },
+        {
+          "step": 3,
+          "role": "asset_risk_modeler",
+          "requires_capability": "threat_asset_modeling",
+          "suggested_skills": [
+            "asset-risk",
+            "threat-modeler",
+            "asset-inventory"
+          ],
+          "action": "audit",
+          "flags": [
+            "--drill",
+            "--format markdown"
+          ],
+          "slot": "[normalized_asset_name]",
+          "exit_gate": "canonical_pair_and_8step_drill_generated"
+        },
+        {
+          "step": 4,
+          "role": "narrative_polisher",
+          "requires_capability": "text_detox_and_brief",
+          "suggested_skills": [
+            "noai-note",
+            "doc-cleaner",
+            "text-polisher"
+          ],
+          "action": "polish",
+          "flag": "--text",
+          "slot": "[debrief_content]",
+          "exit_gate": "executive_debrief_delivered"
+        }
+      ]
+    },
+    {
+      "id": "subtractive_refactor_and_skill_packaging",
+      "work_mode": "phased",
+      "tags": [
+        "subtractive_refactor",
+        "ast_hygiene",
+        "doc_distillation",
+        "skill_packaging"
+      ],
+      "label": "Subtractive Code Refactor & Skill Packaging Pipeline",
+      "description": "Perform subtractive code refactoring, eliminate nested blocks, distill multi-source technical documents, and package into standardized skill modules",
+      "utterance_triggers": [
+        "對臃腫腳本執行減法重構，去雜音並打包成標準 Skill 目錄",
+        "Perform subtractive refactoring on bloated scripts and eliminate nested blocks",
+        "將長篇技術文件提煉去雜音並封裝為符合規範的技能目錄",
+        "多來源技術文件去雜音、代碼加固與建立技能結構"
+      ],
+      "pipeline": [
+        {
+          "step": 1,
+          "role": "document_distiller",
+          "requires_capability": "raw_stream_distillation",
+          "suggested_skills": [
+            "deep-mod",
+            "doc-distiller",
+            "knowledge-extractor"
+          ],
+          "action": "build",
+          "flags": [
+            "-o scratch/stream.txt"
+          ],
+          "slot": "[input_files]",
+          "exit_gate": "raw_stream_ingested"
+        },
+        {
+          "step": 2,
+          "role": "narrative_polisher",
+          "requires_capability": "text_detox_and_brief",
+          "suggested_skills": [
+            "noai-note",
+            "doc-cleaner",
+            "text-polisher"
+          ],
+          "action": "polish",
+          "flag": "--text",
+          "slot": "[extracted_rules]",
+          "exit_gate": "zero_ai_tells_confirmed"
+        },
+        {
+          "step": 3,
+          "role": "code_security_auditor",
+          "requires_capability": "ast_security_audit",
+          "suggested_skills": [
+            "audit-skill",
+            "code-auditor",
+            "ast-linter"
+          ],
+          "action": "audit",
+          "flags": [
+            "--ast",
+            "--security"
+          ],
+          "slot": "[generated_skill_dir]",
+          "exit_gate": "zero_ast_and_security_violations"
+        }
+      ]
+    }
+  ]
+}
