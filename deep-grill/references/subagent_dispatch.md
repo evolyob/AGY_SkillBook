@@ -1,34 +1,34 @@
 # Subagent Dispatch & Isolation Protocol (`subagent_dispatch.md`)
 
-> **Core Philosophy**: Dispatch isolated subagents across the ready frontier with mutually exclusive allowed paths and deterministic verification gates.
+> **Core Philosophy**: Minified contract-first dispatch with strict context quotas, exclusive write paths, and 2-retry circuit breaker.
 
 ---
 
-## 1. Dispatch Rules of Engagement
-1. **Zero Overlapping Allowed Paths**: Subagents executing in parallel must NEVER modify the same file path.
-2. **Minimal Self-Contained Prompt**: Provide only the exact Goal, Non-Goals, Allowed Paths, and Verification Command.
-3. **Deterministic Exit Gate**: A subagent must achieve 100% test pass (`OK`) before its dependent tickets can be dispatched.
+## 1. The 4-Step Execution Pipeline
+1. **Pre-flight**: Freeze shared interfaces (`typing.Protocol`) or schemas before parallel dispatch.
+2. **Map (Isolation)**: Dispatch workers across mutually exclusive `Allowed Write Paths` with designated read-only context.
+3. **Scan (Integration)**: Main agent runs deterministic integration test or lint script across all touched files.
+4. **Circuit Breaker**: If integration fails, re-dispatch error trace back to the original worker. Maximum **2 retries**; halt and emit `FAILED_REMEDIATION_REPORT.md` on 3rd failure.
 
 ---
 
-## 2. Dispatch Proposal Format (Presented to User)
-At the conclusion of a grilling and spec freeze session, dynamically evaluate the DAG and present a concrete, non-abstract dispatch proposal:
+## 2. Hard Context & Cost Quotas
+- **Read-Only Quota**: Maximum **2 reference files** per subagent (e.g. 1 type stub + 1 schema).
+- **Stateless Dispatch**: Prohibit conversational history dumps. Inject only target input data and acceptance commands.
+- **Model Tiering**: Default `Model: "flash"` for extraction, parsing, and batch sharding; reserve `inherit`/`pro` for complex logic.
+
+---
+
+## 3. High-Density Dispatch Proposal (Presented to User)
+Dynamically output the execution table:
 
 ```markdown
-### 🚀 Subagents Dispatch Proposal
+###  Dispatch Plan
 
-The task has been decomposed into **N independent subtasks** for parallel execution:
+| ID | Target / Shard | Read-Only Context | Allowed Write Paths | Verification Command |
+|---|---|---|---|---|
+| 1 | `scripts/parser.py` | `types.py` | `scripts/parser.py`, `tests/test_parser.py` | `python3 -m unittest tests/test_parser.py` |
+| 2 | `scripts/cli.py` | `types.py` | `scripts/cli.py`, `tests/test_cli.py` | `python3 -m unittest tests/test_cli.py` |
 
-1. **Subagent 1 ([Concrete Role Name])**
-   * **Allowed Paths**: `scripts/target_module.py`, `tests/test_target_module.py`
-   * **Responsibility**: [Exact function/class to implement or refactor, avoiding vague summaries]
-   * **Verification**: `python3 -m unittest tests/test_target_module.py`
-
-2. **Subagent 2 ([Concrete Role Name])**
-   * **Allowed Paths**: `scripts/cli_interface.py`, `tests/test_cli_interface.py`
-   * **Responsibility**: [Exact CLI flags and output formatting to add]
-   * **Verification**: `python3 -m unittest tests/test_cli_interface.py`
-
----
-> 💡 Proceed with parallel subagent dispatch based on this proposal?
+> 💡 Run parallel dispatch? (Y/n)
 ```
