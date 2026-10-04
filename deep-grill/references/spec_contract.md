@@ -20,9 +20,10 @@
 
 ## 2. Allowed Paths Perimeter (Strict Whitelist)
 Modifications outside this declared perimeter are strictly blocked:
-- `scripts/<module_name>.py`
-- `SKILL.md`
-- `tests/test_<module_name>.py`
+- `<declared_target_file_1>`
+- `<declared_target_file_2>`
+- `<declared_test_file>`
+*(Maximum 5 files explicitly declared during specification freeze)*
 
 ---
 
@@ -36,4 +37,6 @@ Modifications outside this declared perimeter are strictly blocked:
   - [ ] 100% unit tests pass (`OK`).
   - [ ] Maximum function nesting depth $\le 2$.
   - [ ] Zero bare `except:` clauses; explicit exception chaining.
-  - [ ] Negative or zero net line diffs achieved on refactors (Deletions $\ge$ Additions).
+  - [ ] **Refactoring Tasks**: Negative or zero net line diffs (`git diff --shortstat` Deletions $\ge$ Additions).
+  - [ ] **New Feature Tasks**: Added lines conform strictly to the declared line budget.
+
