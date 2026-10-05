@@ -9,12 +9,12 @@ dependencies: []
 # Deep Mod: Universal Research, Architecture & Skill Pipeline
 
 ## Objective
-Execute domain-agnostic interactive research, architecture visualization, and skill distillation with Shift-Left Anti-AI enforcement.
+Execute domain-agnostic interactive research, architecture visualization, and skill distillation with Shift-Left Anti-AI enforcement and deterministic Subagent dispatch.
 
 ## Execution Workflow
 
 ### Stage 1: Universal Intake (Gate 0)
-- Pre-flight scan via `python3 scripts/ingest.py <input> --list-only` (zero-I/O tokens and chapters).
+- Pre-flight scan via `python3 scripts/ingest.py <input> --list-only` (emits zero-I/O tokens, chapters, and Subagent dispatch proposal).
 - **Fast-Track** (keywords: `diff`, `review`, `架構圖`, `重構`): Stream clean text via `python3 scripts/ingest.py <input> --format stream`, ask ONE boundary question, then jump to Stage 3 Branch 1.
 - For all other requests (including `轉技能`, `提取技能`, or research), proceed to Stage 2.
 
@@ -29,4 +29,4 @@ Write deliverables with Anti-AI verification:
 - **Branch 1: Research & Architecture Review** (`references/type_a_research.md`):
   Verify report via `python3 tests/noai_gate.py ~/Downloads/<report>.md`.
 - **Branch 2: Agent Skill Directory** (`references/type_b_skill.md`):
-  Partition via `python3 scripts/ingest.py <input> --split-dir <target_dir>`, then audit with `tests/noai_gate.py` and `tests/audit.py`.
+  Partition via `python3 scripts/ingest.py <input> --split-dir <target_dir>`, dispatch Subagents across chapter shards ($\le$ 45 KB single-shot budget), then audit with `tests/noai_gate.py` and `tests/audit.py`.

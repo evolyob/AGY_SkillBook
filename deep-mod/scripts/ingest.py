@@ -264,6 +264,22 @@ def safe_collect_files(inp: Path) -> list[Path]:
     return [p for p in sorted(inp.rglob("*")) if p.is_file() and p.suffix.lower() in SUPPORTED_EXTS] if inp.is_dir() else []
 
 
+def build_dispatch_proposal(catalog: list[dict]) -> list[dict]:
+    """Generate deterministic Subagent dispatch matrix aligned with subagent_dispatch.md."""
+    return [
+        {
+            "id": f"{c['index']:02d}",
+            "target_chapter": c["title"],
+            "target_write_path": f"chapters/{c['file']}",
+            "read_only_context": [f"scratch/chunk_{c['index']:02d}.txt", "data/glossary.json"],
+            "est_tokens": c["est_tokens"],
+            "recommended_model": "flash",
+            "verification_cmd": f"python3 tests/noai_gate.py chapters/{c['file']}",
+        }
+        for c in catalog
+    ]
+
+
 def main():
     p = argparse.ArgumentParser(description="Parse, clean, and chunk documents for deep-mod with TOC filter")
     p.add_argument("input", nargs="?", default="", help="Target file, directory, or URL")
@@ -366,7 +382,15 @@ def main():
     if args.list_only or est_tokens > MAX_STREAM_TOKENS:
         if not args.list_only:
             sys.stderr.write(f"[NOTICE] Large document ({est_tokens} est. tokens > {MAX_STREAM_TOKENS}). Outputting chapter list. Use --split-dir to export.\n")
-        print(json.dumps({"total_est_tokens": est_tokens, "chapters": catalog}, ensure_ascii=False, indent=2))
+        dispatch_plan = build_dispatch_proposal(catalog)
+        result = {
+            "total_est_tokens": est_tokens,
+            "total_chapters": len(catalog),
+            "estimated_subagents": len(dispatch_plan),
+            "chapters": catalog,
+            "dispatch_proposal": dispatch_plan,
+        }
+        print(json.dumps(result, ensure_ascii=False, indent=2))
         return
 
     out = json.dumps(records, ensure_ascii=False, indent=2) if args.format == "json" else "\n\n".join(f"=== [SOURCE: {r['source']} | CHAPTER: {r['chapter']}] ===\n{r['content']}" for r in records)
