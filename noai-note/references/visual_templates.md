@@ -47,7 +47,7 @@
 
 ---
 
-## 3. Branch D: A4 Executive Decision Blueprint (1-Pager vs. N-Pager)
+## 3. Branch C: A4 Executive Decision Blueprint (1-Pager vs. N-Pager)
 *(Output Spec: A4 executive format. Confirm target upfront: 1-Pager or N-Pager.)*
 
 > **A4 Capacity Rules (1 or N)**:

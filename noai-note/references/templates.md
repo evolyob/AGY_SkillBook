@@ -1,6 +1,6 @@
 # Editorial Text Execution Specifications (`templates.md`)
 
-> **Agent Execution Rule**: When producing text-only outputs (Collection, Branch A, or Branch C), strictly adhere to the chosen template below. Deliver user-facing output in Traditional Chinese.
+> **Agent Execution Rule**: When producing text-only outputs (Collection or Branch A), strictly adhere to the chosen template below. Deliver user-facing output in Traditional Chinese.
 
 ---
 
@@ -18,8 +18,7 @@
 1. 繼續補充筆記（持續收集資料）
 2. 生成會議紀錄 / 主管摘要（Executive Brief 模式）
 3. 生成簡報大綱（16:9 簡報投影片大綱模式）
-4. 生成審查意見 / 修正對照表（Revision Coach 模式）
-5. 生成 A4 版面藍圖（請指定：1-Pager 單頁 或 N-Pager 多頁）
+4. 生成 A4 版面藍圖（請指定：1-Pager 單頁 或 N-Pager 多頁）
 ```
 
 ---
@@ -42,33 +41,4 @@
 ### Core Problem & Elevator Pitch
 • Core Problem: "[What is the single most critical bottleneck/question resolved by this brief?]"
 • Executive Assertion: "[1-sentence claim stating primary business value created or critical risk avoided]"
-```
-
----
-
-## 3. Branch C: Revision Coach Template (Surgical Minimal-Diff Report)
-*(Output Spec: Surgical review and refactoring comparison. Minimal-Diff principle: modify affected lines only; keep remaining content 100% intact.)*
-
-```text
-# [Document / Specification Name] — Revision & Comparison Report
-
-【1. Revision Context & Core Mandates】
-• Motivation: [1 concise sentence stating the core bottleneck, review feedback, or audit finding]
-• Guiding Principle: Minimal-Diff (Surgically adjust target sections only; keep remainder intact)
-
-【2. Surgical Comparison Items】
-### Item [No.]: [Module / Section Title]
-• Problem Diagnosis: [Explicitly identify ambiguity, omission, logical gap, or rule violation]
-• Proposed Revision:
-  - Before: [Section / line number reference, e.g., Line xx or Lxx-Lyy]
-  - After:
-    ```[format]
-    [Insert modified markdown prose or code snippet here]
-    ```
-  - Next Action: [1~2 concrete follow-up action items if required]
-
-【3. Final Drop-in Deliverable】
-```[format]
-[Insert complete drop-in replacement file content ready for immediate deployment]
-```
 ```
