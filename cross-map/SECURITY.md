@@ -11,7 +11,8 @@ This skill is a local-first semantic routing and intent matrix scanner. It perfo
 ## Execution
 Single-shot ephemeral CLI (< 20ms). Read-only in-memory analysis with zero filesystem mutations and zero background daemons.
 - Validated execution flags:
-  - `--sync`: Synchronize skills registry to ~/.gemini/config/skills/SKILLS.md.
+  - `--check`: Output dependency readiness status report.
   - `--json`: Output raw structured JSON analysis to stdout.
+  - `--sync`: Synchronize skills registry to ~/.gemini/config/skills/SKILLS.md.
 
 

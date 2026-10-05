@@ -27,7 +27,7 @@ Analyze installed skills, extract sub-features and CLI flags, detect keyword col
   - Estimated tokens > 6,500: Partition on disk or dispatch `research` subagent.
 - **Dispatch Channels**:
   - Single-skill CLI audits (< 2s): Direct single tool call.
-  - Multi-skill repo inspections (> 10 files): Offload to subagent (`invoke_subagent`).
+  - Multi-skill repo inspections (> 3 files): Offload to subagent (`invoke_subagent`).
 
 ### Step 3: Execute Scanner Engine
 Run the target mode with a single tool call:

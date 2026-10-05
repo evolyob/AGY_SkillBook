@@ -6,15 +6,17 @@ from importlib.util import find_spec
 from pathlib import Path
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "data" / "groups.json"
-SCENARIOS_FILE = Path(__file__).resolve().parent.parent / "data" / "scenarios.example.json"
+SCENARIOS_CUSTOM = Path(__file__).resolve().parent.parent / "data" / "scenarios.json"
+SCENARIOS_EXAMPLE = Path(__file__).resolve().parent.parent / "data" / "scenarios.example.json"
 DEFAULT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def load_config() -> dict:
     cfg = json.loads(DATA_FILE.read_text(encoding="utf-8-sig")) if DATA_FILE.exists() else {}
-    if SCENARIOS_FILE.exists():
+    s_file = SCENARIOS_CUSTOM if SCENARIOS_CUSTOM.exists() else SCENARIOS_EXAMPLE
+    if s_file.exists():
         try:
-            sc_cfg = json.loads(SCENARIOS_FILE.read_text(encoding="utf-8-sig"))
+            sc_cfg = json.loads(s_file.read_text(encoding="utf-8-sig"))
             cfg["scenarios"] = sc_cfg.get("scenarios", [])
         except Exception:
             pass
@@ -114,7 +116,6 @@ def scan_skill(p: Path) -> dict:
     }
 
 
-
 def render_table(headers: list[str], rows: list[list[str]]) -> str:
     sep = " | ".join([":---"] * len(headers))
     return "\n".join([f"| {' | '.join(headers)} |", f"| {sep} |"] + [f"| {' | '.join(r)} |" for r in rows])
@@ -162,11 +163,9 @@ def generate_skills_doc(profs: list[dict], cfg: dict) -> str:
             for s, _ in matched_pipeline
         )
         g_rows.append([f"**{g['label']}**<br>*({g['id']})*", w_mode, utts, p_skills, pipe_details])
-    
+
     table_3 = render_table(h.get('groups', []), g_rows) if g_rows else "*(No composite scenario pipelines available for currently installed skills)*"
     return f"# Global Skills Registry & Intent Index (`SKILLS.md`)\n\n> Authoritative capability registry, 4-facet intent matrix, and scenario pipelines for all active skills under this directory.\n> Automatically generated and synchronized via `cross-map`.\n\n---\n\n## 1. Skill Registry & Security Contracts\n\n{render_table(h.get('registry', []), r_rows)}\n\n---\n\n## 2. 4-Facet Intent & Semantic Routing Matrix\n\n{render_table(h.get('matrix', []), m_rows)}\n\n---\n\n## 3. Multi-Skill Scenario Pipelines\n\n{table_3}\n"
-
-
 
 
 def main():
