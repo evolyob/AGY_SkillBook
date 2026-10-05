@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Lightweight Python Script Auditor for deep-mod (Stdlib only)."""
-import argparse, ast, re, sys
+import argparse, ast, json, re, sys
 from pathlib import Path
 
 PEP_594 = {"cgi", "cgitb", "pipes", "crypt", "imghdr", "sndhdr", "aifc", "audioop", "chunk", "mailcap", "nntplib", "sunau", "telnetlib", "uu", "xdrlib", "distutils"}
@@ -62,19 +62,85 @@ def audit_script(src: str, filename: str) -> list[str]:
     if lines > (limit := base + n_defs * rate + dict_lines):
         issues.append(f"Lines {lines} > limit {limit} (Base {base} + {n_defs} defs × {rate} + {dict_lines} dict)")
     return issues
+def audit_skill_directory(target_dir: Path) -> list[str]:
+    issues, referenced_refs = [], []
+    skill_md = target_dir / "SKILL.md"
+    if not skill_md.exists():
+        return [f"Missing SKILL.md in {target_dir.name}"]
+    
+    # SKILL.md validation
+    s_lines = skill_md.read_text(encoding="utf-8-sig", errors="ignore").splitlines()
+    if len(s_lines) > 50: issues.append(f"SKILL.md lines {len(s_lines)} > 50")
+    s_content = "\n".join(s_lines)
+    fm = re.match(r"^---\n(.*?)\n---\n", s_content, re.DOTALL)
+    if not fm: issues.append("SKILL.md missing valid YAML frontmatter")
+    else:
+        fmt = fm.group(1)
+        if not re.search(r"^name:\s+[a-z0-9-]+", fmt, re.M): issues.append("SKILL.md frontmatter missing valid kebab-case 'name:'")
+        if not re.search(r"^description:\s+.+", fmt, re.M): issues.append("SKILL.md frontmatter missing non-empty 'description:'")
+        if not re.search(r"^dependencies:\s*\[\s*\]", fmt, re.M): issues.append("SKILL.md frontmatter missing 'dependencies: []'")
+        if re.search(r"^version:", fmt, re.M): issues.append("SKILL.md frontmatter contains prohibited 'version:'")
+    for sec in ["## Objective", "## Execution Workflow"]:
+        if sec not in s_content: issues.append(f"SKILL.md missing required section '{sec}'")
+    for i, l in enumerate(s_lines, 1):
+        if re.search(r'/(Users|home)/[a-zA-Z0-9_-]+/', l): issues.append(f"SKILL.md line {i}: Hardcoded absolute user path")
+    referenced_refs = [Path(r).name for r in re.findall(r'references/[a-zA-Z0-9_.-]+', s_content)]
+
+    # SECURITY.md validation
+    sec_md = target_dir / "SECURITY.md"
+    if sec_md.exists():
+        sec_lines = sec_md.read_text(encoding="utf-8-sig", errors="ignore").splitlines()
+        if len(sec_lines) > 30: issues.append(f"SECURITY.md lines {len(sec_lines)} > 30")
+        sec_cnt = "\n".join(sec_lines)
+        for s in ["## Scope", "## Dependencies", "## Execution"]:
+            if s not in sec_cnt: issues.append(f"SECURITY.md missing required section '{s}'")
+
+    # chapters/ validation
+    for ch in (target_dir / "chapters").glob("*.md"):
+        if ch.stat().st_size > 46080: issues.append(f"Chapter '{ch.name}' size {ch.stat().st_size}B > 46,080B")
+
+    # references/ validation
+    for ref in (target_dir / "references").glob("*.md"):
+        r_lines = len(ref.read_text(encoding="utf-8-sig", errors="ignore").splitlines())
+        if r_lines > 200: issues.append(f"Reference '{ref.name}' lines {r_lines} > 200")
+        if ref.name not in referenced_refs: issues.append(f"Orphan reference '{ref.name}' not cited in SKILL.md")
+
+    # data/ JSON validation
+    for j in (target_dir / "data").glob("*.json"):
+        try: json.loads(j.read_text(encoding="utf-8-sig", errors="ignore"))
+        except Exception as e: issues.append(f"Invalid JSON in '{j.name}': {e}")
+
+    return issues
 
 def main():
-    p = argparse.ArgumentParser(description="deep-mod script auditor")
-    p.add_argument("target", help="Target Python file or directory")
+    p = argparse.ArgumentParser(description="deep-mod script and skill auditor")
+    p.add_argument("target", help="Target Python file, scripts directory, or Skill root directory")
     tgt = Path(p.parse_args().target).resolve()
-    files = [tgt] if tgt.is_file() else sorted(tgt.rglob("*.py")) if tgt.is_dir() else []
-    if not files: sys.exit(f"No Python files found in {tgt}")
-    has_fail = False
-    for f in files:
+    
+    if not tgt.exists(): sys.exit(f"Target path does not exist: {tgt}")
+    
+    # If target is a full Skill root directory (contains SKILL.md)
+    if tgt.is_dir() and (tgt / "SKILL.md").exists():
+        dir_issues = audit_skill_directory(tgt)
+        print(f"{'[✗] FAIL' if dir_issues else '[✓] PASS'} Skill Directory Structure: {tgt.name}")
+        for iss in dir_issues: print(f"  └── [ISSUE] {iss}")
+        # Also audit any python scripts in scripts/ or tests/
+        py_files = sorted(tgt.rglob("*.py"))
+    elif tgt.is_file():
+        dir_issues = []
+        py_files = [tgt]
+    else:
+        dir_issues = []
+        py_files = sorted(tgt.rglob("*.py"))
+
+    has_fail = bool(dir_issues)
+    for f in py_files:
         issues = audit_script(f.read_text(encoding="utf-8-sig", errors="ignore"), f.name)
         print(f"{'[✗] FAIL' if issues else '[✓] PASS'} {f.name} ({len(f.read_text(encoding='utf-8-sig', errors='ignore').splitlines())} lines)")
         for issue in issues: print(f"  └── [ISSUE] {issue}")
         if issues: has_fail = True
+
     if has_fail: sys.exit(1)
 
 if __name__ == "__main__": main()
+
