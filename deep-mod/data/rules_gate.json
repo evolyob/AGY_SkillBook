@@ -116,12 +116,12 @@
       "regex": "\\b(I hope this (email|message) finds you well|look no further( than)?|without further ado)\\b|\\b[Ii]n (today'?s?|this|an?)\\s+(?:(?:fast-paced|rapidly changing|ever-evolving|constantly shifting|interconnected|dynamic|digital|modern)\\s+)+(world|era|landscape|age)\\b|[Ii]t('s| is| should be) ((important|worth|crucial|vital|essential) (to note|noting|mentioning|remembering)|(worth noting|worth mentioning))"
     },
     {
-      "label": "LLM corporate overdrive verbs (delve/spearhead/bolster/catalyze/streamline)",
-      "regex": "\\b(delv\\w+|leverag\\w+|underscor\\w+|harness\\w*|foster\\w*|streamlin\\w+|navigat\\w+|utiliz\\w+|facilitat\\w+|empower\\w*|spearhead\\w*|bolster\\w*|catalyz\\w+)\\b"
+      "label": "LLM corporate overdrive verbs (delve/spearhead/catalyze)",
+      "regex": "\\b(delv\\w+|underscor\\w+|foster\\w*|navigat\\w+|empower\\w*|spearhead\\w*|catalyz\\w+)\\b"
     },
     {
       "label": "puffery adjectives & buzzword metaphors (pivotal/seamless/multifaceted/paradigm shift/tapestry)",
-      "regex": "\\b(pivotal|seamless|multifaceted|bespoke|holistic|burgeoning|robust)\\b|\\btestament to\\b|\\bbeacon of\\b|\\btapestry\\b|\\bparadigm shift\\b|\\bcornerstone\\b"
+      "regex": "\\b(pivotal|seamless|multifaceted|bespoke|burgeoning)\\b|\\btestament to\\b|\\bbeacon of\\b|\\btapestry\\b|\\bparadigm shift\\b|\\bcornerstone\\b"
     },
     {
       "label": "negative contrast setup (not just X but Y / not merely A but rather B)",

@@ -1,5 +1,5 @@
 {
-  "pattern": "^(?:#\\s+|第\\s*[0-9一二三四五六七八九十百\\d]+\\s*[章課節講篇回領域條款]\\s*[:：\\s]*|(?:Domain|Chapter|Lesson|Lecture|Section|Unit|Module|Part|Task|Case)\\s+\\d+[:：\\s]*|(?:領域|單元|模組|任務|案例)\\s*[0-9一二三四五六七八九十百\\d]+[:：\\s]*|(?:§+|¶+)\\s*[0-9]+(?:\\.[0-9]+)*[:：\\s]*)(.+)$",
+  "pattern": "^(?:#\\s+|第\\s*[0-9一二三四五六七八九十百\\d]+\\s*[章課講篇回領域單元模組]\\s*[:：\\s]*|(?:Domain|Chapter|Lesson|Lecture|Unit|Module|Part)\\s+\\d+[:：\\s]*|(?:領域|單元|模組)\\s*[0-9一二三四五六七八九十百\\d]+[:：\\s]*)(.+)$",
   "taxonomy": {
     "Domain": {"prefix": "domain", "aliases": ["領域 {idx}", "Domain {idx}", "第{idx}領域"]},
     "領域": {"prefix": "domain", "aliases": ["領域 {idx}", "Domain {idx}", "第{idx}領域"]},
