@@ -1,20 +1,15 @@
 {
-  "pattern": "^(?:#\\s+|第\\s*[0-9一二三四五六七八九十百\\d]+\\s*[章課講篇回領域單元模組]\\s*[:：\\s]*|(?:Domain|Chapter|Lesson|Lecture|Unit|Module|Part)\\s+\\d+[:：\\s]*|(?:領域|單元|模組)\\s*[0-9一二三四五六七八九十百\\d]+[:：\\s]*)(.+)$",
+  "pattern": "^(?:#+\\s*)?(?:第\\s*[0-9一二三四五六七八九十百千萬零〇兩\\d]+\\s*(?P<kind_zh>[章課講篇回節條任務案例領域單元模組條款])\\s*[:：\\s]*|(?P<kind_en>Domain|Chapter|Lesson|Lecture|Unit|Module|Part|Section|Article|Task|Case)\\s+\\d+[:：\\s]*|(?P<kind_sym>§)\\s*[0-9]+(?:\\.[0-9]+)*[:：\\s]*|(?P<kind_prefix>領域|單元|模組)\\s*[0-9一二三四五六七八九十百千萬零〇兩\\d]+[:：\\s]*|#\\s+)(.+)$",
   "taxonomy": {
-    "Domain": {"prefix": "domain", "aliases": ["領域 {idx}", "Domain {idx}", "第{idx}領域"]},
-    "領域": {"prefix": "domain", "aliases": ["領域 {idx}", "Domain {idx}", "第{idx}領域"]},
-    "課": {"prefix": "lesson", "aliases": ["第{idx}課", "Lesson {idx}"]},
-    "Lesson": {"prefix": "lesson", "aliases": ["第{idx}課", "Lesson {idx}"]},
-    "講": {"prefix": "lecture", "aliases": ["第{idx}講", "Lecture {idx}"]},
-    "Lecture": {"prefix": "lecture", "aliases": ["第{idx}講", "Lecture {idx}"]},
-    "Task": {"prefix": "task", "aliases": ["任務 {idx}", "Task {idx}"]},
-    "任務": {"prefix": "task", "aliases": ["任務 {idx}", "Task {idx}"]},
-    "Case": {"prefix": "case", "aliases": ["案例 {idx}", "Case {idx}"]},
-    "案例": {"prefix": "case", "aliases": ["案例 {idx}", "Case {idx}"]},
-    "Section": {"prefix": "sec", "aliases": ["第{idx}節", "Section {idx}", "§{idx}"]},
-    "節": {"prefix": "sec", "aliases": ["第{idx}節", "Section {idx}", "§{idx}"]},
-    "條": {"prefix": "art", "aliases": ["第{idx}條", "Article {idx}"]},
-    "§": {"prefix": "sec", "aliases": ["條款 {idx}", "Section {idx}", "§{idx}"]}
+    "domain": {"prefix": "domain", "keys": ["Domain", "領域"], "aliases": ["領域 {idx}", "Domain {idx}", "第{idx}領域"]},
+    "chapter": {"prefix": "ch", "keys": ["Chapter", "章", "篇", "回"], "aliases": ["第{idx}章", "Chapter {idx}"]},
+    "lesson": {"prefix": "lesson", "keys": ["Lesson", "課"], "aliases": ["第{idx}課", "Lesson {idx}"]},
+    "lecture": {"prefix": "lecture", "keys": ["Lecture", "講"], "aliases": ["第{idx}講", "Lecture {idx}"]},
+    "unit": {"prefix": "unit", "keys": ["Unit", "Module", "Part", "單元", "模組"], "aliases": ["第{idx}單元", "Unit {idx}", "Module {idx}"]},
+    "section": {"prefix": "sec", "keys": ["Section", "節", "§", "條款"], "aliases": ["第{idx}節", "Section {idx}", "§{idx}"]},
+    "article": {"prefix": "art", "keys": ["Article", "條"], "aliases": ["第{idx}條", "Article {idx}"]},
+    "task": {"prefix": "task", "keys": ["Task", "任務"], "aliases": ["任務 {idx}", "Task {idx}"]},
+    "case": {"prefix": "case", "keys": ["Case", "案例"], "aliases": ["案例 {idx}", "Case {idx}"]}
   },
   "sanitization": {
     "invisibles": "[\\u200b-\\u200d\\ufeff\\u2060\\u202a-\\u202e\\u2066-\\u2069\\u000b\\u000c\\u000e-\\u001f\\u007f]|[\\U000e0000-\\U000e007f]|\\ufffd|\\(cid:[0-9]+\\)",
@@ -24,7 +19,6 @@
     "chunk_lines": 800,
     "chunk_step": 750,
     "max_stream_tokens": 6500,
-    "max_stream_pages": 25,
     "supported_exts": [".docx", ".pdf", ".md", ".txt", ".xlsx", ".html"]
   },
   "indexing": {
@@ -32,8 +26,8 @@
     "key_elements_patterns": [
       "\\*\\*([^*]{2,30})\\*\\*",
       "`([^`]{2,30})`",
-      "(?:定義|架構|法則|模式|原則|機制)[：:]\\s*([^\\n,，。]{2,20})",
-      "(§\\s*[0-9]+(?:\\.[0-9]+)*)"
+      "(?:定義|架構|法則|模式|原則|機制|步驟|流程|規範|控制)[：:]\\s*([^\\n,，。]{2,20})",
+      "(?:§|第)\\s*[0-9一二三四五六七八九十百]+(?:\\.[0-9]+)*(?:條)?"
     ],
     "max_key_elements_per_chunk": 8
   }

@@ -18,12 +18,12 @@ LIMITS = RULES_DATA.get("limits", {})
 SUPPORTED_EXTS = set(LIMITS.get("supported_exts", [".docx", ".pdf", ".md", ".txt", ".xlsx", ".html"]))
 CHUNK_LINES = LIMITS.get("chunk_lines", 800)
 CHUNK_STEP = LIMITS.get("chunk_step", 750)
-MAX_STREAM_TOKENS = LIMITS.get("max_stream_tokens", 10000)
+MAX_STREAM_TOKENS = LIMITS.get("max_stream_tokens", 6500)
 
 CHAPTER_PATTERN = re.compile(RULES_DATA.get("pattern", r'^(?:#\s+|第\s*\d+\s*章\s*|Chapter\s+\d+[:\s]+)(.+)$'), re.MULTILINE | re.IGNORECASE)
 TOC_DOT_LEADER_PATTERN = re.compile(r'(?:\.{3,}|(?:\.\s*){3,}|\·{3,}|…{2,})\s*\d+$')
 MIN_CHUNK_CHAR_LENGTH = 90
-MAX_SINGLE_CHUNK_BYTES = 38000
+MAX_SINGLE_CHUNK_BYTES = 18000
 SUB_HEADING_PATTERN = re.compile(r'^(?:#{2,4}\s+|(?:\d+\.\d+|\b[A-Z]{2,3}-\d+)\s+)(.+)$', re.MULTILINE)
 
 TAXONOMY = RULES_DATA.get("taxonomy", {})
@@ -135,7 +135,7 @@ def extract_index_metadata(content: str) -> tuple[str, list[str]]:
     keys: list[str] = []
     for pat in KEY_PATTERNS:
         for m in pat.finditer(content):
-            k = m.group(1).strip()
+            k = m.group(1).strip() if m.groups() else m.group(0).strip()
             if k and k not in keys:
                 keys.append(k)
             if len(keys) >= MAX_KEY_ELEMENTS:
@@ -163,13 +163,40 @@ def chunk_sliding_window(text: str, source: str) -> list[dict]:
     return chunks
 
 
-def resolve_taxonomy(title: str, idx: int) -> tuple[str, list[str]]:
-    """Match title against TAXONOMY to assign semantic ID and aliases."""
-    for keyword, meta in TAXONOMY.items():
-        if keyword.lower() in title.lower():
-            prefix = meta["prefix"]
-            aliases = [title] + [a.format(idx=idx) for a in meta.get("aliases", [])]
-            return f"{prefix}_{idx:02d}", list(dict.fromkeys(aliases))
+def resolve_taxonomy(match_or_title: re.Match | str, idx: int) -> tuple[str, list[str]]:
+    """Match title or regex match against TAXONOMY to assign semantic ID and aliases."""
+    if isinstance(match_or_title, re.Match):
+        kind = (
+            match_or_title.groupdict().get("kind_zh")
+            or match_or_title.groupdict().get("kind_en")
+            or match_or_title.groupdict().get("kind_sym")
+            or match_or_title.groupdict().get("kind_prefix")
+            or ""
+        )
+        title = match_or_title.group(0).strip("# ").strip()
+    else:
+        title = str(match_or_title).strip("# ").strip()
+        kind = ""
+
+    if kind:
+        for prefix, meta in TAXONOMY.items():
+            if any(k.lower() == kind.lower() for k in meta.get("keys", [])):
+                p = meta.get("prefix", prefix)
+                aliases = [title] + [a.format(idx=idx) for a in meta.get("aliases", [])]
+                return f"{p}_{idx:02d}", list(dict.fromkeys(aliases))
+
+    for prefix, meta in TAXONOMY.items():
+        for k in meta.get("keys", []):
+            if k.isascii():
+                if re.search(r"\b" + re.escape(k) + r"\b", title, re.IGNORECASE):
+                    p = meta.get("prefix", prefix)
+                    aliases = [title] + [a.format(idx=idx) for a in meta.get("aliases", [])]
+                    return f"{p}_{idx:02d}", list(dict.fromkeys(aliases))
+            elif len(k) > 1 and k in title:
+                p = meta.get("prefix", prefix)
+                aliases = [title] + [a.format(idx=idx) for a in meta.get("aliases", [])]
+                return f"{p}_{idx:02d}", list(dict.fromkeys(aliases))
+
     return f"ch_{idx:02d}", [title, f"Chapter {idx}", f"第{idx}單元"]
 
 
@@ -248,7 +275,7 @@ def chunk_chapters(text: str, source: str) -> tuple[list[dict], bool]:
         body = text[start:end].strip()
         if len(body) < MIN_CHUNK_CHAR_LENGTH and i + 1 < len(matches):
             continue
-        cid, aliases = resolve_taxonomy(title, len(raw_chunks) + 1)
+        cid, aliases = resolve_taxonomy(m, len(raw_chunks) + 1)
         summary, keys = extract_index_metadata(body)
         base_chunk = {"source": source, "chapter": title, "content": body, "start_line": text[:m.start()].count("\n") + 1, "end_line": text[:end].count("\n") + 1, "id": cid, "aliases": aliases, "summary": summary, "key_elements": keys}
         raw_chunks.extend(split_large_chunk_semantically(base_chunk))
@@ -349,7 +376,7 @@ def main():
             "index": i,
             "id": r.get("id", f"part_{i:02d}"),
             "title": r["chapter"],
-            "file": f"{i:02d}_{re.sub(r'[\\\\/*?:\"<>|#\\s]+', '_', r['chapter']).strip('_')}.md",
+            "file": f"{i:02d}_{re.sub(r'[\\\\/*?:\"<>|#\\s]+', '_', r['chapter']).strip('_')[:50].strip('_')}.md",
             "aliases": r.get("aliases", []),
             "summary": r.get("summary", ""),
             "key_elements": r.get("key_elements", []),

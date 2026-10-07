@@ -1,7 +1,7 @@
 # Senior Clean Code & Vibe Craft Guide
 
 Practical engineering awareness standards for clean code architecture and resilient system implementation.
-**Core Philosophy**: Implements the approved spec contract through a sequential 5-step engineering radar. Balance architectural hygiene with pragmatism.
+**Core Philosophy**: Implements the approved spec contract through a sequential 5-step engineering radar. Balance architectural hygiene with pragmatism. Reference case studies: `senior_coding_examples.md`.
 
 ---
 
@@ -10,8 +10,10 @@ Practical engineering awareness standards for clean code architecture and resili
   - MUST prioritize Python 3.13+ standard library (`pathlib`, `urllib`, `json`) over third-party dependencies declared in `spec.md`.
   - MUST isolate volatile third-party SDKs behind structural protocols (`typing.Protocol`) or adapters.
   - MUST treat static JSON assets as SSOT lookup dictionaries; consume them via targeted key-indexing, structured mapping, or generator queries in Python 3, never by brute-force loops or whole-file prompt dumps.
+  - MUST validate filesystem access using standard library `pathlib`: normalize with `Path.resolve()` and enforce containment via `Path.is_relative_to(base)` before reading or writing.
 - **Prohibitions (MUST NOT)**:
   - MUST NOT leak raw SDK objects or unvalidated dictionaries into the domain core.
+  - MUST NOT use string concatenation (e.g. `f"{base}/{filename}"`) or manual string slicing for filesystem paths.
   - MUST NOT permit semantic tag contamination (e.g. assigning contradictory or nonsensical tags) or silent unpopulated arrays in data assets.
   - MUST NOT patch around malformed JSON with ad-hoc `if-else` ladders (Anti-Whack-A-Mole); enforce the dictionary contract at the root.
 - **Pragmatic Boundary**: Built-in standard library utilities and stable internal helpers do not require protocol abstraction layers.

@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "description": "Deterministic Decision Matrix and Dispatch Registry for 12 AGY Subagent Topologies",
+  "topologies": {
+    "pipeline": {
+      "id": "pipeline",
+      "category": "sequential_chain",
+      "decision_rules": {
+        "task_dependencies": "strict_sequential",
+        "context_retention": "file_persisted",
+        "conflict_risk": "none"
+      },
+      "workspace_mode": "inherit",
+      "recommended_model": "inherit",
+      "dispatch_payload": {
+        "Stage1": {
+          "Subagents": [
+            {
+              "TypeName": "research",
+              "Role": "Upstream Producer",
+              "Model": "pro",
+              "Workspace": "inherit",
+              "Prompt": "Execute stage 1 and persist artifacts to ./artifacts/stage1_output.json."
+            }
+          ]
+        },
+        "Stage2": {
+          "Subagents": [
+            {
+              "TypeName": "self",
+              "Role": "Downstream Consumer",
+              "Model": "inherit",
+              "Workspace": "inherit",
+              "Prompt": "Read ./artifacts/stage1_output.json and execute stage 2 implementation."
+            }
+          ]
+        }
+      }
+    },
+    "parallel": {
+      "id": "parallel",
+      "category": "fan_out",
+      "decision_rules": {
+        "task_dependencies": "independent",
+        "file_conflicts": "mutually_exclusive_paths",
+        "target_metric": "minimum_latency"
+      },
+      "workspace_mode": "inherit",
+      "recommended_model": "flash",
+      "dispatch_payload": {
+        "Subagents": [
+          {
+            "TypeName": "research",
+            "Role": "Module A Worker",
+            "Model": "flash",
+            "Workspace": "inherit",
+            "Prompt": "Audit Module A under /src/module_a with exclusive write scope."
+          },
+          {
+            "TypeName": "research",
+            "Role": "Module B Worker",
+            "Model": "flash",
+            "Workspace": "inherit",
+            "Prompt": "Audit Module B under /src/module_b with exclusive write scope."
+          }
+        ]
+      }
+    },
+    "supervisor": {
+      "id": "supervisor",
+      "category": "supervised_loop",
+      "decision_rules": {
+        "coordination_need": "continuous_delegation",
+        "circuit_breaker_limit": 2,
+        "verification_mode": "deterministic_test"
+      },
+      "workspace_mode": "inherit",
+      "recommended_model": "pro",
+      "dispatch_payload": {
+        "Subagents": [
+          {
+            "TypeName": "self",
+            "Role": "Worker",
+            "Model": "inherit",
+            "Workspace": "inherit",
+            "Prompt": "Implement feature per spec and report back when unit tests pass."
+          }
+        ]
+      }
+    },
+    "hierarchical": {
+      "id": "hierarchical",
+      "category": "shared_state",
+      "decision_rules": {
+        "system_scale": "multi_subsystem",
+        "delegation_depth": 2,
+        "requires_subagent_spawning": true
+      },
+      "workspace_mode": "branch",
+      "recommended_model": "pro",
+      "dispatch_payload": {
+        "SubagentDefinition": {
+          "name": "tech_lead",
+          "description": "Decomposes complex subsystem requirements and spawns dedicated workers",
+          "system_prompt": "You are a tech lead. Decompose system contracts and invoke subagents via invoke_subagent.",
+          "enable_write_tools": true,
+          "enable_subagent_tools": true
+        }
+      }
+    },
+    "handoff": {
+      "id": "handoff",
+      "category": "sequential_chain",
+      "decision_rules": {
+        "lifecycle_transition": "complete_transfer",
+        "primary_retire_on_dispatch": true
+      },
+      "workspace_mode": "inherit",
+      "recommended_model": "inherit",
+      "dispatch_payload": {
+        "Subagents": [
+          {
+            "TypeName": "self",
+            "Role": "Release Engineer",
+            "Model": "inherit",
+            "Workspace": "inherit",
+            "Prompt": "Previous build stage complete. Take full control of production deployment."
+          }
+        ]
+      }
+    },
+    "debating": {
+      "id": "debating",
+      "category": "supervised_loop",
+      "decision_rules": {
+        "problem_type": "high_ambiguity_tradeoff",
+        "max_rounds": 3,
+        "adjudication_required": true
+      },
+      "workspace_mode": "inherit",
+      "recommended_model": "pro",
+      "dispatch_payload": {
+        "Subagents": [
+          {
+            "TypeName": "research",
+            "Role": "Proponent",
+            "Model": "pro",
+            "Workspace": "inherit",
+            "Prompt": "Argue for architectural Option A with performance and latency metrics."
+          },
+          {
+            "TypeName": "research",
+            "Role": "Opponent",
+            "Model": "pro",
+            "Workspace": "inherit",
+            "Prompt": "Argue against Option A focusing on operational overhead and migration risks."
+          }
+        ]
+      }
+    },
+    "voting": {
+      "id": "voting",
+      "category": "fan_out",
+      "decision_rules": {
+        "evaluation_type": "multi_perspective_consensus",
+        "aggregation_method": "weighted_sum",
+        "output_format": "strict_json"
+      },
+      "workspace_mode": "inherit",
+      "recommended_model": "flash",
+      "dispatch_payload": {
+        "Subagents": [
+          {
+            "TypeName": "research",
+            "Role": "Security Judge",
+            "Model": "flash",
+            "Prompt": "Score design 1-10 on security. Output JSON: {score: number, reason: string}."
+          },
+          {
+            "TypeName": "research",
+            "Role": "Performance Judge",
+            "Model": "flash",
+            "Prompt": "Score design 1-10 on throughput. Output JSON: {score: number, reason: string}."
+          },
+          {
+            "TypeName": "research",
+            "Role": "Maintainability Judge",
+            "Model": "flash",
+            "Prompt": "Score design 1-10 on complexity. Output JSON: {score: number, reason: string}."
+          }
+        ]
+      }
+    },
+    "blackboard": {
+      "id": "blackboard",
+      "category": "shared_state",
+      "decision_rules": {
+        "state_sharing": "central_file_pool",
+        "coordination_channel": ".memory/project.md",
+        "concurrency": "read_heavy"
+      },
+      "workspace_mode": "share",
+      "recommended_model": "inherit",
+      "dispatch_payload": {
+        "Subagents": [
+          {
+            "TypeName": "self",
+            "Role": "State Producer",
+            "Workspace": "share",
+            "Prompt": "Update global blackboard state at .memory/shared_state.json."
+          },
+          {
+            "TypeName": "self",
+            "Role": "State Consumer",
+            "Workspace": "share",
+            "Prompt": "Read .memory/shared_state.json and execute dependent triggers."
+          }
+        ]
+      }
+    },
+    "router": {
+      "id": "router",
+      "category": "sequential_chain",
+      "decision_rules": {
+        "intent_classification": "dynamic_single_target",
+        "domain_specialization": "high"
+      },
+      "workspace_mode": "inherit",
+      "recommended_model": "flash",
+      "dispatch_payload": {
+        "Subagents": [
+          {
+            "TypeName": "self",
+            "Role": "Domain Specialist",
+            "Model": "inherit",
+            "Workspace": "inherit",
+            "Prompt": "Execute domain-specific routine based on classified intent."
+          }
+        ]
+      }
+    },
+    "generator_reviewer": {
+      "id": "generator_reviewer",
+      "category": "supervised_loop",
+      "decision_rules": {
+        "code_risk": "high",
+        "verification_automation": "unit_test_suite",
+        "retry_circuit_breaker": 2
+      },
+      "workspace_mode": "branch",
+      "recommended_model": "pro",
+      "dispatch_payload": {
+        "Subagents": [
+          {
+            "TypeName": "self",
+            "Role": "Isolated Generator",
+            "Model": "pro",
+            "Workspace": "branch",
+            "Prompt": "Implement logic in isolated branch and run verification suite."
+          }
+        ]
+      }
+    },
+    "collaborative": {
+      "id": "collaborative",
+      "category": "shared_state",
+      "decision_rules": {
+        "module_coupling": "tight_bi_directional",
+        "communication_frequency": "high",
+        "workspace_sharing": true
+      },
+      "workspace_mode": "share",
+      "recommended_model": "inherit",
+      "dispatch_payload": {
+        "Subagents": [
+          {
+            "TypeName": "self",
+            "Role": "API Partner",
+            "Workspace": "share",
+            "Prompt": "Implement backend contract and ping Frontend Partner via send_message."
+          },
+          {
+            "TypeName": "self",
+            "Role": "UI Partner",
+            "Workspace": "share",
+            "Prompt": "Implement UI binding to backend contract upon receiving sync message."
+          }
+        ]
+      }
+    },
+    "competitive": {
+      "id": "competitive",
+      "category": "fan_out",
+      "decision_rules": {
+        "algorithm_exploration": "multiple_hypotheses",
+        "selection_metric": "benchmark_score",
+        "isolation_requirement": "strict_branch"
+      },
+      "workspace_mode": "branch",
+      "recommended_model": "pro",
+      "dispatch_payload": {
+        "Subagents": [
+          {
+            "TypeName": "self",
+            "Role": "Candidate A (DP)",
+            "Workspace": "branch",
+            "Prompt": "Implement solution via Dynamic Programming and run benchmark."
+          },
+          {
+            "TypeName": "self",
+            "Role": "Candidate B (Greedy)",
+            "Workspace": "branch",
+            "Prompt": "Implement solution via Greedy Heuristic and run benchmark."
+          }
+        ]
+      }
+    }
+  }
+}

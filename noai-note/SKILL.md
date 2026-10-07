@@ -3,7 +3,7 @@ name: noai-note
 description: Two-phase executive assistant tool for meeting notes, executive briefs, presentation outlines (PPTX), and 1-pager visual blueprints (PDF/DOCX) with Shift-Left Anti-AI filtering.
 metadata:
   task_type: open-ended
-dependencies: []
+dependencies: ["openpyxl", "pypdf"]
 ---
 
 # NoAI Note — Universal Executive Assistant & Blueprint Tool

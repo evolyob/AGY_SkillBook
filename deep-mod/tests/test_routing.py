@@ -38,7 +38,7 @@ class TestDeepModRouting(unittest.TestCase):
         self.assertLessEqual(len(lines), 50, "SKILL.md must be 50 lines or fewer")
         self.assertIn("## Objective", content)
         self.assertIn("## Execution Workflow", content)
-        self.assertIn("dependencies: []", content)
+        self.assertIn("dependencies:", content)
         self.assertNotIn("version:", content, "version should not be in metadata")
 
     def test_security_boundary_file(self):
@@ -156,6 +156,33 @@ class TestDeepModRouting(unittest.TestCase):
         self.assertIn("This chapter aligns the complete DAIR framework with NIST CSF 2.0 categories.", cleaned)
         self.assertIn("- **Item 1**: First bullet\n- **Item 2**: Second bullet", cleaned)
         self.assertIn("| Col 1 | Col 2 |\n| :--- | :--- |\n| Val 1 | Val 2 |", cleaned)
+
+    def test_taxonomy_precision_and_subtractive_patterns(self):
+        # 1. Test legal article (第 12 條)
+        chunks_art, matched = chunk_chapters("第 12 條 個人資料之蒐集限制\n\n公務機關或非公務機關應遵守個資保護法規之法定要求與資料自主控制措施，確保蒐集之正當性與安全性。\n", "art.md")
+        self.assertTrue(matched)
+        self.assertEqual(chunks_art[0]["id"], "art_01")
+        self.assertIn("Article 1", chunks_art[0]["aliases"])
+
+        # 2. Test domain vs lesson disambiguation (Domain 3: Lesson Planning -> domain_01)
+        chunks_dom, matched = chunk_chapters("Domain 3: Lesson Planning\n\nThis domain defines educational engineering workflows, curricula structuring, and pedagogical delivery boundaries across standard educational frameworks.\n", "domain.md")
+        self.assertTrue(matched)
+        self.assertEqual(chunks_dom[0]["id"], "domain_01")
+
+        # 3. Test Chinese numbers expansion (第一千零一條)
+        chunks_large, matched = chunk_chapters("第一千零一條 附則\n\n本法自公布日施行，施行細則由主管機關定之。\n", "law.md")
+        self.assertTrue(matched)
+        self.assertEqual(chunks_large[0]["id"], "art_01")
+
+        # 4. Test section symbol (§ 12.3)
+        chunks_sec, matched = chunk_chapters("§ 12.3 Security Controls\n\nDefines role-based access control, cryptographic key management, and continuous network monitoring telemetry.\n", "sec.md")
+        self.assertTrue(matched)
+        self.assertEqual(chunks_sec[0]["id"], "sec_01")
+
+        # 5. Test false-positive prevention on generic word (課程設計與管理 -> ch_01)
+        chunks_course, matched = chunk_chapters("# 課程設計與管理\n\n本文件介紹整體課程設計架構與評量方法。\n", "course.md")
+        self.assertTrue(matched)
+        self.assertEqual(chunks_course[0]["id"], "ch_01")
 
 
 if __name__ == "__main__":
