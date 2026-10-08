@@ -4,3 +4,10 @@ __pycache__/
 *.bak
 *:Zone.Identifier
 .DS_Store
+
+# Local Generated and Memory Indexes
+examples_v1/memory/core.md
+examples_v1/memory/topics/skills_routing.md
+*teams_power*
+*cyfirma_detct*
+SKILLS.md
