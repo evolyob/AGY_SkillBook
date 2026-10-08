@@ -19,3 +19,16 @@ The following skills are available in this repository:
 | **[`pptx`](pptx/)** | Presentation Engineering | Declarative layout engine for modern slide decks with dynamic grid solvers, WCAG auto-contrast, and polymorphic card slots. | `python-pptx`, `resvg-py`, `Pillow` |
 | **[`pdf`](pdf/)** | Document Engineering | High-precision PDF document creation, Platypus flowable layouts, UI dashboards, OCR scanning, and 5-Gate schema verification. | `reportlab`, `pdfplumber`, `pypdf` |
 | **[`noai-note`](noai-note/)** | Executive Communication | Two-phase executive assistant for meeting notes, executive briefs, proof-led presentation outlines, and 1-pager visual blueprints. | Markdown, Shift-Left Anti-AI Heuristics |
+
+---
+
+## 2. Reference Architectures & Examples (`examples_v1/`)
+
+The [`examples_v1/`](examples_v1/) directory provides reference implementations and foundational infrastructure templates:
+
+| Component | Path | Description |
+| :--- | :--- | :--- |
+| **Prompt Template** | [`examples_v1/gemini_template.md`](examples_v1/gemini_template.md) | Standard system prompt template with structured workflow, writing style, persistent memory, and security guardrails. |
+| **Lifecycle Hooks Suite** | [`examples_v1/hooks/`](examples_v1/hooks/) | Production-grade lifecycle hooks (`PreToolUse`, `PostToolUse`) including Anti-AI cliché filtering, secret leak guarding, and anti-blind mutation rules. |
+| **Persistent Memory Framework** | [`examples_v1/memory/`](examples_v1/memory/) | Structured long-term memory system:<ul><li>`core.md`: Master index and routing table for persistent memory.</li><li>`topics/`: Governance and preference protocols (`system_governance.md`, `user_preferences.md`).</li><li>`templates/`: Specification contracts, coding laws, subagent topologies, and skill data specifications.</li></ul> |
+
