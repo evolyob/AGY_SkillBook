@@ -8,11 +8,12 @@
 1. **Pre-flight**: Primary agent establishes and writes shared interfaces (`typing.Protocol`) or schema files (e.g. `types.py`) before parallel dispatch.
 2. **Map (Isolation)**: Dispatch workers across mutually exclusive `Allowed Write Paths` with designated read-only context.
 3. **Scan (Integration)**: Main agent runs deterministic integration test or lint script across all touched files.
-4. **Circuit Breaker**: If integration fails, re-dispatch error trace back to the original worker. Maximum **2 retries**; halt and write `FAILED_REMEDIATION_REPORT.md` (in workspace root) on 3rd failure.
+4. **Circuit Breaker**: Workers execute verification ONCE per dispatch; if it fails, report raw error logs immediately without recursive internal debugging or probing out-of-scope files. Main agent re-dispatches error trace (maximum **2 retries**); halt and write `FAILED_REMEDIATION_REPORT.md` (in workspace root) on 3rd failure.
 
 ---
 
 ## 2. Hard Context & Cost Quotas
+- **Tool Reuse Gate**: Mandatory check against `~/.gemini/skills/SKILLS.md`. Workers MUST directly execute declared CLI tools instead of generating redundant one-off scratch scripts.
 - **Read-Only Quota**: Maximum **2 reference files** per subagent (e.g. 1 type stub + 1 schema).
 - **Stateless Dispatch**: Prohibit conversational history dumps. Inject only target input data and acceptance commands.
 - **Model Tiering**: Default `Model: "flash"` for extraction, parsing, and batch sharding; reserve `inherit`/`pro` for complex logic.
