@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Deterministic Decision Matrix and Dispatch Registry for 12 AGY Subagent Topologies",
   "topologies": {
     "pipeline": {
@@ -21,7 +21,7 @@
               "Role": "Upstream Producer",
               "Model": "pro",
               "Workspace": "inherit",
-              "Prompt": "Execute stage 1 and persist artifacts to ./artifacts/stage1_output.json."
+              "Prompt": "Execute stage 1 and persist artifacts to ./artifacts/stage1_output.json. Execute verification EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately."
             }
           ]
         },
@@ -32,7 +32,7 @@
               "Role": "Downstream Consumer",
               "Model": "inherit",
               "Workspace": "inherit",
-              "Prompt": "Read ./artifacts/stage1_output.json and execute stage 2 implementation."
+              "Prompt": "Read ./artifacts/stage1_output.json and execute stage 2 implementation. Execute verification EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately."
             }
           ]
         }
@@ -44,7 +44,8 @@
       "decision_rules": {
         "task_dependencies": "independent",
         "file_conflicts": "mutually_exclusive_paths",
-        "target_metric": "minimum_latency"
+        "target_metric": "minimum_latency",
+        "worker_verification_limit": 1
       },
       "workspace_mode": "inherit",
       "recommended_model": "flash",
@@ -55,14 +56,14 @@
             "Role": "Module A Worker",
             "Model": "flash",
             "Workspace": "inherit",
-            "Prompt": "Audit Module A under /src/module_a with exclusive write scope."
+            "Prompt": "Audit Module A under /src/module_a with exclusive write scope. Execute verification EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately without probing out-of-scope files."
           },
           {
             "TypeName": "research",
             "Role": "Module B Worker",
             "Model": "flash",
             "Workspace": "inherit",
-            "Prompt": "Audit Module B under /src/module_b with exclusive write scope."
+            "Prompt": "Audit Module B under /src/module_b with exclusive write scope. Execute verification EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately without probing out-of-scope files."
           }
         ]
       }
@@ -73,7 +74,8 @@
       "decision_rules": {
         "coordination_need": "continuous_delegation",
         "circuit_breaker_limit": 2,
-        "verification_mode": "deterministic_test"
+        "verification_mode": "deterministic_test",
+        "worker_verification_limit": 1
       },
       "workspace_mode": "inherit",
       "recommended_model": "pro",
@@ -84,7 +86,7 @@
             "Role": "Worker",
             "Model": "inherit",
             "Workspace": "inherit",
-            "Prompt": "Implement feature per spec and report back when unit tests pass."
+            "Prompt": "Implement feature per spec. Execute verification EXACTLY ONCE per dispatch; if it fails, STOP immediately and report raw error logs without recursive internal debugging or probing out-of-scope files."
           }
         ]
       }
@@ -103,7 +105,7 @@
         "SubagentDefinition": {
           "name": "tech_lead",
           "description": "Decomposes complex subsystem requirements and spawns dedicated workers",
-          "system_prompt": "You are a tech lead. Decompose system contracts and invoke subagents via invoke_subagent.",
+          "system_prompt": "You are a tech lead. Decompose system contracts, enforce single-verification worker limit, and invoke subagents via invoke_subagent. On worker failure, collect raw error logs without recursive probing.",
           "enable_write_tools": true,
           "enable_subagent_tools": true
         }
@@ -125,7 +127,7 @@
             "Role": "Release Engineer",
             "Model": "inherit",
             "Workspace": "inherit",
-            "Prompt": "Previous build stage complete. Take full control of production deployment."
+            "Prompt": "Previous build stage complete. Take full control of production deployment. Execute verification EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately."
           }
         ]
       }
@@ -208,13 +210,13 @@
             "TypeName": "self",
             "Role": "State Producer",
             "Workspace": "share",
-            "Prompt": "Update global blackboard state at .memory/shared_state.json."
+            "Prompt": "Update global blackboard state at .memory/shared_state.json. Execute verification EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately."
           },
           {
             "TypeName": "self",
             "Role": "State Consumer",
             "Workspace": "share",
-            "Prompt": "Read .memory/shared_state.json and execute dependent triggers."
+            "Prompt": "Read .memory/shared_state.json and execute dependent triggers. Execute verification EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately."
           }
         ]
       }
@@ -235,7 +237,7 @@
             "Role": "Domain Specialist",
             "Model": "inherit",
             "Workspace": "inherit",
-            "Prompt": "Execute domain-specific routine based on classified intent."
+            "Prompt": "Execute domain-specific routine based on classified intent. Execute verification EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately."
           }
         ]
       }
@@ -246,7 +248,8 @@
       "decision_rules": {
         "code_risk": "high",
         "verification_automation": "unit_test_suite",
-        "retry_circuit_breaker": 2
+        "retry_circuit_breaker": 2,
+        "worker_verification_limit": 1
       },
       "workspace_mode": "branch",
       "recommended_model": "pro",
@@ -257,7 +260,7 @@
             "Role": "Isolated Generator",
             "Model": "pro",
             "Workspace": "branch",
-            "Prompt": "Implement logic in isolated branch and run verification suite."
+            "Prompt": "Implement logic in isolated branch. Execute verification suite EXACTLY ONCE per dispatch; if it fails, STOP immediately and report raw error logs without recursive internal debugging or probing out-of-scope files."
           }
         ]
       }
@@ -278,13 +281,13 @@
             "TypeName": "self",
             "Role": "API Partner",
             "Workspace": "share",
-            "Prompt": "Implement backend contract and ping Frontend Partner via send_message."
+            "Prompt": "Implement backend contract and ping Frontend Partner via send_message. Execute verification EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately."
           },
           {
             "TypeName": "self",
             "Role": "UI Partner",
             "Workspace": "share",
-            "Prompt": "Implement UI binding to backend contract upon receiving sync message."
+            "Prompt": "Implement UI binding to backend contract upon receiving sync message. Execute verification EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately."
           }
         ]
       }
@@ -305,16 +308,28 @@
             "TypeName": "self",
             "Role": "Candidate A (DP)",
             "Workspace": "branch",
-            "Prompt": "Implement solution via Dynamic Programming and run benchmark."
+            "Prompt": "Implement solution via Dynamic Programming. Execute benchmark EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately."
           },
           {
             "TypeName": "self",
             "Role": "Candidate B (Greedy)",
             "Workspace": "branch",
-            "Prompt": "Implement solution via Greedy Heuristic and run benchmark."
+            "Prompt": "Implement solution via Greedy Heuristic. Execute benchmark EXACTLY ONCE per dispatch; if it fails, report raw error logs immediately."
           }
         ]
       }
     }
-  }
+  },
+  "circuit_breaker_protocol": {
+    "worker_verification_limit": 1,
+    "on_failure": "halt_immediately_and_report_raw_logs",
+    "forbidden_actions": [
+      "recursive_internal_debugging",
+      "probing_out_of_scope_files",
+      "editing_shared_contracts"
+    ],
+    "main_agent_retry_budget": 2,
+    "final_action_on_3rd_failure": "halt_and_write_FAILED_REMEDIATION_REPORT.md_in_workspace_root"
+  },
+  "worker_verification_contract": "Execute verification EXACTLY ONCE per dispatch. If verification fails, STOP immediately and report raw error logs; DO NOT attempt recursive internal debugging or probe out-of-scope files."
 }
