@@ -15,7 +15,7 @@ Distill multi-source documents into structured, production-ready Agent Skill dir
 - **Subagent Execution Contract**:
   - **Single Write Path**: Exactly 1 exclusive target file per worker (e.g. `chapters/chapter_XX_*.md`).
   - **Context Quota**: Exactly 2 read-only inputs (1 assigned raw chunk + `data/glossary.json` or `data/*.json`).
-  - **Zero Micro-Trimming**: Prohibit multi-round line-by-line trimming loops. Synthesize to target budget in a single pass. If output exceeds 45 KB, execute 1 compact pass; if still > 44 KB, split into sub-shards (e.g. `chapter_XX-1a.md`, `chapter_XX-1b.md`).
+  - **Direct Split Mandate (Zero Compression Loops)**: Prohibit trimming or compression loops. Synthesize content naturally in a single pass. If a chapter naturally exceeds 45 KB (46,080 bytes), MUST directly split into sub-shards (e.g. `chapter_XX_part1.md`, `chapter_XX_part2.md`). NEVER execute post-hoc text deletion or size-measuring loops.
 
 ---
 
@@ -44,6 +44,6 @@ Distill multi-source documents into structured, production-ready Agent Skill dir
 ---
 
 ## 5. Verification & Quality Gates
-- **Gate 1 (Anti-AI Baseline)**: Run `python3 tests/noai_gate.py <generated_skill_dir>` to verify zero prohibited buzzwords, canned openings, or formulaic patterns.
+- **Gate 1 (Anti-AI Baseline)**: Run `python3 scripts/noai_gate.py <generated_skill_dir>` to verify zero prohibited buzzwords, canned openings, or formulaic patterns.
 - **Gate 2 (Structure & AST Audit)**: Run `python3 tests/audit.py <generated_skill_dir>` to verify frontmatter constraints, single-file sizes (<= 45 KB), valid JSON syntax, and script AST rules.
 - **Gate 3 (Circuit Breaker)**: Maximum 2 automated fix retries upon gate failure. If blocking errors persist, generate `FAILED_REMEDIATION_REPORT.md` and pause for user direction.
