@@ -11,8 +11,11 @@ This skill is a local-first semantic routing and intent matrix scanner. It perfo
 ## Execution
 Single-shot ephemeral CLI (< 20ms). Read-only in-memory analysis with zero filesystem mutations and zero background daemons.
 - Validated execution flags:
-  - `--check`: Output dependency readiness status report.
+  - `--check`: Output dependency readiness and scenario routing DAG verification report.
+  - `--check-dag`: Output scenario routing DAG cycle and depth verification.
+  - `--scenarios`: Specify custom scenarios JSON file for routing verification.
+  - `--max-depth`: Maximum allowed scenario invocation depth (default: 3).
   - `--json`: Output raw structured JSON analysis to stdout.
-  - `--sync`: Synchronize skills registry to ~/.gemini/config/skills/SKILLS.md.
+  - `--sync`: Synchronize skills registry to target SKILLS.md.
 
 

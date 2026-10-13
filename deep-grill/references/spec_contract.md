@@ -18,12 +18,16 @@
 
 ---
 
-## 2. Allowed Paths Perimeter (Strict Whitelist)
+## 2. Allowed Paths Perimeter (Strict Whitelist & Read-Only Isolation)
 Modifications outside this declared perimeter are strictly blocked:
 - `<declared_target_file_1>`
 - `<declared_target_file_2>`
 - `<declared_test_file>`
 *(Maximum 5 files explicitly declared during specification freeze)*
+
+### Anti-Traversal & Read-Only Enforcement
+- **Anti-Traversal Lockdown**: Declared paths strictly prohibit path traversal sequences (e.g., `..`), unnormalized relative paths escaping the boundary, or NUL characters.
+- **Strict Read-Only Isolation**: All workspace files not explicitly declared in Allowed Paths are strictly read-only. Any write, overwrite, or delete attempt is an immediate contract violation and must be blocked.
 
 ---
 

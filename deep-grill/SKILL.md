@@ -25,7 +25,7 @@ Execute radar-guided architectural interviews, freeze defensive specifications, 
    - Apply MISSION rules: Pin down concrete Why (reject abstract framings), observable Success criteria, and strict Out-of-Scope boundaries.
    - Probe architectural radar: Boundary isolation, pure core, flattened flow, and negative net diffs.
 2. **Phase 2 (Spec Contract Freeze)**:
-   - Synthesize decisions into a frozen contract per [spec_contract.md](references/spec_contract.md) with Goal/Non-Goals Firewall, Allowed Paths, and deterministic test commands.
+   - Synthesize decisions into a frozen contract per [spec_contract.md](references/spec_contract.md) with Goal/Non-Goals Firewall, Allowed Paths (anti-traversal & read-only isolation), and deterministic test commands.
 3. **Phase 3 (Dispatch Proposal)**:
    - Decompose into tracer-bullet slices per [ticket_decomposition.md](references/ticket_decomposition.md), then output a high-density dispatch table per [subagent_dispatch.md](references/subagent_dispatch.md).
 4. **Phase 4 (Integration & Verification)**:

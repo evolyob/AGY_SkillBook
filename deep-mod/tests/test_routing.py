@@ -5,7 +5,7 @@ import sys
 # Add scripts directory to path for unit testing
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR / "scripts"))
-from ingest import clean_text, chunk_chapters, read_raw
+from ingest import clean_text, chunk_chapters, read_raw, check_file_boundary, filter_boilerplate
 
 
 class TestDeepModRouting(unittest.TestCase):
@@ -183,6 +183,44 @@ class TestDeepModRouting(unittest.TestCase):
         chunks_course, matched = chunk_chapters("# 課程設計與管理\n\n本文件介紹整體課程設計架構與評量方法。\n", "course.md")
         self.assertTrue(matched)
         self.assertEqual(chunks_course[0]["id"], "ch_01")
+
+    def test_boilerplate_and_bundler_glue_filtering(self):
+        sample = (
+            "/*\n * Copyright (c) 2024 Vendor Corp. All rights reserved.\n * Licensed under the Apache License, Version 2.0\n */\n"
+            "// SPDX-License-Identifier: Apache-2.0\n"
+            "// # sourceMappingURL=app.min.js.map\n"
+            "/* eslint-disable no-unused-vars */\n"
+            "/******/ (() => { // webpackBootstrap\n"
+            "Object.defineProperty(exports, \"__esModule\", { value: true });\n"
+            "var _interopRequireDefault = require(\"@babel/runtime/helpers/interopRequireDefault\");\n"
+            "var __awaiter = (this && this.__awaiter) || function () {};\n"
+            "function executeTask() { return true; }\n"
+        )
+        cleaned = filter_boilerplate(sample)
+        self.assertNotIn("Copyright (c)", cleaned)
+        self.assertNotIn("SPDX-License-Identifier", cleaned)
+        self.assertNotIn("sourceMappingURL", cleaned)
+        self.assertNotIn("eslint-disable", cleaned)
+        self.assertNotIn("webpackBootstrap", cleaned)
+        self.assertNotIn("defineProperty", cleaned)
+        self.assertNotIn("_interopRequireDefault", cleaned)
+        self.assertNotIn("__awaiter", cleaned)
+        self.assertIn("function executeTask() { return true; }", cleaned)
+
+    def test_defensive_size_and_boundary_checks(self):
+        import tempfile, ingest
+        tmp_dir = Path(tempfile.gettempdir())
+        oversized_file = tmp_dir / "oversized_test.txt"
+        oversized_file.write_text("A" * 1024, encoding="utf-8")
+        orig = ingest.MAX_FILE_BYTES
+        try:
+            ingest.MAX_FILE_BYTES = 512
+            with self.assertRaises(ValueError):
+                check_file_boundary(oversized_file)
+        finally:
+            ingest.MAX_FILE_BYTES = orig
+            if oversized_file.exists():
+                oversized_file.unlink()
 
 
 if __name__ == "__main__":
