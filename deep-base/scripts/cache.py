@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SHA-256 Deduplication & Content Cache Manager for llm-wiki."""
+"""SHA-256 Deduplication & Content Cache Manager for deep-base."""
 
 import hashlib
 import json
@@ -30,13 +30,25 @@ def load_cache(cache_file: Path) -> dict:
     try:
         with open(cache_file, "r", encoding="utf-8") as f:
             return json.load(f)
-    except Exception:
-        return {}
+    except json.JSONDecodeError as e:
+        print(f"Error: Cache file corrupted ({cache_file}): {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: Failed to read cache file ({cache_file}): {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 def save_cache(cache_file: Path, data: dict) -> None:
-    with open(cache_file, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    cache_file.parent.mkdir(parents=True, exist_ok=True)
+    tmp_file = cache_file.parent / f".wiki-cache.tmp.{os.getpid()}"
+    try:
+        with open(tmp_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        os.replace(tmp_file, cache_file)
+    except Exception:
+        if tmp_file.exists():
+            tmp_file.unlink(missing_ok=True)
+        raise
 
 
 def main():

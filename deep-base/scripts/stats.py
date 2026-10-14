@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fast Telemetry & Scale Dashboard for llm-wiki."""
+"""Fast Telemetry & Scale Dashboard for deep-base."""
 
 import sys
 from pathlib import Path

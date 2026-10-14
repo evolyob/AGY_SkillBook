@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Knowledge Base Scaffolding & Assembly Engine for llm-wiki."""
+"""Knowledge Base Scaffolding & Assembly Engine for deep-base."""
 
 import argparse
 from datetime import datetime
+import json
 from pathlib import Path
 
 
@@ -21,7 +22,8 @@ def init_knowledge_base(target_path: Path):
         target / "wiki" / "comparisons",
         target / "wiki" / "synthesis",
         target / "wiki" / "queries",
-        target / "templates"
+        target / "templates",
+        target / "data",
     ]
 
     for d in dirs:
@@ -71,6 +73,33 @@ def init_knowledge_base(target_path: Path):
         log_path.write_text(f"""# Wiki Operation Log
 - {today}: Initialized personal knowledge base structure at {target}.
 """, encoding="utf-8")
+
+    # data/glossary.json
+    glossary_path = target / "data" / "glossary.json"
+    if not glossary_path.exists():
+        initial_glossary = {
+            "version": "1.0.0",
+            "last_updated": today,
+            "terms": [
+                {
+                    "term_zh": "檢索增強生成",
+                    "term_en": "Retrieval-Augmented Generation",
+                    "abbr": "RAG",
+                    "entity": "rag",
+                    "aliases": ["檢索增強生成", "Retrieval-Augmented Generation", "RAG"],
+                    "definition": "結合外部檢索機制與大型語言模型生成能力之架構。"
+                },
+                {
+                    "term_zh": "大型語言模型",
+                    "term_en": "Large Language Model",
+                    "abbr": "LLM",
+                    "entity": "llm",
+                    "aliases": ["大型語言模型", "Large Language Model", "LLM"],
+                    "definition": "基於海量文字預訓練並具備語言理解與生成能力之深度學習模型。"
+                }
+            ]
+        }
+        glossary_path.write_text(json.dumps(initial_glossary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     print(f"Knowledge base successfully initialized at {target}")
 
