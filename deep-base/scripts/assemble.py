@@ -107,7 +107,7 @@ def init_knowledge_base(target_path: Path):
 def main():
     parser = argparse.ArgumentParser(description="Assemble & Scaffold Knowledge Base.")
     parser.add_argument("--init", action="store_true", help="Initialize a fresh knowledge base")
-    parser.add_argument("--path", default="~/wiki", help="Target path for knowledge base")
+    parser.add_argument("--path", default="~/.gemini/wiki", help="Target path for knowledge base")
     args = parser.parse_args()
 
     if args.init:

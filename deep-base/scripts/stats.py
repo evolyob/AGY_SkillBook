@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def main():
-    target = Path(sys.argv[1] if len(sys.argv) > 1 else "~/wiki").expanduser().resolve()
+    target = Path(sys.argv[1] if len(sys.argv) > 1 else "~/.gemini/wiki").expanduser().resolve()
     if not target.exists():
         print(f"Error: Target path does not exist: {target}", file=sys.stderr)
         sys.exit(1)

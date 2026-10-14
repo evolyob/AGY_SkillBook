@@ -183,7 +183,7 @@ def find_backlinks(wiki_root: Path, entity_name: str) -> list[dict]:
 
 def main():
     parser = argparse.ArgumentParser(description="Deterministic Wikilink & Health Scanner for deep-base.")
-    parser.add_argument("wiki_root", nargs="?", default="~/wiki", help="Root path of wiki")
+    parser.add_argument("wiki_root", nargs="?", default="~/.gemini/wiki", help="Root path of wiki")
     parser.add_argument("--strict", action="store_true", help="Exit code 2 on broken links, oversized files, or unverified quotes")
     parser.add_argument("--verify-quotes", action="store_true", help="Verify quotes in wiki/sources/*.md against raw files")
     parser.add_argument("--backlinks", metavar="ENTITY", help="List all markdown files referencing the entity with context excerpts")
