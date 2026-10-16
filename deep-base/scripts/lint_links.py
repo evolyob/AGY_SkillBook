@@ -133,6 +133,27 @@ def verify_markdown_structure(content: str) -> dict:
     }
 
 
+def collect_structural_issues(rel_file: str, struct: dict) -> list[dict]:
+    """Format structural failures into diagnostic issue records."""
+    if struct.get("valid", True):
+        return []
+    issues = []
+    if struct.get("unbalanced_fences"):
+        issues.append({
+            "file": rel_file,
+            "type": "unbalanced_fences",
+            "detail": f"Unbalanced code fences (total fence marks: {struct.get('fence_count', 0)})",
+        })
+    for ct in struct.get("collapsed_tables", []):
+        issues.append({
+            "file": rel_file,
+            "type": "collapsed_table",
+            "line": ct["line"],
+            "detail": f"Collapsed table separator at line {ct['line']}: {ct['content']}",
+        })
+    return issues
+
+
 def scan_wiki(wiki_root: Path, verify_quotes: bool = False, verify_structure: bool = True) -> dict:
     if wiki_root.is_file():
         all_md_files = [wiki_root]
@@ -165,20 +186,7 @@ def scan_wiki(wiki_root: Path, verify_quotes: bool = False, verify_structure: bo
 
         if verify_structure:
             struct = verify_markdown_structure(content)
-            if not struct["valid"]:
-                if struct["unbalanced_fences"]:
-                    structural_issues.append({
-                        "file": rel_file,
-                        "type": "unbalanced_fences",
-                        "detail": f"Unbalanced code fences (total fence marks: {struct['fence_count']})"
-                    })
-                for ct in struct["collapsed_tables"]:
-                    structural_issues.append({
-                        "file": rel_file,
-                        "type": "collapsed_table",
-                        "line": ct["line"],
-                        "detail": f"Collapsed table separator at line {ct['line']}: {ct['content']}"
-                    })
+            structural_issues.extend(collect_structural_issues(rel_file, struct))
 
         filtered = strip_markdown_code(content)
         for match in WIKILINK_PATTERN.finditer(filtered):

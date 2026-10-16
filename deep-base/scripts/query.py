@@ -38,6 +38,18 @@ def find_glossary_term(terms: list[dict], query: str) -> dict | None:
     return None
 
 
+def extract_glossary_targets(term: dict | None, default_target: str) -> list[str]:
+    """Extract search target aliases from a glossary term."""
+    targets = [default_target]
+    if not term:
+        return targets
+    for k in ["entity", "abbr", "term_zh", "term_en"]:
+        val = term.get(k)
+        if val:
+            targets.append(str(val))
+    return targets
+
+
 def locate_entity_file(wiki_root: Path, term: dict | None, query: str) -> Path | None:
     """Locate markdown document associated with the entity."""
     cands = []
@@ -318,13 +330,9 @@ def run_filter(
 
     backlink_candidates = []
     if enable_backlinks:
-        targets = [keyword]
         glossary = load_glossary(wiki_root)
         term = find_glossary_term(glossary.get("terms", []), keyword)
-        if term:
-            for k in ["entity", "abbr", "term_zh", "term_en"]:
-                if term.get(k):
-                    targets.append(str(term[k]))
+        targets = extract_glossary_targets(term, keyword)
         for tc in title_candidates[:3]:
             targets.append(Path(tc["file"]).stem)
         backlink_candidates = find_backlinks_matches(wiki_root, targets, limit=limit * 2)
@@ -445,11 +453,7 @@ def handle_query(root: Path, args) -> str:
     if args.entity:
         ent_res = query_entity(root, args.entity)
         if enable_bl:
-            bl_targets = [args.entity]
-            if ent_res.get("term"):
-                for k in ["entity", "abbr", "term_zh", "term_en"]:
-                    if ent_res["term"].get(k):
-                        bl_targets.append(str(ent_res["term"][k]))
+            bl_targets = extract_glossary_targets(ent_res.get("term"), args.entity)
             ent_res["backlinks"] = find_backlinks_matches(root, bl_targets, limit=args.limit)
         payload["entity"] = ent_res
 
