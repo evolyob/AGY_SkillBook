@@ -22,8 +22,8 @@ RRF_K = CFG.get("rrf_k", 60)
 DEFAULT_LIMIT = CFG.get("default_limit", 5)
 TITLE_SCORING = CFG.get("title_scoring", {"exact": 100, "prefix": 80, "contains": 60, "all_tokens": 40, "any_token": 20})
 GLOSSARY_FIELDS = tuple(CFG.get("glossary_fields", ["entity", "abbr", "term_zh", "term_en"]))
-ENTITY_LABELS = CFG.get("entity_labels", {"abbr": "英文縮寫", "aliases": "別名列表", "definition": "詞彙定義"})
-FILTER_TABLE_HEADERS = CFG.get("filter_table_headers", ["名次", "檔案來源", "RRF 分數", "BM25 分數", "命中軌道", "內文摘錄"])
+ENTITY_LABELS = CFG.get("entity_labels", {"abbr": "Abbreviation", "aliases": "Aliases", "definition": "Definition"})
+FILTER_TABLE_HEADERS = CFG.get("filter_table_headers", ["Rank", "File", "RRF Score", "BM25 Score", "Tracks", "Excerpt"])
 WIKILINK_PATTERN = re.compile(r"\[\[(.*?)\]\]")
 
 
@@ -268,11 +268,11 @@ def run_filter(conn: sqlite3.Connection, wiki_root: Path, keyword: str, limit: i
 def render_filter_view(kw: str, results: list[dict], as_table: bool = False) -> str:
     """Render full-text or backlinks search results as Markdown or table."""
     if not results:
-        return f"未找到與「{kw}」相符之全文內容。"
+        return f"No matching full-text content found for '{kw}'."
     if as_table:
         hdr = " | ".join(FILTER_TABLE_HEADERS)
         lines = [
-            f"### 全文檢索結果表格：`{kw}` (共 {len(results)} 筆，RRF 融合排序)\n",
+            f"### Search Results Table: `{kw}` ({len(results)} matches, RRF fused)\n",
             f"| {hdr} |",
             "|:---:|:---|:---:|:---:|:---|:---|",
         ]
@@ -285,7 +285,7 @@ def render_filter_view(kw: str, results: list[dict], as_table: bool = False) -> 
             lines.append(f"| {rank} | {f_path} | {rrf} | {bm25} | {srcs} | {snip} |")
         return "\n".join(lines).strip()
 
-    lines = [f"### 全文檢索結果：`{kw}` (共 {len(results)} 筆，RRF 融合排序)\n"]
+    lines = [f"### Search Results: `{kw}` ({len(results)} matches, RRF fused)\n"]
     for r in results:
         snip = r.get("paragraph", "")
         snip_str = snip[:240] + "..." if len(snip) > 240 else snip
@@ -294,42 +294,42 @@ def render_filter_view(kw: str, results: list[dict], as_table: bool = False) -> 
             info.append(f"BM25: {r.get('bm25_score', r.get('score'))}")
         srcs = [f"{k.replace('_rank', '')}#{v}" for k, v in sorted(r.get("source_ranks", {}).items())]
         if srcs:
-            info.append(f"來源軌道: {', '.join(srcs)}")
+            info.append(f"Tracks: {', '.join(srcs)}")
         annot = f" ({'; '.join(info)})" if info else ""
-        lines.append(f"- **來源**：`{r['file']}`{annot}\n  > {snip_str}\n")
+        lines.append(f"- **Source**: `{r['file']}`{annot}\n  > {snip_str}\n")
     return "\n".join(lines).strip()
 
 
 def render_entity_view(res: dict, as_table: bool = False) -> str:
     """Render entity resolution output as Markdown or table."""
     if not res.get("matched"):
-        return f"未找到與「{res.get('entity', '')}」相符之實體或權威詞彙。"
+        return f"No entity or authoritative term matched '{res.get('entity', '')}'."
     t = res.get("term") or {}
     term_str = f"{t.get('term_zh', '')} ({t.get('term_en', '')})" if t.get("term_zh") or t.get("term_en") else ""
     fields = [(lbl, ", ".join(t[k]) if isinstance(t[k], list) else t[k]) for k, lbl in ENTITY_LABELS.items() if t.get(k)]
     if as_table:
-        hdr = " | ".join(CFG.get("entity_table_headers", ["屬性", "內容"]))
-        lines = [f"### 實體查詢表格：`{res['entity']}`\n", f"| {hdr} |", "|:---|:---|"]
+        hdr = " | ".join(CFG.get("entity_table_headers", ["Attribute", "Value"]))
+        lines = [f"### Entity Resolution Table: `{res['entity']}`\n", f"| {hdr} |", "|:---|:---|"]
         if term_str:
-            lines.append(f"| 標準術語 | {term_str} |")
+            lines.append(f"| Standard Term | {term_str} |")
         lines.extend(f"| {lbl} | {val} |" for lbl, val in fields)
         if res.get("file"):
-            lines.append(f"| 實體檔案 | `{res['file']}` |")
+            lines.append(f"| Entity File | `{res['file']}` |")
         if res.get("backlinks"):
-            lines.append(f"| 反向連結 | {len(res['backlinks'])} 處引用 |")
+            lines.append(f"| Backlinks | {len(res['backlinks'])} references |")
         return "\n".join(lines)
 
-    lines = [f"### 實體查詢：{res['entity']}\n"]
+    lines = [f"### Entity Resolution: {res['entity']}\n"]
     if term_str:
-        lines.append(f"- **標準術語**：{term_str}")
-    lines.extend(f"- **{lbl}**：{val}" for lbl, val in fields)
+        lines.append(f"- **Standard Term**: {term_str}")
+    lines.extend(f"- **{lbl}**: {val}" for lbl, val in fields)
     if res.get("file"):
-        lines.append(f"- **實體檔案**：`{res['file']}`")
+        lines.append(f"- **Entity File**: `{res['file']}`")
     if res.get("backlinks"):
-        lines.append(f"- **反向連結 (Backlinks)**：{len(res['backlinks'])} 處引用")
+        lines.append(f"- **Backlinks**: {len(res['backlinks'])} references")
         lines.extend(f"  - `{b['file']}`: > {b['paragraph']}" for b in res["backlinks"][:5])
     if res.get("content"):
-        lines.append(f"\n#### 實體檔案內容\n\n```markdown\n{res['content'].strip()}\n```")
+        lines.append(f"\n#### Entity File Content\n\n```markdown\n{res['content'].strip()}\n```")
     return "\n".join(lines)
 
 

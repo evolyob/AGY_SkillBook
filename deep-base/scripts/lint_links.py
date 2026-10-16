@@ -22,6 +22,7 @@ WIKILINK_PATTERN = re.compile(PATTERNS.get("wikilink", r"\[\[(.*?)\]\]"))
 SEP_CELL_RX = re.compile(PATTERNS.get("sep_cell", r"\|\s*:?-{2,}:?\s*\|"))
 PURE_SEP_RX = re.compile(PATTERNS.get("pure_sep", r"^\s*\|?[\s:|-]+\|?\s*$"))
 FENCE_RX = re.compile(PATTERNS.get("fence", r"^\s*(```|~~~)"))
+QUOTE_HEADER_RX = re.compile(PATTERNS.get("quote_header", r"^#{1,6}\s+.*(?:quote|citation|notable).*$"), re.I)
 EXEMPT_FILES = tuple(CFG.get("exempt_files", ["index.md", "log.md"]))
 EXEMPT_PREFIXES = tuple(CFG.get("exempt_prefixes", [".", "raw/"]))
 CATEGORIES = CFG.get("categories", [])
@@ -66,12 +67,12 @@ def resolve_raw_file(wiki_root: Path, source_md: Path, raw_path_str: str) -> Pat
 
 def extract_quotes(content: str) -> list[str]:
     cleaned = strip_markdown_code(content)
-    has_sec = bool(re.search(r'^#{1,6}\s+.*(?:quote|引文|citation|notable).*$', cleaned, re.M | re.I))
+    has_sec = bool(QUOTE_HEADER_RX.search(cleaned))
     quotes, in_sec = [], False
     for line in cleaned.splitlines():
         trimmed = line.strip()
         if trimmed.startswith('#'):
-            in_sec = bool(re.search(r'^#{1,6}\s+.*(?:quote|引文|citation|notable).*$', trimmed, re.I))
+            in_sec = bool(QUOTE_HEADER_RX.match(trimmed))
             continue
         if not trimmed.startswith('>') or trimmed.startswith('>[!'):
             continue

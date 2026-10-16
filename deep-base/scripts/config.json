@@ -7,7 +7,8 @@
       "wikilink": "\\[\\[([^\\]|#]+)(?:#[^\\]|]+)?(?:\\|[^\\]]+)?\\]\\]",
       "sep_cell": "\\|\\s*:?-{2,}:?\\s*\\|",
       "pure_sep": "^\\s*\\|?[\\s:|-]+\\|?\\s*$",
-      "fence": "^\\s*(```|~~~)"
+      "fence": "^\\s*(```|~~~)",
+      "quote_header": "^#{1,6}\\s+.*(?:quote|citation|notable|\\u5f15\\u6587).*$"
     },
     "categories": [
       {"key": "structural_issues", "label": "Structural Issues", "tag": "!"},
@@ -29,12 +30,12 @@
     },
     "glossary_fields": ["entity", "abbr", "term_zh", "term_en"],
     "entity_labels": {
-      "abbr": "英文縮寫",
-      "aliases": "別名列表",
-      "definition": "詞彙定義"
+      "abbr": "Abbreviation",
+      "aliases": "Aliases",
+      "definition": "Definition"
     },
-    "filter_table_headers": ["名次", "檔案來源", "RRF 分數", "BM25 分數", "命中軌道", "內文摘錄"],
-    "entity_table_headers": ["屬性", "內容"]
+    "filter_table_headers": ["Rank", "File", "RRF Score", "BM25 Score", "Tracks", "Excerpt"],
+    "entity_table_headers": ["Attribute", "Value"]
   },
   "scaffold": {
     "directories": [

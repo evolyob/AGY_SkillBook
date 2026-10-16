@@ -206,7 +206,7 @@ class TestWikiEngine(unittest.TestCase):
         cmd_table = [sys.executable, str(SCRIPTS_DIR / "query.py"), str(self.test_dir), "--filter", "vector_db", "--format", "table"]
         res_table = subprocess.run(cmd_table, capture_output=True, text=True)
         self.assertEqual(res_table.returncode, 0)
-        self.assertIn("| 名次 | 檔案來源 | RRF 分數 | BM25 分數 | 命中軌道 | 內文摘錄 |", res_table.stdout)
+        self.assertIn("| Rank | File | RRF Score | BM25 Score | Tracks | Excerpt |", res_table.stdout)
         self.assertIn("wiki/entities/vector_db.md", res_table.stdout)
 
 
