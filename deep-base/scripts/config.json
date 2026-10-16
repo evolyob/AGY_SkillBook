@@ -4,19 +4,12 @@
     "exempt_files": ["index.md", "log.md", ".wiki-schema.md", ".wiki-cache.json"],
     "exempt_prefixes": [".", "raw/"],
     "patterns": {
-      "wikilink": "\\[\\[([^\\]|#]+)(?:#[^\\]|]+)?(?:\\|[^\\]]+)?\\]\\]",
+      "wikilink": "\\[\\[(.*?)\\]\\]",
       "sep_cell": "\\|\\s*:?-{2,}:?\\s*\\|",
       "pure_sep": "^\\s*\\|?[\\s:|-]+\\|?\\s*$",
       "fence": "^\\s*(```|~~~)",
-      "quote_header": "^#{1,6}\\s+.*(?:quote|citation|notable|\\u5f15\\u6587).*$"
-    },
-    "categories": [
-      {"key": "structural_issues", "label": "Structural Issues", "tag": "!"},
-      {"key": "broken_links", "label": "Broken Links", "tag": "!"},
-      {"key": "oversized_files", "label": "Oversized Files (>45KB)", "tag": "!"},
-      {"key": "orphan_pages", "label": "Orphan Pages", "tag": "*"},
-      {"key": "unverified_quotes", "label": "Unverified Quotes", "tag": "?"}
-    ]
+      "quote_header": "^#{1,6}\\s+.*(?:quote|citation|notable).*$"
+    }
   },
   "query": {
     "rrf_k": 60,

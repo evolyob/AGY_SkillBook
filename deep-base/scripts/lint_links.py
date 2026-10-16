@@ -25,7 +25,6 @@ FENCE_RX = re.compile(PATTERNS.get("fence", r"^\s*(```|~~~)"))
 QUOTE_HEADER_RX = re.compile(PATTERNS.get("quote_header", r"^#{1,6}\s+.*(?:quote|citation|notable).*$"), re.I)
 EXEMPT_FILES = tuple(CFG.get("exempt_files", ["index.md", "log.md"]))
 EXEMPT_PREFIXES = tuple(CFG.get("exempt_prefixes", [".", "raw/"]))
-CATEGORIES = CFG.get("categories", [])
 
 
 
