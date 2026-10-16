@@ -291,31 +291,18 @@ def main():
         if args.verify_quotes:
             print(f"Unverified Quotes    : {len(results.get('unverified_quotes', []))}")
 
-        if results.get("structural_issues"):
-            print("\n[!] Structural Issues:")
-            for issue in results["structural_issues"][:10]:
-                line_str = f":{issue['line']}" if "line" in issue else ""
-                print(f"  - {issue['file']}{line_str} [{issue['type']}]: {issue['detail']}")
-
-        if results["broken_links"]:
-            print("\n[!] Broken Links:")
-            for b in results["broken_links"][:10]:
-                print(f"  - {b['source']} -> [[{b['target']}]]")
-
-        if results["oversized_files"]:
-            print("\n[!] Oversized Files (>45KB):")
-            for o in results["oversized_files"][:10]:
-                print(f"  - {o['file']} ({o['size']} bytes)")
-
-        if results["orphan_pages"]:
-            print("\n[*] Orphan Pages:")
-            for op in results["orphan_pages"][:10]:
-                print(f"  - {op}")
-
-        if args.verify_quotes and results.get("unverified_quotes"):
-            print("\n[?] Unverified Quotes:")
-            for u in results["unverified_quotes"][:10]:
-                print(f"  - {u['source']} (Raw: {u['raw_file']}) -> \"{u['quote']}\"")
+        categories = [
+            ("Structural Issues", results.get("structural_issues", []), lambda i: f"{i['file']}:{i.get('line', '')} [{i['type']}]: {i['detail']}"),
+            ("Broken Links", results["broken_links"], lambda b: f"{b['source']} -> [[{b['target']}]]"),
+            ("Oversized Files (>45KB)", results["oversized_files"], lambda o: f"{o['file']} ({o['size']} bytes)"),
+            ("Orphan Pages", results["orphan_pages"], lambda op: str(op)),
+            ("Unverified Quotes", results.get("unverified_quotes", []), lambda u: f"{u['source']} (Raw: {u['raw_file']}) -> \"{u['quote']}\""),
+        ]
+        for header, items, fmt in categories:
+            if items:
+                print(f"\n[!] {header}:")
+                for it in items[:10]:
+                    print(f"  - {fmt(it)}")
 
     if args.strict:
         has_errors = (

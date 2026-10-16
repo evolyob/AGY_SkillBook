@@ -352,65 +352,67 @@ def run_filter(
     return merged[:limit]
 
 
-def format_filter_markdown(kw: str, results: list[dict]) -> str:
-    """Format search results into Markdown output with RRF score and sources."""
+def render_filter_view(kw: str, results: list[dict], as_table: bool = False) -> str:
+    """Render full-text or backlinks search results as Markdown or table."""
     if not results:
         return f"未找到與「{kw}」相符之全文內容。"
+    if as_table:
+        lines = [
+            f"### 全文檢索結果表格：`{kw}` (共 {len(results)} 筆，RRF 融合排序)\n",
+            "| 名次 | 檔案來源 | RRF 分數 | BM25 分數 | 命中軌道 | 內文摘錄 |",
+            "|:---:|:---|:---:|:---:|:---|:---|",
+        ]
+        for r in results:
+            rank, f_path = r.get("rrf_rank", "-"), f"`{r['file']}`"
+            rrf = f"{r.get('rrf_score', 0):.6f}" if "rrf_score" in r else "-"
+            bm25 = str(r.get("bm25_score", r.get("score", "-")))
+            srcs = ", ".join(f"{k.replace('_rank', '')}#{v}" for k, v in sorted(r.get("source_ranks", {}).items())) or "-"
+            snip = r.get("paragraph", "").replace("\n", " ").replace("|", "\\|")[:80]
+            lines.append(f"| {rank} | {f_path} | {rrf} | {bm25} | {srcs} | {snip} |")
+        return "\n".join(lines).strip()
+
     lines = [f"### 全文檢索結果：`{kw}` (共 {len(results)} 筆，RRF 融合排序)\n"]
     for r in results:
         snip = r.get("paragraph", "")
-        if len(snip) > 240:
-            snip = snip[:240] + "..."
+        snip_str = snip[:240] + "..." if len(snip) > 240 else snip
         score_info = []
         if "rrf_score" in r:
             score_info.append(f"RRF: {r['rrf_score']:.6f}")
-        if "bm25_score" in r:
-            score_info.append(f"BM25: {r['bm25_score']}")
-        elif "score" in r and r.get("score") != 0.0:
-            score_info.append(f"BM25: {r['score']}")
+        if "bm25_score" in r or "score" in r:
+            score_info.append(f"BM25: {r.get('bm25_score', r.get('score'))}")
         srcs = [f"{k.replace('_rank', '')}#{v}" for k, v in sorted(r.get("source_ranks", {}).items())]
         if srcs:
             score_info.append(f"來源軌道: {', '.join(srcs)}")
         annot = f" ({'; '.join(score_info)})" if score_info else ""
-        lines.append(f"- **來源**：`{r['file']}`{annot}\n  > {snip}\n")
+        lines.append(f"- **來源**：`{r['file']}`{annot}\n  > {snip_str}\n")
     return "\n".join(lines).strip()
 
 
-def format_filter_table(kw: str, results: list[dict]) -> str:
-    """Format search results into structured Markdown table."""
-    if not results:
-        return f"未找到與「{kw}」相符之全文內容。"
-    lines = [
-        f"### 全文檢索結果表格：`{kw}` (共 {len(results)} 筆，RRF 融合排序)\n",
-        "| 名次 | 檔案來源 | RRF 分數 | BM25 分數 | 命中軌道 | 內文摘錄 |",
-        "|:---:|:---|:---:|:---:|:---|:---|",
-    ]
-    for r in results:
-        rank = r.get("rrf_rank", "-")
-        file_path = f"`{r['file']}`"
-        rrf = f"{r.get('rrf_score', 0):.6f}" if "rrf_score" in r else "-"
-        bm25 = str(r.get("bm25_score", r.get("score", "-")))
-        srcs = [f"{k.replace('_rank', '')}#{v}" for k, v in sorted(r.get("source_ranks", {}).items())]
-        src_str = ", ".join(srcs) if srcs else "-"
-        snip = r.get("paragraph", "").replace("\n", " ").replace("|", "\\|")
-        if len(snip) > 80:
-            snip = snip[:80] + "..."
-        lines.append(f"| {rank} | {file_path} | {rrf} | {bm25} | {src_str} | {snip} |")
-    return "\n".join(lines).strip()
-
-
-def format_entity_markdown(res: dict) -> str:
-    """Format entity resolution details into Markdown."""
-    if not res["matched"]:
-        return f"未找到與「{res['entity']}」相符之實體或權威詞彙。"
+def render_entity_view(res: dict, as_table: bool = False) -> str:
+    """Render entity resolution output as Markdown or table."""
+    if not res.get("matched"):
+        return f"未找到與「{res.get('entity', '')}」相符之實體或權威詞彙。"
     t = res.get("term") or {}
+    term_str = f"{t.get('term_zh', '')} ({t.get('term_en', '')})" if t.get("term_zh") or t.get("term_en") else ""
+    if as_table:
+        lines = [f"### 實體查詢表格：`{res['entity']}`\n", "| 屬性 | 內容 |", "|:---|:---|"]
+        if term_str:
+            lines.append(f"| 標準術語 | {term_str} |")
+        for k, lbl in [("abbr", "英文縮寫"), ("aliases", "別名列表"), ("definition", "詞彙定義")]:
+            if t.get(k):
+                lines.append(f"| {lbl} | {', '.join(t[k]) if isinstance(t[k], list) else t[k]} |")
+        if res.get("file"):
+            lines.append(f"| 實體檔案 | `{res['file']}` |")
+        if res.get("backlinks"):
+            lines.append(f"| 反向連結 | {len(res['backlinks'])} 處引用 |")
+        return "\n".join(lines)
+
     lines = [f"### 實體查詢：{res['entity']}\n"]
-    if t.get("term_zh") or t.get("term_en"):
-        lines.append(f"- **標準術語**：{t.get('term_zh', '')} ({t.get('term_en', '')})")
-    for k, label in [("abbr", "英文縮寫"), ("aliases", "別名列表"), ("definition", "詞彙定義")]:
+    if term_str:
+        lines.append(f"- **標準術語**：{term_str}")
+    for k, lbl in [("abbr", "英文縮寫"), ("aliases", "別名列表"), ("definition", "詞彙定義")]:
         if t.get(k):
-            val = ", ".join(t[k]) if isinstance(t[k], list) else t[k]
-            lines.append(f"- **{label}**：{val}")
+            lines.append(f"- **{lbl}**：{', '.join(t[k]) if isinstance(t[k], list) else t[k]}")
     if res.get("file"):
         lines.append(f"- **實體檔案**：`{res['file']}`")
     if res.get("backlinks"):
@@ -419,29 +421,6 @@ def format_entity_markdown(res: dict) -> str:
             lines.append(f"  - `{b['file']}`: > {b['paragraph']}")
     if res.get("content"):
         lines.append(f"\n#### 實體檔案內容\n\n```markdown\n{res['content'].strip()}\n```")
-    return "\n".join(lines)
-
-
-def format_entity_table(res: dict) -> str:
-    """Format entity metadata into structured Markdown table."""
-    if not res["matched"]:
-        return f"未找到與「{res['entity']}」相符之實體或權威詞彙。"
-    t = res.get("term") or {}
-    lines = [
-        f"### 實體查詢表格：`{res['entity']}`\n",
-        "| 屬性 | 內容 |",
-        "|:---|:---|",
-    ]
-    if t.get("term_zh") or t.get("term_en"):
-        lines.append(f"| 標準術語 | {t.get('term_zh', '')} ({t.get('term_en', '')}) |")
-    for k, label in [("abbr", "英文縮寫"), ("aliases", "別名列表"), ("definition", "詞彙定義")]:
-        if t.get(k):
-            val = ", ".join(t[k]) if isinstance(t[k], list) else t[k]
-            lines.append(f"| {label} | {val} |")
-    if res.get("file"):
-        lines.append(f"| 實體檔案 | `{res['file']}` |")
-    if res.get("backlinks"):
-        lines.append(f"| 反向連結 | {len(res['backlinks'])} 處引用 |")
     return "\n".join(lines)
 
 
@@ -470,23 +449,14 @@ def handle_query(root: Path, args) -> str:
     if args.format == "json":
         return json.dumps(payload, ensure_ascii=False, indent=2)
 
-    if args.format == "table":
-        parts = []
-        if "entity" in payload:
-            parts.append(format_entity_table(payload["entity"]))
-        if "filter" in payload:
-            parts.append(format_filter_table(args.keyword, payload["filter"]["results"]))
-        if "backlinks" in payload:
-            parts.append(format_filter_table(args.backlinks, payload["backlinks"]["results"]))
-        return "\n\n".join(parts)
-
+    as_table = (args.format == "table")
     parts = []
     if "entity" in payload:
-        parts.append(format_entity_markdown(payload["entity"]))
+        parts.append(render_entity_view(payload["entity"], as_table=as_table))
     if "filter" in payload:
-        parts.append(format_filter_markdown(args.keyword, payload["filter"]["results"]))
+        parts.append(render_filter_view(args.keyword, payload["filter"]["results"], as_table=as_table))
     if "backlinks" in payload:
-        parts.append(format_filter_markdown(args.backlinks, payload["backlinks"]["results"]))
+        parts.append(render_filter_view(args.backlinks, payload["backlinks"]["results"], as_table=as_table))
     return "\n\n".join(parts)
 
 
