@@ -13,7 +13,7 @@ def get_wiki_root(start_path: Path) -> Path:
     for parent in [current] + list(current.parents):
         if (parent / ".wiki-schema.md").exists() or (parent / ".wiki-cache.json").exists():
             return parent
-    return Path.home() / "wiki"
+    return Path.home() / ".gemini" / "wiki"
 
 
 def compute_file_hash(file_path: Path) -> str:
