@@ -61,7 +61,7 @@ def extract_raw_source_path(content: str) -> str | None:
 def resolve_raw_file(wiki_root: Path, source_md: Path, raw_path_str: str) -> Path | None:
     raw_path = Path(raw_path_str.strip())
     candidates = [raw_path, wiki_root / raw_path, source_md.parent / raw_path, wiki_root / "raw" / raw_path, wiki_root / "raw" / raw_path.name]
-    return next((c for c in candidates if c.is_file()), None)
+    return next((c for c in candidates if c.exists()), None)
 
 
 def extract_quotes(content: str) -> list[str]:
@@ -110,7 +110,11 @@ def verify_quotes_in_sources(wiki_root: Path) -> list[dict]:
                 unverified.append({"source": rel_sf, "raw_file": raw_label, "quote": q})
             continue
         try:
-            raw_text = resolved_raw.read_text(encoding="utf-8", errors="replace")
+            if resolved_raw.is_dir():
+                parts = [p.read_text(encoding="utf-8", errors="replace") for p in sorted(resolved_raw.rglob("*")) if p.is_file() and p.suffix.lower() in (".md", ".txt")]
+                raw_text = "\n".join(parts)
+            else:
+                raw_text = resolved_raw.read_text(encoding="utf-8", errors="replace")
         except Exception:
             raw_text = ""
         rel_raw = str(resolved_raw.relative_to(wiki_root))
@@ -185,6 +189,9 @@ def scan_wiki(wiki_root: Path, verify_quotes: bool = False, verify_structure: bo
         except ValueError:
             rel_file = md_file.name
 
+        if any(rel_file.startswith(p) for p in EXEMPT_PREFIXES):
+            continue
+
         try:
             st_size = md_file.stat().st_size
             if st_size > MAX_FILE_SIZE:
@@ -242,6 +249,12 @@ def find_backlinks(wiki_root: Path, entity_name: str) -> list[dict]:
     for md_file in sorted(wiki_root.rglob("*.md")):
         if target_path and md_file.resolve() == target_path:
             continue
+        try:
+            rel = str(md_file.relative_to(wiki_root))
+            if any(rel.startswith(p) for p in EXEMPT_PREFIXES):
+                continue
+        except Exception:
+            pass
         try:
             lines = md_file.read_text(encoding="utf-8", errors="replace").splitlines()
         except Exception:

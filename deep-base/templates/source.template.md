@@ -21,6 +21,11 @@ confidence: EXTRACTED
 2. **Takeaway 2**: ...
 3. **Takeaway 3**: ...
 
+## Structural Map & Section Index
+| Section / Module | Core Scope & Parameters | Extracted Entity |
+| :--- | :--- | :--- |
+| (Section or module name) | (Key content & quantitative bounds) | [[{{ENTITY_1}}]] |
+
 ## Extracted Entities & Topics
 - Entities: [[{{ENTITY_1}}]], [[{{ENTITY_2}}]]
 - Topics: [[{{TOPIC_1}}]]

@@ -187,6 +187,43 @@ class TestWikiEngine(unittest.TestCase):
         self.assertIn("collapsed_table", issue_types)
         self.assertIn("unbalanced_fences", issue_types)
 
+    def test_10_flatten_and_directory_quote_verification(self):
+        subprocess.run([sys.executable, str(SCRIPTS_DIR / "assemble.py"), "--init", "--path", str(self.test_dir)], check=True)
+        src_doc = self.test_dir / "sample_standard.md"
+        src_doc.write_text(
+            "# 1. 適用範圍\n" + ("本標準規定工業自動化及控制系統之安全要求事項。\n" * 6) +
+            "\n# 2. 安全控制要求\n" + ("所有特權帳戶必須啟用多因素鑑別與通行碼強度檢查。\n" * 6),
+            encoding="utf-8",
+        )
+
+        res_list = subprocess.run(
+            [sys.executable, str(SCRIPTS_DIR / "flatten.py"), str(src_doc), "--list-only"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(res_list.returncode, 0, f"flatten.py --list-only failed: {res_list.stderr}")
+        meta = json.loads(res_list.stdout)
+        self.assertEqual(meta["total_chapters"], 2)
+        self.assertEqual(meta["dispatch_mode"], "single_agent")
+
+        out_chapters = self.test_dir / "raw" / "articles" / "sample_std" / "chapters"
+        res_split = subprocess.run(
+            [sys.executable, str(SCRIPTS_DIR / "flatten.py"), str(src_doc), "--split-dir", str(out_chapters), "--json"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(res_split.returncode, 0, f"flatten.py --split-dir failed: {res_split.stderr}")
+        self.assertTrue((out_chapters / "index.json").exists())
+
+        summary_md = self.test_dir / "wiki" / "sources" / "sample_std.md"
+        summary_md.write_text(
+            "---\ntags: [source-summary]\nsource_path: raw/articles/sample_std/chapters\nconfidence: EXTRACTED\n---\n\n"
+            "# Sample Standard\n## Notable Quotes\n> \"所有特權帳戶必須啟用多因素鑑別與通行碼強度檢查。\"\n",
+            encoding="utf-8",
+        )
+        res_verify = subprocess.run(
+            [sys.executable, str(SCRIPTS_DIR / "lint_links.py"), str(self.test_dir), "--strict", "--verify-quotes"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(res_verify.returncode, 0, f"Directory quote verification failed: {res_verify.stdout}")
 
 
 if __name__ == "__main__":
