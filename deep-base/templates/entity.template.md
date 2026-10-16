@@ -1,8 +1,17 @@
 ---
 tags: [entity]
+alias: [{{ALIASES}}]
 created: {{DATE}}
 updated: {{DATE}}
-sources: [{{SOURCE_PATH}}]
+fact_type: world # world | experience | observation
+occurred_start: ""
+occurred_end: ""
+mentioned_at: ""
+context: ""
+proof_count: 1
+sources: []
+state: valid # valid | invalidated
+invalidation_reason: ""
 confidence: EXTRACTED
 ---
 

@@ -9,6 +9,10 @@ from pathlib import Path
 
 MAX_FILE_SIZE = 46080  # 45 KB budget for zero-pagination AI agent reads
 WIKILINK_PATTERN = re.compile(r'\[\[(.*?)\]\]')
+SEP_CELL_RX = re.compile(r"\|\s*:?-{2,}:?\s*\|")
+PURE_SEP_RX = re.compile(r"^\s*\|?[\s:|-]+\|?\s*$")
+FENCE_RX = re.compile(r"^\s*(```|~~~)")
+
 
 
 def strip_markdown_code(content: str) -> str:
@@ -103,17 +107,54 @@ def verify_quotes_in_sources(wiki_root: Path) -> list[dict]:
     return unverified
 
 
-def scan_wiki(wiki_root: Path, verify_quotes: bool = False) -> dict:
-    all_md_files = sorted(wiki_root.rglob("*.md"))
-    broken_links, oversized_files = [], []
+def verify_markdown_structure(content: str) -> dict:
+    """Verifies markdown structural integrity (collapsed tables and unbalanced code fences)."""
+    lines = content.splitlines()
+    fence_matches = 0
+    collapsed_tables = []
+    in_fence = False
+
+    for idx, line in enumerate(lines, 1):
+        if FENCE_RX.match(line):
+            fence_matches += 1
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        if SEP_CELL_RX.search(line) and not PURE_SEP_RX.match(line):
+            collapsed_tables.append({"line": idx, "content": line.strip()})
+
+    unbalanced_fences = (fence_matches % 2 != 0)
+    return {
+        "valid": len(collapsed_tables) == 0 and not unbalanced_fences,
+        "collapsed_tables": collapsed_tables,
+        "unbalanced_fences": unbalanced_fences,
+        "fence_count": fence_matches,
+    }
+
+
+def scan_wiki(wiki_root: Path, verify_quotes: bool = False, verify_structure: bool = True) -> dict:
+    if wiki_root.is_file():
+        all_md_files = [wiki_root]
+        base_dir = wiki_root.parent
+    else:
+        all_md_files = sorted(wiki_root.rglob("*.md"))
+        base_dir = wiki_root
+
+    broken_links, oversized_files, structural_issues = [], [], []
     incoming_counts = {f.resolve(): 0 for f in all_md_files}
     total_links = 0
 
     for md_file in all_md_files:
         try:
+            rel_file = str(md_file.relative_to(base_dir))
+        except ValueError:
+            rel_file = md_file.name
+
+        try:
             st_size = md_file.stat().st_size
             if st_size > MAX_FILE_SIZE:
-                oversized_files.append({"file": str(md_file.relative_to(wiki_root)), "size": st_size})
+                oversized_files.append({"file": rel_file, "size": st_size})
         except Exception:
             pass
 
@@ -122,22 +163,40 @@ def scan_wiki(wiki_root: Path, verify_quotes: bool = False) -> dict:
         except Exception:
             continue
 
+        if verify_structure:
+            struct = verify_markdown_structure(content)
+            if not struct["valid"]:
+                if struct["unbalanced_fences"]:
+                    structural_issues.append({
+                        "file": rel_file,
+                        "type": "unbalanced_fences",
+                        "detail": f"Unbalanced code fences (total fence marks: {struct['fence_count']})"
+                    })
+                for ct in struct["collapsed_tables"]:
+                    structural_issues.append({
+                        "file": rel_file,
+                        "type": "collapsed_table",
+                        "line": ct["line"],
+                        "detail": f"Collapsed table separator at line {ct['line']}: {ct['content']}"
+                    })
+
         filtered = strip_markdown_code(content)
         for match in WIKILINK_PATTERN.finditer(filtered):
             total_links += 1
             target_str = match.group(1)
-            resolved = resolve_target(wiki_root, target_str)
+            resolved = resolve_target(wiki_root if wiki_root.is_dir() else base_dir, target_str)
             if resolved:
                 incoming_counts[resolved.resolve()] = incoming_counts.get(resolved.resolve(), 0) + 1
             else:
-                broken_links.append({"source": str(md_file.relative_to(wiki_root)), "target": target_str})
+                broken_links.append({"source": rel_file, "target": target_str})
 
     orphan_pages = []
-    for f, count in incoming_counts.items():
-        rel = str(f.relative_to(wiki_root))
-        is_exempt = rel.endswith("index.md") or rel.endswith("log.md") or rel.startswith(".") or rel.startswith("raw/")
-        if count == 0 and not is_exempt:
-            orphan_pages.append(rel)
+    if wiki_root.is_dir():
+        for f, count in incoming_counts.items():
+            rel = str(f.relative_to(wiki_root))
+            is_exempt = rel.endswith("index.md") or rel.endswith("log.md") or rel.startswith(".") or rel.startswith("raw/")
+            if count == 0 and not is_exempt:
+                orphan_pages.append(rel)
 
     results = {
         "total_files": len(all_md_files),
@@ -145,8 +204,9 @@ def scan_wiki(wiki_root: Path, verify_quotes: bool = False) -> dict:
         "broken_links": broken_links,
         "orphan_pages": orphan_pages,
         "oversized_files": oversized_files,
+        "structural_issues": structural_issues,
     }
-    if verify_quotes:
+    if verify_quotes and wiki_root.is_dir():
         results["unverified_quotes"] = verify_quotes_in_sources(wiki_root)
     return results
 
@@ -183,16 +243,18 @@ def find_backlinks(wiki_root: Path, entity_name: str) -> list[dict]:
 
 def main():
     parser = argparse.ArgumentParser(description="Deterministic Wikilink & Health Scanner for deep-base.")
-    parser.add_argument("wiki_root", nargs="?", default="~/.gemini/wiki", help="Root path of wiki")
-    parser.add_argument("--strict", action="store_true", help="Exit code 2 on broken links, oversized files, or unverified quotes")
+    parser.add_argument("wiki_root", nargs="?", default="~/.gemini/wiki", help="Root path of wiki or markdown file")
+    parser.add_argument("--strict", action="store_true", help="Exit code 2 on broken links, oversized files, structural issues, or unverified quotes")
     parser.add_argument("--verify-quotes", action="store_true", help="Verify quotes in wiki/sources/*.md against raw files")
+    parser.add_argument("--verify-structure", dest="verify_structure", action="store_true", default=True, help="Verify markdown structural integrity (collapsed tables, unbalanced code fences; default: True)")
+    parser.add_argument("--no-verify-structure", dest="verify_structure", action="store_false", help="Disable markdown structural integrity checks")
     parser.add_argument("--backlinks", metavar="ENTITY", help="List all markdown files referencing the entity with context excerpts")
     parser.add_argument("--json", action="store_true", help="Output JSON format")
     args = parser.parse_args()
 
     wiki_root = Path(args.wiki_root).expanduser().resolve()
     if not wiki_root.exists():
-        sys.exit(f"Error: Wiki root does not exist: {wiki_root}")
+        sys.exit(f"Error: Target path does not exist: {wiki_root}")
 
     if args.backlinks:
         bl = find_backlinks(wiki_root, args.backlinks)
@@ -205,7 +267,7 @@ def main():
                 print(f"  - {b['source']}:{b['line']}: {b['context']}")
         sys.exit(0)
 
-    results = scan_wiki(wiki_root, verify_quotes=args.verify_quotes)
+    results = scan_wiki(wiki_root, verify_quotes=args.verify_quotes, verify_structure=args.verify_structure)
 
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
@@ -216,8 +278,16 @@ def main():
         print(f"Broken Links Found   : {len(results['broken_links'])}")
         print(f"Orphan Pages Found   : {len(results['orphan_pages'])}")
         print(f"Oversized Files (>45K): {len(results['oversized_files'])}")
+        if args.verify_structure:
+            print(f"Structural Issues    : {len(results['structural_issues'])}")
         if args.verify_quotes:
             print(f"Unverified Quotes    : {len(results.get('unverified_quotes', []))}")
+
+        if results.get("structural_issues"):
+            print("\n[!] Structural Issues:")
+            for issue in results["structural_issues"][:10]:
+                line_str = f":{issue['line']}" if "line" in issue else ""
+                print(f"  - {issue['file']}{line_str} [{issue['type']}]: {issue['detail']}")
 
         if results["broken_links"]:
             print("\n[!] Broken Links:")
@@ -240,7 +310,12 @@ def main():
                 print(f"  - {u['source']} (Raw: {u['raw_file']}) -> \"{u['quote']}\"")
 
     if args.strict:
-        has_errors = bool(results["broken_links"]) or bool(results["oversized_files"]) or (args.verify_quotes and bool(results.get("unverified_quotes")))
+        has_errors = (
+            bool(results["broken_links"])
+            or bool(results["oversized_files"])
+            or bool(results.get("structural_issues"))
+            or (args.verify_quotes and bool(results.get("unverified_quotes")))
+        )
         if has_errors:
             sys.exit(2)
     sys.exit(0)
@@ -248,3 +323,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
