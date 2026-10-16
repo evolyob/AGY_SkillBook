@@ -1,0 +1,73 @@
+{
+  "linter": {
+    "max_file_size_bytes": 46080,
+    "exempt_files": ["index.md", "log.md", ".wiki-schema.md", ".wiki-cache.json"],
+    "exempt_prefixes": [".", "raw/"],
+    "patterns": {
+      "wikilink": "\\[\\[([^\\]|#]+)(?:#[^\\]|]+)?(?:\\|[^\\]]+)?\\]\\]",
+      "sep_cell": "\\|\\s*:?-{2,}:?\\s*\\|",
+      "pure_sep": "^\\s*\\|?[\\s:|-]+\\|?\\s*$",
+      "fence": "^\\s*(```|~~~)"
+    },
+    "categories": [
+      {"key": "structural_issues", "label": "Structural Issues", "tag": "!"},
+      {"key": "broken_links", "label": "Broken Links", "tag": "!"},
+      {"key": "oversized_files", "label": "Oversized Files (>45KB)", "tag": "!"},
+      {"key": "orphan_pages", "label": "Orphan Pages", "tag": "*"},
+      {"key": "unverified_quotes", "label": "Unverified Quotes", "tag": "?"}
+    ]
+  },
+  "query": {
+    "rrf_k": 60,
+    "default_limit": 5,
+    "title_scoring": {
+      "exact": 100,
+      "prefix": 80,
+      "contains": 60,
+      "all_tokens": 40,
+      "any_token": 20
+    },
+    "glossary_fields": ["entity", "abbr", "term_zh", "term_en"],
+    "entity_labels": {
+      "abbr": "英文縮寫",
+      "aliases": "別名列表",
+      "definition": "詞彙定義"
+    },
+    "filter_table_headers": ["名次", "檔案來源", "RRF 分數", "BM25 分數", "命中軌道", "內文摘錄"],
+    "entity_table_headers": ["屬性", "內容"]
+  },
+  "scaffold": {
+    "directories": [
+      "raw/articles",
+      "raw/notes",
+      "raw/pdfs",
+      "raw/assets",
+      "wiki/entities",
+      "wiki/topics",
+      "wiki/sources",
+      "wiki/comparisons",
+      "wiki/synthesis",
+      "wiki/queries",
+      "templates",
+      "data"
+    ],
+    "initial_terms": [
+      {
+        "term_zh": "檢索增強生成",
+        "term_en": "Retrieval-Augmented Generation",
+        "abbr": "RAG",
+        "entity": "rag",
+        "aliases": ["檢索增強生成", "Retrieval-Augmented Generation", "RAG"],
+        "definition": "結合外部檢索機制與大型語言模型生成能力之架構。"
+      },
+      {
+        "term_zh": "大型語言模型",
+        "term_en": "Large Language Model",
+        "abbr": "LLM",
+        "entity": "llm",
+        "aliases": ["大型語言模型", "Large Language Model", "LLM"],
+        "definition": "基於海量文字預訓練並具備語言理解與生成能力之深度學習模型。"
+      }
+    ]
+  }
+}

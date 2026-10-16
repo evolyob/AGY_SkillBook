@@ -7,31 +7,31 @@ import json
 from pathlib import Path
 
 
+def load_scaffold_config() -> dict:
+    cfg_path = Path(__file__).resolve().parent / "config.json"
+    try:
+        return json.loads(cfg_path.read_text(encoding="utf-8")).get("scaffold", {})
+    except Exception:
+        return {}
+
+
+CFG = load_scaffold_config()
+
+
 def init_knowledge_base(target_path: Path):
     target = target_path.expanduser().resolve()
     print(f"Initializing Knowledge Base at: {target}")
 
-    dirs = [
-        target / "raw" / "articles",
-        target / "raw" / "notes",
-        target / "raw" / "pdfs",
-        target / "raw" / "assets",
-        target / "wiki" / "entities",
-        target / "wiki" / "topics",
-        target / "wiki" / "sources",
-        target / "wiki" / "comparisons",
-        target / "wiki" / "synthesis",
-        target / "wiki" / "queries",
-        target / "templates",
-        target / "data",
-    ]
-
+    dirs = [target / d for d in CFG.get("directories", [
+        "raw/articles", "raw/notes", "raw/pdfs", "raw/assets",
+        "wiki/entities", "wiki/topics", "wiki/sources", "wiki/comparisons",
+        "wiki/synthesis", "wiki/queries", "templates", "data"
+    ])]
     for d in dirs:
         d.mkdir(parents=True, exist_ok=True)
 
     today = datetime.now().strftime("%Y-%m-%d")
 
-    # .wiki-schema.md
     schema_path = target / ".wiki-schema.md"
     if not schema_path.exists():
         schema_path.write_text(f"""# Wiki Schema & Governance
@@ -49,7 +49,6 @@ def init_knowledge_base(target_path: Path):
 - [UNVERIFIED]: External claim pending empirical test.
 """, encoding="utf-8")
 
-    # index.md
     index_path = target / "index.md"
     if not index_path.exists():
         index_path.write_text(f"""# Personal Knowledge Base Index
@@ -67,37 +66,18 @@ def init_knowledge_base(target_path: Path):
 ## Recent Entries
 """, encoding="utf-8")
 
-    # log.md
     log_path = target / "log.md"
     if not log_path.exists():
         log_path.write_text(f"""# Wiki Operation Log
 - {today}: Initialized personal knowledge base structure at {target}.
 """, encoding="utf-8")
 
-    # data/glossary.json
     glossary_path = target / "data" / "glossary.json"
     if not glossary_path.exists():
         initial_glossary = {
             "version": "1.0.0",
             "last_updated": today,
-            "terms": [
-                {
-                    "term_zh": "檢索增強生成",
-                    "term_en": "Retrieval-Augmented Generation",
-                    "abbr": "RAG",
-                    "entity": "rag",
-                    "aliases": ["檢索增強生成", "Retrieval-Augmented Generation", "RAG"],
-                    "definition": "結合外部檢索機制與大型語言模型生成能力之架構。"
-                },
-                {
-                    "term_zh": "大型語言模型",
-                    "term_en": "Large Language Model",
-                    "abbr": "LLM",
-                    "entity": "llm",
-                    "aliases": ["大型語言模型", "Large Language Model", "LLM"],
-                    "definition": "基於海量文字預訓練並具備語言理解與生成能力之深度學習模型。"
-                }
-            ]
+            "terms": CFG.get("initial_terms", [])
         }
         glossary_path.write_text(json.dumps(initial_glossary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

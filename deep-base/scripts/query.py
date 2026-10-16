@@ -8,31 +8,36 @@ import re
 import sqlite3
 import sys
 
+
+def load_query_config() -> dict:
+    cfg_path = Path(__file__).resolve().parent / "config.json"
+    try:
+        return json.loads(cfg_path.read_text(encoding="utf-8")).get("query", {})
+    except Exception:
+        return {}
+
+
+CFG = load_query_config()
+RRF_K = CFG.get("rrf_k", 60)
+DEFAULT_LIMIT = CFG.get("default_limit", 5)
+TITLE_SCORING = CFG.get("title_scoring", {"exact": 100, "prefix": 80, "contains": 60, "all_tokens": 40, "any_token": 20})
+GLOSSARY_FIELDS = tuple(CFG.get("glossary_fields", ["entity", "abbr", "term_zh", "term_en"]))
+ENTITY_LABELS = CFG.get("entity_labels", {"abbr": "英文縮寫", "aliases": "別名列表", "definition": "詞彙定義"})
+FILTER_TABLE_HEADERS = CFG.get("filter_table_headers", ["名次", "檔案來源", "RRF 分數", "BM25 分數", "命中軌道", "內文摘錄"])
 WIKILINK_PATTERN = re.compile(r"\[\[(.*?)\]\]")
 
 
 def load_glossary(wiki_root: Path) -> dict:
     """Load terminology glossary from data/glossary.json."""
     p = wiki_root / "data" / "glossary.json"
-    if not p.exists():
-        return {}
-    try:
-        return json.loads(p.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 
 
 def find_glossary_term(terms: list[dict], query: str) -> dict | None:
     """Resolve an entity by query matching primary names or aliases."""
     q = query.strip().lower()
     for t in terms:
-        names = {
-            t.get("term_zh", "").lower(),
-            t.get("term_en", "").lower(),
-            t.get("abbr", "").lower(),
-            t.get("entity", "").lower(),
-        }
-        names.update(a.lower() for a in t.get("aliases", []))
+        names = {str(t.get(k, "")).lower() for k in GLOSSARY_FIELDS} | {a.lower() for a in t.get("aliases", [])}
         if q in names:
             return t
     return None
@@ -41,28 +46,16 @@ def find_glossary_term(terms: list[dict], query: str) -> dict | None:
 def extract_glossary_targets(term: dict | None, default_target: str) -> list[str]:
     """Extract search target aliases from a glossary term."""
     targets = [default_target]
-    if not term:
-        return targets
-    for k in ["entity", "abbr", "term_zh", "term_en"]:
-        val = term.get(k)
-        if val:
-            targets.append(str(val))
+    if term:
+        targets.extend(str(term[k]) for k in GLOSSARY_FIELDS if term.get(k))
     return targets
 
 
 def locate_entity_file(wiki_root: Path, term: dict | None, query: str) -> Path | None:
     """Locate markdown document associated with the entity."""
-    cands = []
-    if term:
-        ent = term.get("entity") or term.get("abbr", "").lower()
-        if ent:
-            cands.append(wiki_root / "wiki" / "entities" / f"{ent}.md")
-        if term.get("term_zh"):
-            cands.append(wiki_root / "wiki" / "entities" / f"{term['term_zh']}.md")
-    cands.extend([
-        wiki_root / "wiki" / "entities" / f"{query.strip()}.md",
-        wiki_root / "wiki" / "entities" / f"{query.strip().lower()}.md",
-    ])
+    q = query.strip()
+    names = [term.get("entity") if term else None, term.get("abbr", "").lower() if term else None, term.get("term_zh") if term else None, q, q.lower()]
+    cands = [wiki_root / "wiki" / "entities" / f"{n}.md" for n in names if n]
     return next((c for c in cands if c.is_file()), None)
 
 
@@ -113,74 +106,57 @@ def build_index(wiki_root: Path) -> sqlite3.Connection:
 
 def extract_file_headings(content: str) -> tuple[str, str]:
     """Extract primary heading and first body snippet from markdown text."""
-    first_heading = ""
-    first_para = ""
-    for line in content.splitlines():
-        trimmed = line.strip()
-        if not trimmed:
-            continue
-        if trimmed.startswith("#") and not first_heading:
-            first_heading = trimmed.lstrip("#").strip()
-            continue
-        if not trimmed.startswith("#") and not first_para:
-            first_para = trimmed
-            if first_heading:
+    heading, para = "", ""
+    for line in (line.strip() for line in content.splitlines() if line.strip()):
+        if line.startswith("#") and not heading:
+            heading = line.lstrip("#").strip()
+        elif not line.startswith("#") and not para:
+            para = line
+            if heading:
                 break
-    return first_heading, first_para
+    return heading, para
 
 
 def score_title_match(q: str, q_tokens: list[str], stem: str, heading: str, aliases: set[str]) -> int:
     """Deterministic priority heuristic for title and entity matching."""
+    s = TITLE_SCORING
     if stem in aliases or heading in aliases or stem == q or heading == q:
-        return 100
+        return s.get("exact", 100)
     if stem.startswith(q) or heading.startswith(q):
-        return 80
+        return s.get("prefix", 80)
     if q in stem or q in heading:
-        return 60
+        return s.get("contains", 60)
     if q_tokens and all(t in stem or t in heading for t in q_tokens):
-        return 40
+        return s.get("all_tokens", 40)
     if q_tokens and any(t in stem or t in heading for t in q_tokens):
-        return 20
+        return s.get("any_token", 20)
     return 0
 
 
 def find_title_matches(wiki_root: Path, keyword: str, limit: int = 50) -> list[dict]:
     """Identify documents matching keyword in filename stem or heading."""
     wiki_dir = wiki_root / "wiki"
-    if not wiki_dir.exists():
-        return []
-
     q = keyword.strip().lower()
     q_tokens = [t.lower() for t in re.findall(r"[\u4e00-\u9fa5]|[a-zA-Z0-9_\-]+", keyword.strip())]
-    if not q:
+    if not wiki_dir.exists() or not q:
         return []
 
-    glossary = load_glossary(wiki_root)
-    term = find_glossary_term(glossary.get("terms", []), keyword)
-    aliases: set[str] = set()
+    term = find_glossary_term(load_glossary(wiki_root).get("terms", []), keyword)
+    aliases = {str(term[k]).strip().lower() for k in GLOSSARY_FIELDS if term and term.get(k)}
     if term:
-        for k in ["entity", "abbr", "term_zh", "term_en"]:
-            if term.get(k):
-                aliases.add(str(term[k]).strip().lower())
-        for a in term.get("aliases", []):
-            aliases.add(str(a).strip().lower())
+        aliases.update(a.strip().lower() for a in term.get("aliases", []))
 
     matches = []
     for md in wiki_dir.glob("**/*.md"):
-        rel = str(md.relative_to(wiki_root))
-        stem = md.stem.lower()
         try:
             content = md.read_text(encoding="utf-8", errors="replace")
         except Exception:
             continue
-
         heading, first_para = extract_file_headings(content)
-        priority = score_title_match(q, q_tokens, stem, heading.lower(), aliases)
-        if priority <= 0:
-            continue
-
-        snippet = heading if heading else (first_para if first_para else stem)
-        matches.append({"file": rel, "paragraph": snippet, "_priority": priority})
+        priority = score_title_match(q, q_tokens, md.stem.lower(), heading.lower(), aliases)
+        if priority > 0:
+            snippet = heading or first_para or md.stem
+            matches.append({"file": str(md.relative_to(wiki_root)), "paragraph": snippet, "_priority": priority})
 
     matches.sort(key=lambda x: (-x["_priority"], len(x["file"]), x["file"]))
     for m in matches:
@@ -190,15 +166,12 @@ def find_title_matches(wiki_root: Path, keyword: str, limit: int = 50) -> list[d
 
 def inspect_file_backlinks(lines: list[str], targets: set[str]) -> tuple[int, str]:
     """Count wikilink references to target entities and return first excerpt line."""
-    hit_count = 0
-    first_hit = ""
+    hit_count, first_hit = 0, ""
     for line in lines:
         trimmed = line.strip()
-        links = WIKILINK_PATTERN.findall(trimmed)
-        for raw_link in links:
-            clean_link = raw_link.split("|")[0].split("#")[0].strip().lower()
-            clean_stem = Path(clean_link).stem.lower()
-            if clean_link in targets or clean_stem in targets:
+        for raw_link in WIKILINK_PATTERN.findall(trimmed):
+            clean = raw_link.split("|")[0].split("#")[0].strip().lower()
+            if clean in targets or Path(clean).stem.lower() in targets:
                 hit_count += 1
                 if not first_hit:
                     first_hit = trimmed
@@ -208,32 +181,21 @@ def inspect_file_backlinks(lines: list[str], targets: set[str]) -> tuple[int, st
 def find_backlinks_matches(wiki_root: Path, target_names: list[str], limit: int = 50) -> list[dict]:
     """Locate documents referencing target entities via wikilinks."""
     wiki_dir = wiki_root / "wiki"
-    if not wiki_dir.exists() or not target_names:
-        return []
-
     targets = {t.strip().lower() for t in target_names if t.strip()}
-    if not targets:
+    if not wiki_dir.exists() or not targets:
         return []
 
-    matches = []
-    seen_files = set()
+    matches, seen_files = [], set()
     for md in sorted(wiki_dir.glob("**/*.md")):
         rel = str(md.relative_to(wiki_root))
         try:
             lines = md.read_text(encoding="utf-8", errors="replace").splitlines()
         except Exception:
             continue
-
         hit_count, first_hit = inspect_file_backlinks(lines, targets)
-        if hit_count <= 0 or rel in seen_files:
-            continue
-
-        seen_files.add(rel)
-        matches.append({
-            "file": rel,
-            "paragraph": first_hit or f"[[{next(iter(targets))}]]",
-            "_hits": hit_count,
-        })
+        if hit_count > 0 and rel not in seen_files:
+            seen_files.add(rel)
+            matches.append({"file": rel, "paragraph": first_hit or f"[[{next(iter(targets))}]]", "_hits": hit_count})
 
     matches.sort(key=lambda x: (-x["_hits"], x["file"]))
     for m in matches:
@@ -241,65 +203,39 @@ def find_backlinks_matches(wiki_root: Path, target_names: list[str], limit: int 
     return matches[:limit]
 
 
-def reciprocal_rank_fusion(
-    result_lists: list[tuple[str, list[dict]]],
-    k: int = 60
-) -> list[dict]:
-    """Merge multiple ranked result lists using Reciprocal Rank Fusion (RRF).
-
-    Formula: score(d) = sum(1.0 / (k + rank(d)))
-    """
+def reciprocal_rank_fusion(result_lists: list[tuple[str, list[dict]]], k: int = RRF_K) -> list[dict]:
+    """Merge multiple ranked result lists using Reciprocal Rank Fusion (RRF)."""
     rrf_scores: dict[str, float] = {}
     source_ranks: dict[str, dict[str, int]] = {}
     all_retrievals: dict[str, dict] = {}
 
-    for source_name, results in result_lists:
-        seen_in_source: set[str] = set()
+    for src, results in result_lists:
+        seen: set[str] = set()
         for rank, item in enumerate(results, start=1):
-            doc_id = item["file"]
-            if doc_id in seen_in_source:
+            doc = item["file"]
+            if doc in seen:
                 continue
-            seen_in_source.add(doc_id)
+            seen.add(doc)
+            existing = all_retrievals.setdefault(doc, dict(item))
+            if not existing.get("paragraph") and item.get("paragraph"):
+                existing["paragraph"] = item["paragraph"]
+            if "bm25_score" in item:
+                existing.setdefault("bm25_score", item["bm25_score"])
+            if "score" in item:
+                existing.setdefault("score", item["score"])
+            rrf_scores[doc] = rrf_scores.get(doc, 0.0) + 1.0 / (k + rank)
+            source_ranks.setdefault(doc, {})[f"{src}_rank"] = rank
 
-            if doc_id not in all_retrievals:
-                all_retrievals[doc_id] = dict(item)
-            else:
-                existing = all_retrievals[doc_id]
-                if not existing.get("paragraph") and item.get("paragraph"):
-                    existing["paragraph"] = item["paragraph"]
-                if "bm25_score" in item and "bm25_score" not in existing:
-                    existing["bm25_score"] = item["bm25_score"]
-                if "score" in item and "score" not in existing:
-                    existing["score"] = item["score"]
-
-            if doc_id not in rrf_scores:
-                rrf_scores[doc_id] = 0.0
-                source_ranks[doc_id] = {}
-
-            rrf_scores[doc_id] += 1.0 / (k + rank)
-            source_ranks[doc_id][f"{source_name}_rank"] = rank
-
-    merged_results = []
-    sorted_items = sorted(rrf_scores.items(), key=lambda x: (-x[1], x[0]))
-    for rrf_rank, (doc_id, rrf_score) in enumerate(sorted_items, start=1):
-        merged_item = dict(all_retrievals[doc_id])
-        merged_item["rrf_score"] = round(rrf_score, 6)
-        merged_item["rrf_rank"] = rrf_rank
-        merged_item["source_ranks"] = source_ranks[doc_id]
-        if "score" not in merged_item:
-            merged_item["score"] = round(merged_item.get("bm25_score", 0.0), 4)
-        merged_results.append(merged_item)
-
-    return merged_results
+    merged = []
+    for rank, (doc, score) in enumerate(sorted(rrf_scores.items(), key=lambda x: (-x[1], x[0])), start=1):
+        item = dict(all_retrievals[doc])
+        item.update({"rrf_score": round(score, 6), "rrf_rank": rank, "source_ranks": source_ranks[doc]})
+        item.setdefault("score", round(item.get("bm25_score", 0.0), 4))
+        merged.append(item)
+    return merged
 
 
-def run_filter(
-    conn: sqlite3.Connection,
-    wiki_root: Path,
-    keyword: str,
-    limit: int = 5,
-    enable_backlinks: bool = False,
-) -> list[dict]:
+def run_filter(conn: sqlite3.Connection, wiki_root: Path, keyword: str, limit: int = DEFAULT_LIMIT, enable_backlinks: bool = False) -> list[dict]:
     """Execute multi-track retrieval (FTS5 BM25 + Title Match + Backlinks) fused via RRF."""
     tokens = re.findall(r"[\u4e00-\u9fa5]|[a-zA-Z0-9_\-]+", keyword.strip())
     fts_rows = []
@@ -307,49 +243,26 @@ def run_filter(
         phrase = "\"" + " ".join(tokens) + "\""
         sql = "SELECT filepath, paragraph, bm25(fts) FROM fts WHERE content MATCH ? ORDER BY bm25(fts) LIMIT ?"
         try:
-            fts_rows = list(conn.execute(sql, (phrase, limit * 2)))
-            if not fts_rows:
-                alt = " OR ".join(f"\"{t}\"" for t in tokens)
-                fts_rows = list(conn.execute(sql, (alt, limit * 2)))
+            fts_rows = list(conn.execute(sql, (phrase, limit * 2))) or list(conn.execute(sql, (" OR ".join(f"\"{t}\"" for t in tokens), limit * 2)))
         except sqlite3.OperationalError:
             fts_rows = []
 
-    seen_fts_files: set[str] = set()
+    seen: set[str] = set()
     fts_candidates = []
     for r in fts_rows:
-        if r[0] not in seen_fts_files:
-            seen_fts_files.add(r[0])
-            fts_candidates.append({
-                "file": r[0],
-                "paragraph": r[1],
-                "score": round(r[2], 4),
-                "bm25_score": round(r[2], 4),
-            })
+        if r[0] not in seen:
+            seen.add(r[0])
+            fts_candidates.append({"file": r[0], "paragraph": r[1], "score": round(r[2], 4), "bm25_score": round(r[2], 4)})
 
     title_candidates = find_title_matches(wiki_root, keyword, limit=limit * 2)
-
     backlink_candidates = []
     if enable_backlinks:
-        glossary = load_glossary(wiki_root)
-        term = find_glossary_term(glossary.get("terms", []), keyword)
-        targets = extract_glossary_targets(term, keyword)
-        for tc in title_candidates[:3]:
-            targets.append(Path(tc["file"]).stem)
+        term = find_glossary_term(load_glossary(wiki_root).get("terms", []), keyword)
+        targets = extract_glossary_targets(term, keyword) + [Path(tc["file"]).stem for tc in title_candidates[:3]]
         backlink_candidates = find_backlinks_matches(wiki_root, targets, limit=limit * 2)
 
-    arms: list[tuple[str, list[dict]]] = []
-    if fts_candidates:
-        arms.append(("fts5", fts_candidates))
-    if title_candidates:
-        arms.append(("title", title_candidates))
-    if backlink_candidates:
-        arms.append(("backlinks", backlink_candidates))
-
-    if not arms:
-        return []
-
-    merged = reciprocal_rank_fusion(arms, k=60)
-    return merged[:limit]
+    arms = [(src, cands) for src, cands in [("fts5", fts_candidates), ("title", title_candidates), ("backlinks", backlink_candidates)] if cands]
+    return reciprocal_rank_fusion(arms, k=RRF_K)[:limit] if arms else []
 
 
 def render_filter_view(kw: str, results: list[dict], as_table: bool = False) -> str:
@@ -357,9 +270,10 @@ def render_filter_view(kw: str, results: list[dict], as_table: bool = False) -> 
     if not results:
         return f"未找到與「{kw}」相符之全文內容。"
     if as_table:
+        hdr = " | ".join(FILTER_TABLE_HEADERS)
         lines = [
             f"### 全文檢索結果表格：`{kw}` (共 {len(results)} 筆，RRF 融合排序)\n",
-            "| 名次 | 檔案來源 | RRF 分數 | BM25 分數 | 命中軌道 | 內文摘錄 |",
+            f"| {hdr} |",
             "|:---:|:---|:---:|:---:|:---|:---|",
         ]
         for r in results:
@@ -375,15 +289,13 @@ def render_filter_view(kw: str, results: list[dict], as_table: bool = False) -> 
     for r in results:
         snip = r.get("paragraph", "")
         snip_str = snip[:240] + "..." if len(snip) > 240 else snip
-        score_info = []
-        if "rrf_score" in r:
-            score_info.append(f"RRF: {r['rrf_score']:.6f}")
+        info = [f"RRF: {r['rrf_score']:.6f}"] if "rrf_score" in r else []
         if "bm25_score" in r or "score" in r:
-            score_info.append(f"BM25: {r.get('bm25_score', r.get('score'))}")
+            info.append(f"BM25: {r.get('bm25_score', r.get('score'))}")
         srcs = [f"{k.replace('_rank', '')}#{v}" for k, v in sorted(r.get("source_ranks", {}).items())]
         if srcs:
-            score_info.append(f"來源軌道: {', '.join(srcs)}")
-        annot = f" ({'; '.join(score_info)})" if score_info else ""
+            info.append(f"來源軌道: {', '.join(srcs)}")
+        annot = f" ({'; '.join(info)})" if info else ""
         lines.append(f"- **來源**：`{r['file']}`{annot}\n  > {snip_str}\n")
     return "\n".join(lines).strip()
 
@@ -394,13 +306,13 @@ def render_entity_view(res: dict, as_table: bool = False) -> str:
         return f"未找到與「{res.get('entity', '')}」相符之實體或權威詞彙。"
     t = res.get("term") or {}
     term_str = f"{t.get('term_zh', '')} ({t.get('term_en', '')})" if t.get("term_zh") or t.get("term_en") else ""
+    fields = [(lbl, ", ".join(t[k]) if isinstance(t[k], list) else t[k]) for k, lbl in ENTITY_LABELS.items() if t.get(k)]
     if as_table:
-        lines = [f"### 實體查詢表格：`{res['entity']}`\n", "| 屬性 | 內容 |", "|:---|:---|"]
+        hdr = " | ".join(CFG.get("entity_table_headers", ["屬性", "內容"]))
+        lines = [f"### 實體查詢表格：`{res['entity']}`\n", f"| {hdr} |", "|:---|:---|"]
         if term_str:
             lines.append(f"| 標準術語 | {term_str} |")
-        for k, lbl in [("abbr", "英文縮寫"), ("aliases", "別名列表"), ("definition", "詞彙定義")]:
-            if t.get(k):
-                lines.append(f"| {lbl} | {', '.join(t[k]) if isinstance(t[k], list) else t[k]} |")
+        lines.extend(f"| {lbl} | {val} |" for lbl, val in fields)
         if res.get("file"):
             lines.append(f"| 實體檔案 | `{res['file']}` |")
         if res.get("backlinks"):
@@ -410,15 +322,12 @@ def render_entity_view(res: dict, as_table: bool = False) -> str:
     lines = [f"### 實體查詢：{res['entity']}\n"]
     if term_str:
         lines.append(f"- **標準術語**：{term_str}")
-    for k, lbl in [("abbr", "英文縮寫"), ("aliases", "別名列表"), ("definition", "詞彙定義")]:
-        if t.get(k):
-            lines.append(f"- **{lbl}**：{', '.join(t[k]) if isinstance(t[k], list) else t[k]}")
+    lines.extend(f"- **{lbl}**：{val}" for lbl, val in fields)
     if res.get("file"):
         lines.append(f"- **實體檔案**：`{res['file']}`")
     if res.get("backlinks"):
         lines.append(f"- **反向連結 (Backlinks)**：{len(res['backlinks'])} 處引用")
-        for b in res["backlinks"][:5]:
-            lines.append(f"  - `{b['file']}`: > {b['paragraph']}")
+        lines.extend(f"  - `{b['file']}`: > {b['paragraph']}" for b in res["backlinks"][:5])
     if res.get("content"):
         lines.append(f"\n#### 實體檔案內容\n\n```markdown\n{res['content'].strip()}\n```")
     return "\n".join(lines)
@@ -468,7 +377,7 @@ def main():
     p.add_argument("--entity", dest="entity", help="Lookup entity using data/glossary.json alias resolution")
     p.add_argument("--backlinks", dest="backlinks", nargs="?", const=True, default=False, help="Enable backlinks graph traversal or specify entity target")
     p.add_argument("--format", choices=["markdown", "json", "table"], default="markdown", help="Output format (default: markdown)")
-    p.add_argument("--limit", type=int, default=5, help="Maximum number of results (default: 5)")
+    p.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"Maximum number of results (default: {DEFAULT_LIMIT})")
     args = p.parse_args()
 
     if not args.keyword and not args.entity and not args.backlinks:

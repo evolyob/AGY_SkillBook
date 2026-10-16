@@ -7,11 +7,24 @@ import re
 import sys
 from pathlib import Path
 
-MAX_FILE_SIZE = 46080  # 45 KB budget for zero-pagination AI agent reads
-WIKILINK_PATTERN = re.compile(r'\[\[(.*?)\]\]')
-SEP_CELL_RX = re.compile(r"\|\s*:?-{2,}:?\s*\|")
-PURE_SEP_RX = re.compile(r"^\s*\|?[\s:|-]+\|?\s*$")
-FENCE_RX = re.compile(r"^\s*(```|~~~)")
+def load_linter_config() -> dict:
+    cfg_path = Path(__file__).resolve().parent / "config.json"
+    try:
+        return json.loads(cfg_path.read_text(encoding="utf-8")).get("linter", {})
+    except Exception:
+        return {}
+
+
+CFG = load_linter_config()
+MAX_FILE_SIZE = CFG.get("max_file_size_bytes", 46080)
+PATTERNS = CFG.get("patterns", {})
+WIKILINK_PATTERN = re.compile(PATTERNS.get("wikilink", r"\[\[(.*?)\]\]"))
+SEP_CELL_RX = re.compile(PATTERNS.get("sep_cell", r"\|\s*:?-{2,}:?\s*\|"))
+PURE_SEP_RX = re.compile(PATTERNS.get("pure_sep", r"^\s*\|?[\s:|-]+\|?\s*$"))
+FENCE_RX = re.compile(PATTERNS.get("fence", r"^\s*(```|~~~)"))
+EXEMPT_FILES = tuple(CFG.get("exempt_files", ["index.md", "log.md"]))
+EXEMPT_PREFIXES = tuple(CFG.get("exempt_prefixes", [".", "raw/"]))
+CATEGORIES = CFG.get("categories", [])
 
 
 
@@ -202,7 +215,7 @@ def scan_wiki(wiki_root: Path, verify_quotes: bool = False, verify_structure: bo
     if wiki_root.is_dir():
         for f, count in incoming_counts.items():
             rel = str(f.relative_to(wiki_root))
-            is_exempt = rel.endswith("index.md") or rel.endswith("log.md") or rel.startswith(".") or rel.startswith("raw/")
+            is_exempt = rel.endswith(EXEMPT_FILES) or rel.startswith(EXEMPT_PREFIXES)
             if count == 0 and not is_exempt:
                 orphan_pages.append(rel)
 
