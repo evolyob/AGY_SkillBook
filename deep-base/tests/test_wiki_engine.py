@@ -159,7 +159,7 @@ class TestWikiEngine(unittest.TestCase):
         self.assertGreaterEqual(len(bl_items), 1)
         self.assertIn("architecture.md", bl_items[0]["source"])
 
-    def test_09_rrf_multi_track_fusion(self):
+    def test_09_title_weighted_ranking_and_structural_lint(self):
         subprocess.run([sys.executable, str(SCRIPTS_DIR / "assemble.py"), "--init", "--path", str(self.test_dir)], check=True)
 
         target_ent = self.test_dir / "wiki" / "entities" / "vector_db.md"
@@ -168,46 +168,25 @@ class TestWikiEngine(unittest.TestCase):
         spam_doc = self.test_dir / "wiki" / "sources" / "noisy_notes.md"
         spam_doc.write_text("# Notes\n\nVector database vector database vector database keyword repetition.\n", encoding="utf-8")
 
-        ref_doc = self.test_dir / "wiki" / "sources" / "architecture.md"
-        ref_doc.write_text("# System Architecture\n\nCore routing relies on [[vector_db]] for fast indexing.\n", encoding="utf-8")
-
-        # 1. Test basic filter with RRF fusion in JSON format
+        # 1. Native FTS5 title weighting ensures entity page outranks keyword-stuffed note
         cmd_json = [sys.executable, str(SCRIPTS_DIR / "query.py"), str(self.test_dir), "--filter", "vector_db", "--format", "json"]
         res_json = subprocess.run(cmd_json, capture_output=True, text=True)
         self.assertEqual(res_json.returncode, 0, f"Query failed: {res_json.stderr}")
-        data = json.loads(res_json.stdout)
-        results = data["filter"]["results"]
+        results = json.loads(res_json.stdout)["filter"]["results"]
         self.assertGreaterEqual(len(results), 1)
+        self.assertEqual(results[0]["file"], "wiki/entities/vector_db.md")
+        self.assertIn("score", results[0])
 
-        # vector_db.md matches both title and FTS5, so it should rank #1
-        top_hit = results[0]
-        self.assertEqual(top_hit["file"], "wiki/entities/vector_db.md")
-        self.assertIn("rrf_score", top_hit)
-        self.assertIn("rrf_rank", top_hit)
-        self.assertEqual(top_hit["rrf_rank"], 1)
-        self.assertIn("title_rank", top_hit["source_ranks"])
-        self.assertIn("fts5_rank", top_hit["source_ranks"])
+        # 2. Hindsight structural integrity check catches collapsed tables and unbalanced fences
+        broken_md = self.test_dir / "wiki" / "sources" / "malformed.md"
+        broken_md.write_text("# Malformed\n| A | B | |---|---|\n```python\nprint(1)\n", encoding="utf-8")
+        res_lint = subprocess.run([sys.executable, str(SCRIPTS_DIR / "lint_links.py"), str(self.test_dir), "--strict", "--json"], capture_output=True, text=True)
+        self.assertEqual(res_lint.returncode, 2)
+        issues = json.loads(res_lint.stdout).get("structural_issues", [])
+        issue_types = {i["type"] for i in issues}
+        self.assertIn("collapsed_table", issue_types)
+        self.assertIn("unbalanced_fences", issue_types)
 
-        # Validate RRF formula: sum(1.0 / (60 + rank))
-        expected_rrf = round(1.0 / (60 + top_hit["source_ranks"]["title_rank"]) + 1.0 / (60 + top_hit["source_ranks"]["fts5_rank"]), 6)
-        self.assertAlmostEqual(top_hit["rrf_score"], expected_rrf, places=5)
-
-        # 2. Test filter with backlinks enabled
-        cmd_bl = [sys.executable, str(SCRIPTS_DIR / "query.py"), str(self.test_dir), "--filter", "vector_db", "--backlinks", "--format", "json"]
-        res_bl = subprocess.run(cmd_bl, capture_output=True, text=True)
-        self.assertEqual(res_bl.returncode, 0)
-        data_bl = json.loads(res_bl.stdout)
-        bl_results = data_bl["filter"]["results"]
-        arch_hit = next((r for r in bl_results if r["file"] == "wiki/sources/architecture.md"), None)
-        self.assertIsNotNone(arch_hit)
-        self.assertIn("backlinks_rank", arch_hit["source_ranks"])
-
-        # 3. Test table format output
-        cmd_table = [sys.executable, str(SCRIPTS_DIR / "query.py"), str(self.test_dir), "--filter", "vector_db", "--format", "table"]
-        res_table = subprocess.run(cmd_table, capture_output=True, text=True)
-        self.assertEqual(res_table.returncode, 0)
-        self.assertIn("| Rank | File | RRF Score | BM25 Score | Tracks | Excerpt |", res_table.stdout)
-        self.assertIn("wiki/entities/vector_db.md", res_table.stdout)
 
 
 if __name__ == "__main__":

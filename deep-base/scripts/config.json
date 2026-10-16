@@ -12,23 +12,14 @@
     }
   },
   "query": {
-    "rrf_k": 60,
     "default_limit": 5,
-    "title_scoring": {
-      "exact": 100,
-      "prefix": 80,
-      "contains": 60,
-      "all_tokens": 40,
-      "any_token": 20
-    },
+    "title_weight": 10.0,
     "glossary_fields": ["entity", "abbr", "term_zh", "term_en"],
     "entity_labels": {
       "abbr": "Abbreviation",
       "aliases": "Aliases",
       "definition": "Definition"
-    },
-    "filter_table_headers": ["Rank", "File", "RRF Score", "BM25 Score", "Tracks", "Excerpt"],
-    "entity_table_headers": ["Attribute", "Value"]
+    }
   },
   "scaffold": {
     "directories": [
