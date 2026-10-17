@@ -32,6 +32,9 @@ Every synthesized file under `~/wiki/wiki/` must stay within `45 KB` (`46,080 by
 | `wiki/queries/` | High-frequency Q&A cache | Reusable deterministic answer for recurring lookups | `templates/query.template.md` |
 | `wiki/archive/` | Retired or obsolete entity cards | Moved from `wiki/entities/` when deprecated | Retains original entity structure |
 
+**Gate-1 Document Data Hygiene (`~/wiki/` Scope Only)**:
+- Scrub sensitive data at Gate 1 (`raw/` ingestion & notes) so neither `raw/` nor `wiki/` retains personal mobile numbers, private residential addresses, live passwords/API tokens/private keys, or host user-home directory prefixes (automatically normalized to `~/...`). Standard OS paths (`/etc`, `/var`), public institutional info, and instructional placeholders (`<API_KEY>`) are exempt.
+
 ---
 
 ## 3. Workflow 2: Ingestion, Daily Notes & Glossary Rules
