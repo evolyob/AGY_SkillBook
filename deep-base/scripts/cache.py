@@ -13,7 +13,7 @@ def get_wiki_root(start_path: Path) -> Path:
     for parent in [current] + list(current.parents):
         if (parent / ".wiki-schema.md").exists() or (parent / ".wiki-cache.json").exists():
             return parent
-    return Path.home() / ".gemini" / "wiki"
+    return Path.home() / "wiki"
 
 
 def compute_file_hash(file_path: Path) -> str:
@@ -67,7 +67,9 @@ def main():
     cache_file = wiki_root / ".wiki-cache.json"
     cache = load_cache(cache_file)
     file_hash = compute_file_hash(file_path)
-    rel_path = str(file_path)
+    home_str = str(Path.home())
+    abs_str = str(file_path.resolve())
+    rel_path = abs_str.replace(home_str, "~", 1) if abs_str.startswith(home_str) else str(file_path)
 
     if action == "check":
         if file_hash in cache:

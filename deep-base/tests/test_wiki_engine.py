@@ -225,7 +225,76 @@ class TestWikiEngine(unittest.TestCase):
         )
         self.assertEqual(res_verify.returncode, 0, f"Directory quote verification failed: {res_verify.stdout}")
 
+    def test_11_sanitize_markdown(self):
+        dirty_file = self.test_dir / "dirty.md"
+        dirty_file.write_text("# Test\nReference: [[compliance/CWE Top 25]]\n```js=\ncode\n```\n> | H1 | H2 |\n> |---|---|\n```bash\nunclosed\n", encoding="utf-8")
+        res_dry = subprocess.run([sys.executable, str(SCRIPTS_DIR / "sanitize.py"), str(dirty_file)], capture_output=True, text=True)
+        self.assertEqual(res_dry.returncode, 2)
+        res_fix = subprocess.run([sys.executable, str(SCRIPTS_DIR / "sanitize.py"), str(dirty_file), "--fix"], capture_output=True, text=True)
+        self.assertEqual(res_fix.returncode, 0)
+        fixed_text = dirty_file.read_text(encoding="utf-8")
+        self.assertNotIn("[[compliance/CWE Top 25]]", fixed_text)
+        self.assertIn("`compliance/CWE Top 25`", fixed_text)
+        self.assertNotIn("```js=", fixed_text)
+        self.assertIn("```js", fixed_text)
+        self.assertIn("|---|---|", fixed_text)
+        import re
+        self.assertEqual(len(re.findall(r"^\s*```", fixed_text, re.M)) % 2, 0)
+
+    def test_12_assemble_update_index(self):
+        subprocess.run([sys.executable, str(SCRIPTS_DIR / "assemble.py"), "--init", "--path", str(self.test_dir)], check=True)
+        (self.test_dir / "wiki" / "entities" / "demo_tool.md").write_text("---\ntags: [entity, appsec]\ncontext: \"Automated AppSec test tool\"\n---\n\n# Demo Tool\n> Tool description.\n", encoding="utf-8")
+        res_up = subprocess.run([sys.executable, str(SCRIPTS_DIR / "assemble.py"), "--update-index", "--path", str(self.test_dir), "--json"], capture_output=True, text=True)
+        self.assertEqual(res_up.returncode, 0, f"update-index failed: {res_up.stderr}")
+        meta = json.loads(res_up.stdout)
+        self.assertEqual(meta["total_entities"], 1)
+        self.assertIn("demo_tool", meta["newly_added_to_index"])
+        index_text = (self.test_dir / "index.md").read_text(encoding="utf-8")
+        self.assertIn("[[demo_tool]]", index_text)
+    def test_13_boundary_aware_fences(self):
+        mid_file = self.test_dir / "mid_break.md"
+        mid_file.write_text(
+            "# Title\n\n```http\nscript-src 'nonce-123';\n\n---\n\n## 2. Next Section (來源: `test.md`)\n\nCode demo:\n```csharp\nint x = 1;\n```\n",
+            encoding="utf-8"
+        )
+        res_fix = subprocess.run([sys.executable, str(SCRIPTS_DIR / "sanitize.py"), str(mid_file), "--fix"], capture_output=True, text=True)
+        self.assertEqual(res_fix.returncode, 0)
+        fixed_text = mid_file.read_text(encoding="utf-8")
+        # Ensure that ``` was inserted BEFORE the section delimiter
+        sec_idx = fixed_text.find("## 2. Next Section")
+        fence_before_sec = fixed_text[:sec_idx].rstrip()
+        self.assertTrue(fence_before_sec.endswith("```\n\n---") or "```\n\n---" in fixed_text[:sec_idx])
+        # Ensure csharp block starts cleanly
+        self.assertIn("```csharp\nint x = 1;\n```", fixed_text)
+
+    def test_14_real_index_omission_simulation(self):
+        subprocess.run([sys.executable, str(SCRIPTS_DIR / "assemble.py"), "--init", "--path", str(self.test_dir)], check=True)
+        index_file = self.test_dir / "index.md"
+        # Seed index.md with sections
+        index_file.write_text(
+            "# Index\n\n> Local-first knowledge base (`0` Entities | `0` Topics | `0` Source Summaries).\n\n"
+            "## 2. Entity Quick-Lookup Tables\n\n"
+            "### 2.5 應用程式與 Web 站點安全\n| 實體卡片 | 標籤 | 說明 |\n| :--- | :--- | :--- |\n\n"
+            "### 2.4 端點系統、網路協定與暴險防禦\n| 實體卡片 | 標籤 | 說明 |\n| :--- | :--- | :--- |\n",
+            encoding="utf-8"
+        )
+        (self.test_dir / "wiki" / "entities" / "web_card.md").write_text("---\ntags: [entity, csp]\ncontext: \"CSP Web Security\"\n---\n# CSP\n", encoding="utf-8")
+        (self.test_dir / "wiki" / "entities" / "linux_card.md").write_text("---\ntags: [entity, linux]\ncontext: \"Linux Kernel\"\n---\n# Linux\n", encoding="utf-8")
+
+        res_up = subprocess.run([sys.executable, str(SCRIPTS_DIR / "assemble.py"), "--update-index", "--path", str(self.test_dir), "--json"], capture_output=True, text=True)
+        self.assertEqual(res_up.returncode, 0)
+        idx_content = index_file.read_text(encoding="utf-8")
+        
+        pos_25 = idx_content.find("### 2.5")
+        pos_24 = idx_content.find("### 2.4")
+        pos_web = idx_content.find("[[web_card]]")
+        pos_linux = idx_content.find("[[linux_card]]")
+        
+        self.assertTrue(pos_25 < pos_web < pos_24)
+        self.assertTrue(pos_24 < pos_linux)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

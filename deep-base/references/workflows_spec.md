@@ -33,7 +33,7 @@ Every synthesized file under `~/wiki/wiki/` must stay within `45 KB` (`46,080 by
 | `wiki/archive/` | Retired or obsolete entity cards | Moved from `wiki/entities/` when deprecated | Retains original entity structure |
 
 **Gate-1 Document Data Hygiene (`~/wiki/` Scope Only)**:
-- Scrub sensitive data at Gate 1 (`raw/` ingestion & notes) so neither `raw/` nor `wiki/` retains personal mobile numbers, private residential addresses, live passwords/API tokens/private keys, or host user-home directory prefixes (automatically normalized to `~/...`). Standard OS paths (`/etc`, `/var`), public institutional info, and instructional placeholders (`<API_KEY>`) are exempt.
+- Scrub sensitive data and normalize markdown syntax at Gate 1 (`raw/` ingestion & notes) via `sanitize.py --fix` and `flatten.py`: strip personal mobile numbers, private residential addresses, live passwords/API tokens/private keys, and host user-home directory prefixes (normalized to `~/...`). Automatically convert legacy pseudo-wikilinks (`[[dir/note]]` -> `` `dir/note` ``), balance unclosed code fences, and normalize platform-specific fence decorators (`js=`, `csharp=`). Standard OS paths (`/etc`, `/var`), public institutional info, and instructional placeholders (`<API_KEY>`) are exempt.
 
 ---
 
@@ -56,9 +56,10 @@ Every synthesized file under `~/wiki/wiki/` must stay within `45 KB` (`46,080 by
 
 ### 3.2 Document Flattening & Zero-Lookback Synthesis (`ingest`)
 1. **Binary Cleanup**: After `flatten.py` exports `<= 40 KB` UTF-8 chapters to `raw/articles/<slug>/chapters` and extracts figures to `raw/assets/`, delete the original binary file to save disk space. If `flatten.py --list-only` exits with code `3` (`OCR_REQUIRED`), run OCR first.
-2. **Write-Isolated Dispatch**:
+2. **Write-Isolated Dispatch & Pre-Dispatch Sharding Gate**:
    - `single_agent` (`<= 80 KB` and `<= 6` chapters): synthesize directly.
-   - `subagent_parallel`: dispatch subagents by `recommended_batches`; each subagent writes exclusively to its assigned `wiki/entities/<entity_slug>.md` and returns JSON metadata to prevent race conditions on `index.md` and `log.md`.
+   - `subagent_parallel`: dispatch subagents by `recommended_batches`; each subagent writes exclusively to its assigned `wiki/entities/<entity_slug>.md` and returns JSON metadata to prevent race conditions on `index.md` and `log.md`. Parent agent automatically runs `assemble.py --update-index ~/wiki` upon batch completion to eliminate orphan pages and mount entries into domain tables.
+   - **Pre-Dispatch Sharding Gate (`> 75 KB` Raw Input per Entity)**: Whenever the raw chapters mapped to a single entity exceed `75 KB` (or `>= 3` lessons), proactively split the target into sub-domain entity cards (Mode A) **before** invoking subagents so no synthesized card approaches the `45 KB` ceiling.
 3. **No-Elision Enumeration & Quantitative Fidelity**: Preserve 100% of enumerated items (modules, APIs, CLI flags, algorithm steps, clauses) in Markdown tables and retain exact numbers, bounds, formulas, and defaults so `wiki/` requires zero `raw/` lookback.
 
 ### 3.3 Pattern A Glossary Schema (`data/glossary.json`)
@@ -91,5 +92,5 @@ After distillation or ingestion, list newly detected acronyms/terms for user con
 ## 5. Workflow 4: Audit, Capacity Sharding & Archival Rules (`lint`)
 
 1. **On-Demand Audit**: Run `lint_links.py ~/wiki --strict --verify-quotes` on user request to validate wikilinks, table/fence syntax, and source quotes.
-2. **Capacity Sharding (`<= 45 KB`)**: When a card exceeds `46,080 bytes`, shard into sequential parts (`<entity_slug>_part1.md`, `<entity_slug>_part2.md`) linked at the footer, or split by sub-domain connected via `templates/topic.template.md`.
+2. **Capacity Sharding (`<= 45 KB`)**: When a card exceeds `46,080 bytes` (or raw input exceeds `75 KB` at dispatch), split by sub-domain connected via `templates/topic.template.md` (**Mode A**, preferred) or shard into sequential parts (`<entity_slug>_part1.md`, `<entity_slug>_part2.md`) linked at the footer (**Mode B**).
 3. **Deprecation Archival**: Move retired entity cards from `wiki/entities/<entity_slug>.md` to `wiki/archive/<entity_slug>.md`.

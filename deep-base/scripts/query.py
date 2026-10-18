@@ -191,7 +191,7 @@ def handle_query(root: Path, args) -> str:
 def main():
     """CLI entrypoint for deep-base knowledge query engine."""
     p = argparse.ArgumentParser(description="Terminal FTS5 Knowledge Query & Entity Resolution Engine.")
-    p.add_argument("wiki_root", nargs="?", default="~/.gemini/wiki", help="Wiki root directory (default: ~/.gemini/wiki)")
+    p.add_argument("wiki_root", nargs="?", default="~/wiki", help="Wiki root directory (default: ~/wiki)")
     p.add_argument("--filter", dest="keyword", help="Full-text keyword search across wiki markdown files")
     p.add_argument("--entity", dest="entity", help="Lookup entity using data/glossary.json alias resolution")
     p.add_argument("--format", choices=["markdown", "json"], default="markdown", help="Output format (default: markdown)")

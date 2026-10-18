@@ -38,7 +38,7 @@ def resolve_target(wiki_root: Path, link_text: str) -> Path | None:
     raw_target = link_text.split('|')[0].split('#')[0].strip()
     if not raw_target:
         return None
-    subdirs = ["entities", "topics", "sources", "comparisons", "synthesis", "queries"]
+    subdirs = ["entities", "topics", "sources", "comparisons", "synthesis", "queries", "archive"]
     candidates = [wiki_root / raw_target, wiki_root / f"{raw_target}.md"] + [
         wiki_root / "wiki" / d / f"{raw_target}.md" for d in subdirs
     ]
@@ -65,7 +65,7 @@ def resolve_raw_file(wiki_root: Path, source_md: Path, raw_path_str: str) -> Pat
 
 
 def extract_quotes(content: str) -> list[str]:
-    cleaned = strip_markdown_code(content)
+    cleaned = re.sub(r'(?:```[\s\S]*?```|~~~[\s\S]*?~~~)', '', content)
     has_sec = bool(QUOTE_HEADER_RX.search(cleaned))
     quotes, in_sec = [], False
     for line in cleaned.splitlines():
@@ -277,7 +277,7 @@ def find_backlinks(wiki_root: Path, entity_name: str) -> list[dict]:
 
 def main():
     parser = argparse.ArgumentParser(description="Deterministic Wikilink & Health Scanner for deep-base.")
-    parser.add_argument("wiki_root", nargs="?", default="~/.gemini/wiki", help="Root path of wiki or markdown file")
+    parser.add_argument("wiki_root", nargs="?", default="~/wiki", help="Root path of wiki or markdown file")
     parser.add_argument("--strict", action="store_true", help="Exit code 2 on broken links, oversized files, structural issues, or unverified quotes")
     parser.add_argument("--verify-quotes", action="store_true", help="Verify quotes in wiki/sources/*.md against raw files")
     parser.add_argument("--verify-structure", dest="verify_structure", action="store_true", default=True, help="Verify markdown structural integrity (collapsed tables, unbalanced code fences; default: True)")

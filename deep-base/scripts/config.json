@@ -2,13 +2,13 @@
   "linter": {
     "max_file_size_bytes": 46080,
     "exempt_files": ["index.md", "log.md", ".wiki-schema.md", ".wiki-cache.json"],
-    "exempt_prefixes": [".", "raw/"],
+    "exempt_prefixes": [".", "raw/", "templates/", "wiki/archive/"],
     "patterns": {
       "wikilink": "\\[\\[(.*?)\\]\\]",
       "sep_cell": "\\|\\s*:?-{2,}:?\\s*\\|",
       "pure_sep": "^\\s*\\|?[\\s:|-]+\\|?\\s*$",
       "fence": "^\\s*(```|~~~)",
-      "quote_header": "^#{1,6}\\s+.*(?:quote|citation|notable).*$"
+      "quote_header": "^#{1,6}\\s+.*(?:quote|citation|notable|引文|引述).*$"
     }
   },
   "query": {
@@ -25,6 +25,7 @@
     "directories": [
       "raw/articles",
       "raw/notes",
+      "raw/notes/archive",
       "raw/pdfs",
       "raw/assets",
       "wiki/entities",
@@ -33,6 +34,7 @@
       "wiki/comparisons",
       "wiki/synthesis",
       "wiki/queries",
+      "wiki/archive",
       "templates",
       "data"
     ],
@@ -65,8 +67,52 @@
     "patterns": {
       "toc_dot": "(?:\\.{3,}|(?:\\.\\s*){3,}|·{3,}|…{2,})\\s*\\d+\\s*$",
       "page_num": "^(?:[-－—–]\\s*\\d+\\s*[-－—–]|\\(\\s*共\\s*\\d+\\s*頁\\s*\\)|Page\\s+\\d+(?:\\s+of\\s+\\d+)?|:20\\d{2}|CNS\\s+\\d+[\\d\\s\\-:]*)$",
-      "heading": "^(?:#{1,2}\\s+.+|第\\s*[0-9一二三四五六七八九十百]+\\s*[章節編篇條](?:\\s+.+)?|(?:Chapter|Section)\\s+\\d+[:\\s].+|\\d{1,2}\\.\\s*(?:[\\u4e00-\\u9fffA-Za-z].*)|[一二三四五六七八九十]+、\\s*[\\u4e00-\\u9fffA-Za-z].*|(?:前言|簡介|附錄\\s*[A-Z0-9一二三四五六七八九十]+|參考資料|參考文獻|名詞對照)(?:\\s+.*)?$)$",
+      "heading": "^(?:#{1,2}\\s+.+|第\\s*[0-9一二三四五六七八九十百]+\\s*[章節編篇條](?:\\s+.+)?|(?:Chapter|Section|Module|Lesson|Domain|Unit)\\s+[0-9A-Z]+(?:[:\\s-].*)?|\\d{1,2}\\.\\s*(?:[\\u4e00-\\u9fffA-Za-z].*)|[一二三四五六七八九十]+、\\s*[\\u4e00-\\u9fffA-Za-z].*|(?:前言|簡介|附錄\\s*[A-Z0-9一二三四五六七八九十]+|參考資料|參考文獻|名詞對照)(?:\\s+.*)?$)$",
       "sub_heading": "^(?:#{2,4}\\s+.+|\\d{1,2}\\.\\d+(?:\\.\\d+)?\\s+[\\u4e00-\\u9fffA-Za-z].+)$"
+    }
+  },
+  "assemble": {
+    "section_tag_map": {
+      "### 2.5 應用程式與 Web 站點安全": [
+        "appsec", "web", "csp", "cwe", "va", "middleware", "fuzzing", "sast"
+      ],
+      "### 2.4 端點系統、網路協定與暴險防禦": [
+        "linux", "windows", "os_audit", "kernel", "easm", "osint", "dns", "zero-trust", "zero_trust"
+      ],
+      "### 2.1 PQC 與合規治理": [
+        "compliance", "pqc", "pii", "audit", "governance", "isaca"
+      ],
+      "### 2.2 文件排版與視覺化引擎": [
+        "pdf", "layout", "mermaid", "pptx"
+      ],
+      "### 2.3 Agent 記憶、防護欄與暴險稽核": [
+        "agent", "memory", "guardrail"
+      ],
+      "### 2.6 Vibe Coding 與技能工程": [
+        "vibe", "skill", "astro", "mod", "prompt"
+      ],
+      "### 2.7 CompTIA SecAI+ (CY0-001) 認證複習模組": [
+        "secai", "comptia", "cy0-001"
+      ]
+    }
+  },
+  "sanitize": {
+    "patterns": {
+      "pseudo_wikilink": "\\[\\[([^\\/\\]\\n]+\\/[^\\/\\]\\n]+)\\]\\]",
+      "hackmd_fence": "^(\\s*```+)([a-zA-Z0-9_\\-]+)[=!]+.*$",
+      "hackmd_empty_fence": "^(\\s*```+)[=!]+.*$",
+      "collapsed_table_sep": "^>\\s*(\\|[\\s\\-:|]+\\|)\\s*$",
+      "fence_line": "^\\s*(```+|~~~+)",
+      "open_fence_line": "^\\s*(```+|~~~+)[a-zA-Z0-9_\\-]+",
+      "hr_line": "^---\\s*$",
+      "sec_heading": "^##\\s+\\d+\\.\\s+.*\\(來源:|^##\\s+關聯實體與擴展防護"
+    }
+  },
+  "hygiene": {
+    "redact_patterns": {
+      "secret_token": "\\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35})\\b",
+      "private_key": "-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\\s\\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----",
+      "tw_phone": "(?<!\\d)09\\d{2}[-\\s]?\\d{3}[-\\s]?\\d{3}(?!\\d)"
     }
   }
 }

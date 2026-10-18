@@ -24,10 +24,12 @@ Operate a local-first personal knowledge base at `~/wiki/` (pure filesystem back
 | | Inspect density / OCR | `python3 ~/.gemini/skills/deep-base/scripts/flatten.py <file> --list-only` |
 | | Flatten `<= 40 KB` chapters | `python3 ~/.gemini/skills/deep-base/scripts/flatten.py <file> --split-dir ~/wiki/raw/articles/<slug>/chapters --json` |
 | | Register summary hash | `python3 ~/.gemini/skills/deep-base/scripts/cache.py update <file> <summary_page>` |
+| | Gate-1 Syntax Sanitizer | `python3 ~/.gemini/skills/deep-base/scripts/sanitize.py <file_or_dir> --fix` |
 | **3. Query (`query`)** | FTS5 & alias lookup | `python3 ~/.gemini/skills/deep-base/scripts/query.py ~/wiki --filter <kw>` or `--entity <name>` (`--format markdown\|json`) |
 | **4. Audit (`lint`)** | Link, size & quote check | `python3 ~/.gemini/skills/deep-base/scripts/lint_links.py ~/wiki --strict --verify-quotes` |
 | | Dynamic backlinks | `python3 ~/.gemini/skills/deep-base/scripts/lint_links.py ~/wiki --backlinks <entity>` |
 | | Layer telemetry | `python3 ~/.gemini/skills/deep-base/scripts/stats.py ~/wiki` |
+| | Automated Index Compiler | `python3 ~/.gemini/skills/deep-base/scripts/assemble.py --update-index --path ~/wiki` |
 
 ## 3. Operational & Synthesis Specifications
 Load [workflows_spec.md](references/workflows_spec.md) for daily note buffering, batch distillation, zero-lookback synthesis, and local-first grounding rules.

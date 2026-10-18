@@ -14,15 +14,16 @@ import zipfile
 from pathlib import Path
 
 
-def load_flatten_config() -> dict:
+def load_flatten_config() -> tuple[dict, dict]:
     cfg_path = Path(__file__).resolve().parent / "config.json"
     try:
-        return json.loads(cfg_path.read_text(encoding="utf-8")).get("flatten", {})
+        raw = json.loads(cfg_path.read_text(encoding="utf-8"))
+        return raw.get("flatten", {}), raw.get("hygiene", {}).get("redact_patterns", {})
     except Exception:
-        return {}
+        return {}, {}
 
 
-CFG = load_flatten_config()
+CFG, HYGIENE_PATS = load_flatten_config()
 MAX_CHAPTER_BYTES = CFG.get("max_chapter_bytes", 40000)
 MIN_CHAPTER_CHARS = CFG.get("min_chapter_chars", 80)
 MIN_CHARS_PER_PAGE_OCR = CFG.get("min_chars_per_page_ocr", 50)
@@ -35,6 +36,25 @@ TOC_DOT_LEADER_RX = re.compile(PATS.get("toc_dot", r"(?:\.{3,}|(?:\.\s*){3,}|·{
 PAGE_NUM_RX = re.compile(PATS.get("page_num", r"^(?:[-－—–]\s*\d+\s*[-－—–]|Page\s+\d+)$"), re.I)
 HEADING_RX = re.compile(PATS.get("heading", r"^#{1,2}\s+.+$"), re.M)
 SUB_HEADING_RX = re.compile(PATS.get("sub_heading", r"^#{2,4}\s+.+$"), re.M)
+SECRET_TOKEN_RX = re.compile(HYGIENE_PATS.get("secret_token", r"\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35})\b"))
+PRIVATE_KEY_RX = re.compile(HYGIENE_PATS.get("private_key", r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----"))
+TW_MOBILE_RX = re.compile(HYGIENE_PATS.get("tw_phone", r"(?<!\d)09\d{2}[-\s]?\d{3}[-\s]?\d{3}(?!\d)"))
+
+
+def sanitize_sensitive_text(text: str) -> str:
+    """Scrub host user-home absolute paths, private keys, API tokens, personal mobile numbers, and markdown syntax at Gate 1."""
+    home_str = str(Path.home())
+    if home_str and home_str != "/":
+        text = text.replace(home_str, "~")
+    text = PRIVATE_KEY_RX.sub("[REDACTED_PRIVATE_KEY]", text)
+    text = SECRET_TOKEN_RX.sub("[REDACTED_SECRET]", text)
+    text = TW_MOBILE_RX.sub("[REDACTED_PHONE]", text)
+    try:
+        from sanitize import sanitize_markdown_text
+        text, _ = sanitize_markdown_text(text)
+    except Exception:
+        pass
+    return text
 
 
 def normalize_cjk_spacing(text: str) -> str:
@@ -87,11 +107,17 @@ def strip_running_headers_and_toc(pages: list[str]) -> list[str]:
     return [c for c in cleaned if c]
 
 
+STRUCT_SOLO_RX = re.compile(r"^(?:Module|Lesson|Chapter|Section|Domain|Unit)\s+[0-9A-Z]+$", re.I)
+
+
 def unwrap_broken_lines(text: str) -> str:
     """Rejoin mid-sentence PDF line wraps while preserving headings, lists, and tables."""
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
     out: list[str] = []
     for ln in lines:
+        if out and STRUCT_SOLO_RX.match(out[-1]) and not is_valid_heading(ln) and len(ln) <= 75:
+            out[-1] = f"{out[-1]}: {ln}"
+            continue
         is_struct = any(ln.startswith(p) for p in ("#", ">", "|", "```", "---")) or bool(re.match(r"^(?:[-*+]|\(\d+\)|\([a-zA-Z]\)|\d+[\.\)])\s*", ln)) or is_valid_heading(ln)
         prev = out[-1] if out else ""
         prev_struct = any(prev.startswith(p) for p in ("#", ">", "|", "```", "---")) or is_valid_heading(prev)
@@ -119,6 +145,7 @@ def extract_pdf(path: Path) -> tuple[str, dict]:
             "avg_chars_per_page": avg_chars,
         }
     full_text = unwrap_broken_lines("\n".join(strip_running_headers_and_toc(raw_pages)))
+    full_text = re.sub(r"(?m)^#\s+", "// ", full_text)
     return full_text, {"total_pages": total_pages, "avg_chars_per_page": avg_chars}
 
 
@@ -169,12 +196,28 @@ def pack_segments_by_budget(title: str, segments: list[str]) -> list[tuple[str, 
     return parts
 
 
+FENCE_LINE_RX = re.compile(r"^\s*(```|~~~)")
+
+
+def non_fenced_indices(lines: list[str], predicate) -> list[int]:
+    """Return line indices matching predicate outside fenced code blocks."""
+    indices: list[int] = []
+    in_fence = False
+    for i, ln in enumerate(lines):
+        if FENCE_LINE_RX.match(ln):
+            in_fence = not in_fence
+            continue
+        if not in_fence and predicate(ln):
+            indices.append(i)
+    return indices
+
+
 def split_oversized_section(title: str, body: str) -> list[tuple[str, str]]:
     """Split a section exceeding MAX_CHAPTER_BYTES along sub-headings or lines."""
     if len(body.encode("utf-8")) <= MAX_CHAPTER_BYTES:
         return [(title, body)]
     lines = body.splitlines()
-    sub_idx = [i for i, ln in enumerate(lines) if SUB_HEADING_RX.match(ln.strip()) and len(ln.strip()) <= 70]
+    sub_idx = non_fenced_indices(lines, lambda ln: bool(SUB_HEADING_RX.match(ln.strip())) and len(ln.strip()) <= 70)
     if len(sub_idx) >= 2:
         bounds = [0] + sub_idx + [len(lines)]
         segs = ["\n".join(lines[bounds[i]:bounds[i + 1]]).strip() for i in range(len(bounds) - 1)]
@@ -213,8 +256,9 @@ def merge_and_split_headings(lines: list[str], heading_indices: list[int]) -> li
 
 def segment_chapters(text: str) -> list[dict]:
     """Segment cleaned document text into chapter dicts without dropping short sections."""
+    text = sanitize_sensitive_text(text)
     lines = text.splitlines()
-    heading_indices = [i for i, ln in enumerate(lines) if is_valid_heading(ln)]
+    heading_indices = non_fenced_indices(lines, is_valid_heading)
     raw_sections = split_oversized_section("Full Document", text.strip()) if not heading_indices else merge_and_split_headings(lines, heading_indices)
     chapters = []
     for i, (title, body) in enumerate(raw_sections, 1):
@@ -301,8 +345,10 @@ def main():
     for c in chapters:
         (out_dir / c["file"]).write_text(c["content"], encoding="utf-8")
     (out_dir / "index.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    report["output_dir"] = str(out_dir)
-    print(json.dumps(report, ensure_ascii=False, indent=2) if args.json else f"Flattened {src_path.name} -> {len(chapters)} chapters in {out_dir} (mode: {dispatch_mode})")
+    home_str = str(Path.home())
+    out_str = str(out_dir).replace(home_str, "~", 1) if str(out_dir).startswith(home_str) else str(out_dir)
+    report["output_dir"] = out_str
+    print(json.dumps(report, ensure_ascii=False, indent=2) if args.json else f"Flattened {src_path.name} -> {len(chapters)} chapters in {out_str} (mode: {dispatch_mode})")
 
 
 if __name__ == "__main__":
