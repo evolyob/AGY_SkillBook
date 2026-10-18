@@ -42,7 +42,7 @@ Every synthesized file under `~/wiki/wiki/` must stay within `45 KB` (`46,080 by
 ### 3.1 Daily Fragmented Notes & Tag Anatomy (`note` & `distill`)
 1. **Monthly Buffer Creation**: On the first note of a month, create `~/wiki/raw/notes/YYYY-MM.md` with `# Notes YYYY-MM` if absent.
 2. **Tag Anatomy (`#<domain>/<entity_slug>`)**:
-   - `<domain>` (e.g., `tech`, `academic`, `compliance`): maps to the `tags` array in `data/glossary.json`.
+   - `<domain>` (e.g., `ai`, `tech`, `rmf`, `compliance`, `work`): maps to the `tags` array in `data/glossary.json`.
    - `<entity_slug>` (e.g., `ebpf`, `iso27001`): maps directly to target card `wiki/entities/<entity_slug>.md`.
 3. **Header-Only Block Schema**: Split blocks strictly on `^## \d{4}-\d{2}-\d{2}` headers (do not use `---` horizontal rules as block delimiters):
    ```markdown

@@ -73,26 +73,26 @@
   },
   "assemble": {
     "section_tag_map": {
+      "### 2.1 法規遵循與資訊系統查核": [
+        "compliance", "pqc", "audit", "itaf"
+      ],
+      "### 2.2 風險管理架構、計量與演練體系": [
+        "rmf", "risk", "kri", "kpi", "bcp_drp"
+      ],
+      "### 2.3 基礎系統、網路協定與暴險防禦": [
+        "tech", "linux", "windows", "web", "dns", "pdf", "mermaid", "pptx", "cryptography"
+      ],
+      "### 2.4 人工智慧、Agent 架構與技能工程": [
+        "ai", "agent", "memory", "vibe", "skill", "secai"
+      ],
+      "### 2.5 職場實務、工作會議與職涯發展": [
+        "work", "career", "meeting", "interview", "resume", "job"
+      ],
       "### 2.5 應用程式與 Web 站點安全": [
         "appsec", "web", "csp", "cwe", "va", "middleware", "fuzzing", "sast"
       ],
       "### 2.4 端點系統、網路協定與暴險防禦": [
         "linux", "windows", "os_audit", "kernel", "easm", "osint", "dns", "zero-trust", "zero_trust"
-      ],
-      "### 2.1 PQC 與合規治理": [
-        "compliance", "pqc", "pii", "audit", "governance", "isaca"
-      ],
-      "### 2.2 文件排版與視覺化引擎": [
-        "pdf", "layout", "mermaid", "pptx"
-      ],
-      "### 2.3 Agent 記憶、防護欄與暴險稽核": [
-        "agent", "memory", "guardrail"
-      ],
-      "### 2.6 Vibe Coding 與技能工程": [
-        "vibe", "skill", "astro", "mod", "prompt"
-      ],
-      "### 2.7 CompTIA SecAI+ (CY0-001) 認證複習模組": [
-        "secai", "comptia", "cy0-001"
       ]
     }
   },

@@ -12,7 +12,7 @@ Operate a local-first personal knowledge base at `~/wiki/` (pure filesystem back
 ## 1. Directory Boundaries
 - `~/wiki/raw/`: Immutable flattened sources (`articles/<slug>/chapters/*.md`, `assets/`) and monthly note buffers (`notes/YYYY-MM.md`, `notes/archive/YYYY-MM.md`).
 - `~/wiki/wiki/`: Synthesized compounding cards (`<= 45 KB` per file: `entities/`, `topics/`, `sources/`, `comparisons/`, `synthesis/`, `queries/`).
-- `~/wiki/data/glossary.json`: Pattern A flat terminology and alias array with domain `tags` (`tech`, `academic`, `compliance`).
+- `~/wiki/data/glossary.json`: Pattern A flat terminology and alias array with domain `tags` (`ai`, `tech`, `rmf`, `compliance`, `work`).
 - `~/wiki/index.md`, `~/wiki/log.md`, `~/wiki/.wiki-cache.json`: Global index, append-only audit trail, and SHA-256 cache registry.
 
 ## 2. Core Workflows & CLI Routing

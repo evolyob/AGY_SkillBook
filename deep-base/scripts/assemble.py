@@ -20,17 +20,18 @@ def load_config() -> tuple[dict, dict]:
     except Exception:
         return {}, {}
 
-
 CFG, SECTION_TAG_MAP = load_config()
 
-
-def resolve_section(tags: list[str]) -> str | None:
+def resolve_section(tags: list[str], content: str = "") -> str | None:
     lower_tags = {t.lower() for t in tags}
+    first_match = None
     for sec, kw_list in SECTION_TAG_MAP.items():
         if lower_tags & set(kw_list):
-            return sec
-    return None
-
+            if not content or any(line.startswith(sec) for line in content.splitlines()):
+                return sec
+            if first_match is None:
+                first_match = sec
+    return first_match
 
 def init_knowledge_base(target_path: Path):
     target = target_path.expanduser().resolve()
@@ -140,7 +141,7 @@ def update_index(wiki_path: Path, metadata_json: Path | None = None) -> dict:
         tags, context = parse_entity_metadata(entities_dir / f"{e}.md", metadata_map)
         primary_tag = tags[1] if len(tags) > 1 and tags[0] == "entity" else (tags[0] if tags else "tech")
         row = f"| [[{e}]] | `#{primary_tag}` | {context} |"
-        sec = resolve_section(tags)
+        sec = resolve_section(tags, content)
         matched_pos = -1
         matched_sec_str = ""
         if sec:
