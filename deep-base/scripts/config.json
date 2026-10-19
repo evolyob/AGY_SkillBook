@@ -73,32 +73,32 @@
   },
   "assemble": {
     "section_tag_map": {
-      "### 2.1 法規遵循與資訊系統查核": [
+      "### 法規遵循與資訊系統查核": [
         "compliance", "pqc", "audit", "itaf"
       ],
-      "### 2.2 風險管理架構、計量與演練體系": [
+      "### 風險管理架構、計量與演練體系": [
         "rmf", "risk", "kri", "kpi", "bcp_drp"
       ],
-      "### 2.3 基礎系統、網路協定與暴險防禦": [
+      "### 基礎系統、網路協定與暴險防禦": [
         "tech", "linux", "windows", "web", "dns", "pdf", "mermaid", "pptx", "cryptography"
       ],
-      "### 2.4 人工智慧、Agent 架構與技能工程": [
+      "### 人工智慧、Agent 架構與技能工程": [
         "ai", "agent", "memory", "vibe", "skill", "secai"
       ],
-      "### 2.5 職場實務、工作會議與職涯發展": [
+      "### 職場實務、工作會議與職涯發展": [
         "work", "career", "meeting", "interview", "resume", "job"
       ],
-      "### 2.5 應用程式與 Web 站點安全": [
+      "### 應用程式與 Web 站點安全": [
         "appsec", "web", "csp", "cwe", "va", "middleware", "fuzzing", "sast"
       ],
-      "### 2.4 端點系統、網路協定與暴險防禦": [
+      "### 端點系統、網路協定與暴險防禦": [
         "linux", "windows", "os_audit", "kernel", "easm", "osint", "dns", "zero-trust", "zero_trust"
       ]
     }
   },
   "sanitize": {
     "patterns": {
-      "pseudo_wikilink": "\\[\\[([^\\/\\]\\n]+\\/[^\\/\\]\\n]+)\\]\\]",
+      "pseudo_wikilink": "\\[\\[([^\\/\\\\\\]\\n]+\\/[^\\/\\\\\\]\\n]+)\\]\\]",
       "hackmd_fence": "^(\\s*```+)([a-zA-Z0-9_\\-]+)[=!]+.*$",
       "hackmd_empty_fence": "^(\\s*```+)[=!]+.*$",
       "collapsed_table_sep": "^>\\s*(\\|[\\s\\-:|]+\\|)\\s*$",

@@ -12,6 +12,11 @@ import re
 import sys
 
 
+def default_wiki_path() -> str:
+    gemini_wiki = Path.home() / ".gemini" / "wiki"
+    return "~/.gemini/wiki" if gemini_wiki.exists() else "~/wiki"
+
+
 def load_config() -> tuple[dict, dict]:
     cfg_path = Path(__file__).resolve().parent / "config.json"
     try:
@@ -20,27 +25,37 @@ def load_config() -> tuple[dict, dict]:
     except Exception:
         return {}, {}
 
+
 CFG, SECTION_TAG_MAP = load_config()
 
-def resolve_section(tags: list[str], content: str = "") -> str | None:
+
+def resolve_section(tags: list[str], content: str = "", section_map: dict | None = None) -> tuple[str | None, str]:
+    mapping = section_map or SECTION_TAG_MAP
     lower_tags = {t.lower() for t in tags}
-    first_match = None
-    for sec, kw_list in SECTION_TAG_MAP.items():
+    lines = content.splitlines() if content else []
+    for sec, kw_list in mapping.items():
         if lower_tags & set(kw_list):
-            if not content or any(line.startswith(sec) for line in content.splitlines()):
-                return sec
-            if first_match is None:
-                first_match = sec
-    return first_match
+            if not content:
+                return sec, sec
+            for line in lines:
+                if line.startswith(sec):
+                    return sec, line
+            sec_clean = re.sub(r"^#+\s*(?:\d+(?:\.\d+)*\s*)?", "", sec).strip()
+            for line in lines:
+                if line.startswith("#") and sec_clean and sec_clean in line:
+                    return sec, line
+            return sec, ""
+    return None, ""
+
 
 def init_knowledge_base(target_path: Path):
     target = target_path.expanduser().resolve()
     print(f"Initializing Knowledge Base at: {target}")
 
     dirs = [target / d for d in CFG.get("directories", [
-        "raw/articles", "raw/notes", "raw/pdfs", "raw/assets",
+        "raw/articles", "raw/notes", "raw/notes/archive", "raw/pdfs", "raw/assets",
         "wiki/entities", "wiki/topics", "wiki/sources", "wiki/comparisons",
-        "wiki/synthesis", "wiki/queries", "templates", "data"
+        "wiki/synthesis", "wiki/queries", "wiki/archive", "templates", "data"
     ])]
     for d in dirs:
         d.mkdir(parents=True, exist_ok=True)
@@ -49,24 +64,17 @@ def init_knowledge_base(target_path: Path):
 
     schema_path = target / ".wiki-schema.md"
     if not schema_path.exists():
-        schema_path.write_text(f"""# Wiki Schema & Governance
-- Language: zh-TW | Version: 1.0.0 | Methodology: Andrej Karpathy LLM Wiki Architecture
-- Boundary: Local-first Markdown (Layer 1: raw/ Immutable Sources, Layer 2: wiki/ Synthesized Knowledge)
-
-## Confidence Labels & Gate-1 Hygiene
-- Labels: [EXTRACTED] Source extraction, [INFERRED] LLM deduction, [AMBIGUOUS] Conflicting, [UNVERIFIED] External.
-- Hygiene: Scrub PII mobile numbers, live credentials (sk-, ghp-, AKIA-), and normalize user paths to ~/ at Gate 1.
-""", encoding="utf-8")
+        schema_path.write_text(f"# Wiki Schema & Governance\n- Language: zh-TW | Version: 1.0.0 | Methodology: Andrej Karpathy LLM Wiki Architecture\n- Boundary: Local-first Markdown (Layer 1: raw/ Immutable Sources, Layer 2: wiki/ Synthesized Knowledge)\n\n## Confidence Labels & Gate-1 Hygiene\n- Labels: [EXTRACTED] Source extraction, [INFERRED] LLM deduction, [AMBIGUOUS] Conflicting, [UNVERIFIED] External.\n- Hygiene: Scrub PII mobile numbers, live credentials (sk-, ghp-, AKIA-), and normalize user paths to ~/ at Gate 1.\n", encoding="utf-8")
 
     index_path = target / "index.md"
     if not index_path.exists():
-        index_path.write_text(f"""# Personal Knowledge Base Index\n\n> Local-first personal compounding knowledge base initialized on {today}.\n\n## Navigation\n- [[wiki/entities/]], [[wiki/topics/]], [[wiki/sources/]], [[wiki/comparisons/]], [[wiki/synthesis/]], [[wiki/queries/]]\n\n## Recent Entries\n""", encoding="utf-8")
+        index_path.write_text(f"# Personal Knowledge Base Index\n\n> Local-first personal compounding knowledge base initialized on {today}.\n\n## Navigation\n- [[wiki/entities/]], [[wiki/topics/]], [[wiki/sources/]], [[wiki/comparisons/]], [[wiki/synthesis/]], [[wiki/queries/]]\n\n## Recent Entries\n", encoding="utf-8")
 
     home_str = str(Path.home())
     display_target = str(target).replace(home_str, "~", 1) if str(target).startswith(home_str) else str(target)
     log_path = target / "log.md"
     if not log_path.exists():
-        log_path.write_text(f"""# Wiki Operation Log\n- {today}: Initialized personal knowledge base structure at {display_target}.\n""", encoding="utf-8")
+        log_path.write_text(f"# Wiki Operation Log\n- {today}: Initialized personal knowledge base structure at {display_target}.\n", encoding="utf-8")
 
     glossary_path = target / "data" / "glossary.json"
     if not glossary_path.exists():
@@ -135,29 +143,31 @@ def update_index(wiki_path: Path, metadata_json: Path | None = None) -> dict:
         except Exception:
             pass
 
+    custom_section_map = dict(SECTION_TAG_MAP)
+    taxonomy_file = target / "data" / "taxonomy.json"
+    if taxonomy_file.exists():
+        try:
+            t_data = json.loads(taxonomy_file.read_text(encoding="utf-8"))
+            if "section_tag_map" in t_data:
+                custom_section_map.update(t_data["section_tag_map"])
+        except Exception:
+            pass
+
     newly_added = []
     untabled = [e for e in entities if f"[[{e}]]" not in content]
     for e in untabled:
         tags, context = parse_entity_metadata(entities_dir / f"{e}.md", metadata_map)
         primary_tag = tags[1] if len(tags) > 1 and tags[0] == "entity" else (tags[0] if tags else "tech")
         row = f"| [[{e}]] | `#{primary_tag}` | {context} |"
-        sec = resolve_section(tags, content)
-        matched_pos = -1
-        matched_sec_str = ""
-        if sec:
-            # Match either exact section header or section starting with prefix
-            for line in content.splitlines():
-                if line.startswith(sec):
-                    matched_sec_str = line
-                    matched_pos = content.find(line)
-                    break
+        sec_key, matched_line = resolve_section(tags, content, section_map=custom_section_map)
+        matched_pos = content.find(matched_line) if matched_line else -1
 
         if matched_pos != -1:
-            next_idx = content.find("\n### ", matched_pos + len(matched_sec_str))
+            next_idx = content.find("\n### ", matched_pos + len(matched_line))
             end_idx = next_idx if next_idx != -1 else len(content)
             content = content[:matched_pos] + content[matched_pos:end_idx].rstrip() + "\n" + row + "\n" + content[end_idx:]
         else:
-            print(f"Warning: Section '{sec}' not found in index.md for entity '{e}'. Appending to Recent Entries.", file=sys.stderr)
+            print(f"Warning: Section '{sec_key}' not found in index.md for entity '{e}'. Appending to Recent Entries.", file=sys.stderr)
             recent_idx = content.find("## Recent Entries")
             if recent_idx != -1:
                 next_h2 = content.find("\n## ", recent_idx + 17)
@@ -174,7 +184,7 @@ def update_index(wiki_path: Path, metadata_json: Path | None = None) -> dict:
 def main():
     parser = argparse.ArgumentParser(description="Assemble & Scaffold Knowledge Base.")
     parser.add_argument("--init", action="store_true", help="Initialize a fresh knowledge base")
-    parser.add_argument("--path", default="~/wiki", help="Target path for knowledge base")
+    parser.add_argument("--path", default=default_wiki_path(), help="Target path for knowledge base")
     parser.add_argument("--update-index", action="store_true", help="Compile and update index.md with live entities and topics")
     parser.add_argument("--metadata-json", help="Optional path to metadata JSON from subagent batch execution")
     parser.add_argument("--json", action="store_true", help="Output JSON result summary")

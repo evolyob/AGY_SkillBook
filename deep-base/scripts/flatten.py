@@ -41,14 +41,15 @@ PRIVATE_KEY_RX = re.compile(HYGIENE_PATS.get("private_key", r"-----BEGIN [A-Z0-9
 TW_MOBILE_RX = re.compile(HYGIENE_PATS.get("tw_phone", r"(?<!\d)09\d{2}[-\s]?\d{3}[-\s]?\d{3}(?!\d)"))
 
 
-def sanitize_sensitive_text(text: str) -> str:
+def sanitize_sensitive_text(text: str, redact: bool = True) -> str:
     """Scrub host user-home absolute paths, private keys, API tokens, personal mobile numbers, and markdown syntax at Gate 1."""
     home_str = str(Path.home())
     if home_str and home_str != "/":
         text = text.replace(home_str, "~")
-    text = PRIVATE_KEY_RX.sub("[REDACTED_PRIVATE_KEY]", text)
-    text = SECRET_TOKEN_RX.sub("[REDACTED_SECRET]", text)
-    text = TW_MOBILE_RX.sub("[REDACTED_PHONE]", text)
+    if redact:
+        text = PRIVATE_KEY_RX.sub("[REDACTED_PRIVATE_KEY]", text)
+        text = SECRET_TOKEN_RX.sub("[REDACTED_SECRET]", text)
+        text = TW_MOBILE_RX.sub("[REDACTED_PHONE]", text)
     try:
         from sanitize import sanitize_markdown_text
         text, _ = sanitize_markdown_text(text)
@@ -254,9 +255,9 @@ def merge_and_split_headings(lines: list[str], heading_indices: list[int]) -> li
     return raw_sections
 
 
-def segment_chapters(text: str) -> list[dict]:
+def segment_chapters(text: str, redact: bool = True) -> list[dict]:
     """Segment cleaned document text into chapter dicts without dropping short sections."""
-    text = sanitize_sensitive_text(text)
+    text = sanitize_sensitive_text(text, redact=redact)
     lines = text.splitlines()
     heading_indices = non_fenced_indices(lines, is_valid_heading)
     raw_sections = split_oversized_section("Full Document", text.strip()) if not heading_indices else merge_and_split_headings(lines, heading_indices)
@@ -302,6 +303,7 @@ def main():
     parser.add_argument("input", help="Source document path (PDF, DOCX, XLSX, HTML, MD, TXT)")
     parser.add_argument("--list-only", action="store_true", help="Output reconnaissance JSON without writing files")
     parser.add_argument("--split-dir", help="Target directory to write flattened chapter .md files")
+    parser.add_argument("--no-redact", action="store_true", help="Skip PII and credential redaction during flattening")
     parser.add_argument("--json", action="store_true", help="Output JSON result summary")
     args = parser.parse_args()
 
@@ -321,7 +323,7 @@ def main():
             sys.stderr.write(f"[!] OCR_REQUIRED: {meta['message']}\n")
         sys.exit(3)
 
-    chapters = segment_chapters(full_text)
+    chapters = segment_chapters(full_text, redact=not args.no_redact)
     dispatch_mode, batches = plan_batches(chapters)
     catalog = [{k: v for k, v in c.items() if k != "content"} for c in chapters]
     report = {
