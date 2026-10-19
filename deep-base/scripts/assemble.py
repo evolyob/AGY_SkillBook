@@ -64,7 +64,7 @@ def init_knowledge_base(target_path: Path):
 
     schema_path = target / ".wiki-schema.md"
     if not schema_path.exists():
-        schema_path.write_text(f"# Wiki Schema & Governance\n- Language: zh-TW | Version: 1.0.0 | Methodology: Andrej Karpathy LLM Wiki Architecture\n- Boundary: Local-first Markdown (Layer 1: raw/ Immutable Sources, Layer 2: wiki/ Synthesized Knowledge)\n\n## Confidence Labels & Gate-1 Hygiene\n- Labels: [EXTRACTED] Source extraction, [INFERRED] LLM deduction, [AMBIGUOUS] Conflicting, [UNVERIFIED] External.\n- Hygiene: Scrub PII mobile numbers, live credentials (sk-, ghp-, AKIA-), and normalize user paths to ~/ at Gate 1.\n", encoding="utf-8")
+        schema_path.write_text(f"# Wiki Schema & Governance\n- Language: en (English-first synthesis; zh-TW glossary & query bridging) | Version: 1.0.0 | Methodology: Andrej Karpathy LLM Wiki Architecture\n- Boundary: Local-first Markdown (Layer 1: raw/ Immutable Sources, Layer 2: wiki/ Synthesized Knowledge)\n\n## Confidence Labels & Gate-1 Hygiene\n- Labels: [EXTRACTED] Source extraction, [INFERRED] LLM deduction, [AMBIGUOUS] Conflicting, [UNVERIFIED] External.\n- Hygiene: Scrub PII mobile numbers, live credentials (sk-, ghp-, AKIA-), and normalize user paths to ~/ at Gate 1.\n", encoding="utf-8")
 
     index_path = target / "index.md"
     if not index_path.exists():

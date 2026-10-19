@@ -7,7 +7,7 @@ dependencies: []
 # Deep Base: Personal Compounding Knowledge Base
 
 ## Objective
-Operate a local-first personal knowledge base at `~/.gemini/wiki/` (or `~/wiki/`). User-provided materials serve as primary ground truth before any external search.
+Operate a local-first personal knowledge base at `~/.gemini/wiki/` (or `~/wiki/`). User-provided materials serve as primary ground truth before any external search. Synthesize technical knowledge cards in English by default to eliminate translation loss, maximize search precision, and maintain zero-friction Anti-AI immunity.
 
 ## 1. Directory Boundaries
 - `~/.gemini/wiki/raw/`: Immutable flattened sources (`articles/<slug>/chapters/*.md`, `assets/`) and monthly note buffers (`notes/YYYY-MM.md`, `notes/archive/YYYY-MM.md`).
