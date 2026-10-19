@@ -61,9 +61,12 @@ Every synthesized file under `~/wiki/wiki/` must stay within `45 KB` (`46,080 by
    - `subagent_parallel`: dispatch subagents by `recommended_batches`; each subagent writes exclusively to its assigned `wiki/entities/<entity_slug>.md` and returns JSON metadata to prevent race conditions on `index.md` and `log.md`. Parent agent automatically runs `assemble.py --update-index ~/wiki` upon batch completion to eliminate orphan pages and mount entries into domain tables.
    - **Pre-Dispatch Sharding Gate (`> 75 KB` Raw Input per Entity)**: Whenever the raw chapters mapped to a single entity exceed `75 KB` (or `>= 3` lessons), proactively split the target into sub-domain entity cards (Mode A) **before** invoking subagents so no synthesized card approaches the `45 KB` ceiling.
 3. **No-Elision Enumeration & Quantitative Fidelity**: Preserve 100% of enumerated items (modules, APIs, CLI flags, algorithm steps, clauses) in Markdown tables and retain exact numbers, bounds, formulas, and defaults so `wiki/` requires zero `raw/` lookback.
-4. **Bilingual Dual-Track Indexing Specification**:
-   - **Frontmatter Aliases**: When an entity has common Traditional Chinese and English terms, include both in `alias: [ZH_Term, EN_Term, Abbr]` to enable direct CJK FTS5 matching without translation latency.
-   - **Technical Precision**: Maintain specification tables, CLI flags, APIs, configuration schemas, formulas, and code blocks in **English** by default.
+4. **Source-Language Invariant & Dual-Track Indexing Specification**:
+   - **Source-Language Fidelity (來源語言原生保真)**:
+     - **English Raw Sources** (e.g., CompTIA, CIS Benchmarks, RFCs, NIST, international tech standards): The synthesized entity card (title, core definition, detailed facts, tables, operational mechanics) MUST be written 100% natively in **English**. Zero unsolicited machine translation.
+     - **Chinese Raw Sources** (e.g., Taiwan PDPA, FSC financial regulations, CNS standards): The card is written natively in **Traditional Chinese**, maintaining standard technical parameters, APIs, and CLI flags in English.
+     - **No Mixed-Language Mutations**: Never create fragmented mixed-language cards by translating parts (e.g. tables) while leaving other parts in another language. Maintain 100% document-level language coherence.
+   - **Frontmatter Aliases for Dual-Track Retrieval**: For English cards, include common Traditional Chinese terms and abbreviations in `alias: [ZH_Term, EN_Term, Abbr]` to enable direct CJK FTS5 matching and conversational triggering without mutating card body prose.
 
 ### 3.3 Pattern A Glossary Schema (`data/glossary.json`)
 After distillation or ingestion, list newly detected acronyms/terms for user confirmation before appending to `data/glossary.json` using these 7 invariant keys:

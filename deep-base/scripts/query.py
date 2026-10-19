@@ -174,6 +174,51 @@ def render_entity_view(res: dict) -> str:
     return "\n".join(lines)
 
 
+def find_backlinks(wiki_root: Path, entity_name: str) -> list[dict]:
+    clean_target = entity_name.split('|')[0].split('#')[0].strip()
+    target_stem = Path(clean_target).stem.lower()
+    subdirs = ["entities", "topics", "sources", "comparisons", "synthesis", "queries"]
+    candidates = [wiki_root / clean_target, wiki_root / f"{clean_target}.md"] + [
+        wiki_root / "wiki" / d / f"{clean_target}.md" for d in subdirs
+    ]
+    resolved_target = next((c for c in candidates if c.exists()), None)
+    target_path = resolved_target.resolve() if resolved_target else None
+
+    backlinks = []
+    exempt_prefixes = (".", "raw/", "templates/", "wiki/archive/")
+    wikilink_rx = re.compile(r"\[\[(.*?)\]\]")
+    code_rx = re.compile(r"(?:```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*?`)")
+
+    for md_file in sorted(wiki_root.rglob("*.md")):
+        if target_path and md_file.resolve() == target_path:
+            continue
+        try:
+            rel = str(md_file.relative_to(wiki_root))
+            if any(rel.startswith(p) for p in exempt_prefixes):
+                continue
+            lines = md_file.read_text(encoding="utf-8", errors="replace").splitlines()
+        except Exception:
+            continue
+
+        for idx, line in enumerate(lines, 1):
+            cleaned = code_rx.sub("", line)
+            matches = wikilink_rx.findall(cleaned)
+            matched = False
+            for m in matches:
+                link_clean = m.split('|')[0].split('#')[0].strip()
+                link_stem = Path(link_clean).stem.lower()
+                link_cands = [wiki_root / link_clean, wiki_root / f"{link_clean}.md"] + [
+                    wiki_root / "wiki" / d / f"{link_clean}.md" for d in subdirs
+                ]
+                res = next((c for c in link_cands if c.exists()), None)
+                if (target_path and res and res.resolve() == target_path) or link_stem == target_stem:
+                    matched = True
+                    break
+            if matched:
+                backlinks.append({"source": rel, "line": idx, "context": line.strip()})
+    return backlinks
+
+
 def handle_query(root: Path, args) -> str:
     """Dispatch query handlers based on CLI options and output format."""
     payload = {}
@@ -183,6 +228,9 @@ def handle_query(root: Path, args) -> str:
         conn = build_index(root)
         payload["filter"] = {"query": args.keyword, "results": run_filter(conn, args.keyword, limit=args.limit)}
         conn.close()
+    if args.backlinks:
+        payload["backlinks"] = {"entity": args.backlinks, "results": find_backlinks(root, args.backlinks)}
+
     if args.format == "json":
         return json.dumps(payload, ensure_ascii=False, indent=2)
 
@@ -191,6 +239,13 @@ def handle_query(root: Path, args) -> str:
         parts.append(render_entity_view(payload["entity"]))
     if "filter" in payload:
         parts.append(render_filter_view(args.keyword, payload["filter"]["results"]))
+    if "backlinks" in payload:
+        bl_info = payload["backlinks"]
+        res = bl_info["results"]
+        lines = [f"=== Backlinks for '{bl_info['entity']}': {root} ===", f"Total References Found: {len(res)}"]
+        for b in res:
+            lines.append(f"  - {b['source']}:{b['line']}: {b['context']}")
+        parts.append("\n".join(lines))
     return "\n\n".join(parts)
 
 
@@ -200,11 +255,12 @@ def main():
     p.add_argument("wiki_root", nargs="?", default="~/.gemini/wiki", help="Wiki root directory (default: ~/.gemini/wiki)")
     p.add_argument("--filter", dest="keyword", help="Full-text keyword search across wiki markdown files")
     p.add_argument("--entity", dest="entity", help="Lookup entity using data/glossary.json alias resolution")
+    p.add_argument("--backlinks", dest="backlinks", help="List all markdown files referencing the entity with context excerpts")
     p.add_argument("--format", choices=["markdown", "json"], default="markdown", help="Output format (default: markdown)")
     p.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"Maximum number of results (default: {DEFAULT_LIMIT})")
     args = p.parse_args()
 
-    if not args.keyword and not args.entity:
+    if not args.keyword and not args.entity and not args.backlinks:
         p.print_help()
         sys.exit(0)
 

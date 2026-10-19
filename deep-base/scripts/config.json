@@ -9,7 +9,9 @@
       "pure_sep": "^\\s*\\|?[\\s:|-]+\\|?\\s*$",
       "fence": "^\\s*(```|~~~)",
       "quote_header": "^#{1,6}\\s+.*(?:quote|citation|notable|引文|引述).*$"
-    }
+    },
+    "valid_domains": ["ai", "tech", "rmf", "compliance", "work"],
+    "required_entity_tags": ["entity"]
   },
   "query": {
     "default_limit": 5,
@@ -69,31 +71,6 @@
       "page_num": "^(?:[-－—–]\\s*\\d+\\s*[-－—–]|\\(\\s*共\\s*\\d+\\s*頁\\s*\\)|Page\\s+\\d+(?:\\s+of\\s+\\d+)?|:20\\d{2}|CNS\\s+\\d+[\\d\\s\\-:]*)$",
       "heading": "^(?:#{1,2}\\s+.+|第\\s*[0-9一二三四五六七八九十百]+\\s*[章節編篇條](?:\\s+.+)?|(?:Chapter|Section|Module|Lesson|Domain|Unit)\\s+[0-9A-Z]+(?:[:\\s-].*)?|\\d{1,2}\\.\\s*(?:[\\u4e00-\\u9fffA-Za-z].*)|[一二三四五六七八九十]+、\\s*[\\u4e00-\\u9fffA-Za-z].*|(?:前言|簡介|附錄\\s*[A-Z0-9一二三四五六七八九十]+|參考資料|參考文獻|名詞對照)(?:\\s+.*)?$)$",
       "sub_heading": "^(?:#{2,4}\\s+.+|\\d{1,2}\\.\\d+(?:\\.\\d+)?\\s+[\\u4e00-\\u9fffA-Za-z].+)$"
-    }
-  },
-  "assemble": {
-    "section_tag_map": {
-      "### 法規遵循與資訊系統查核": [
-        "compliance", "pqc", "audit", "itaf"
-      ],
-      "### 風險管理架構、計量與演練體系": [
-        "rmf", "risk", "kri", "kpi", "bcp_drp"
-      ],
-      "### 基礎系統、網路協定與暴險防禦": [
-        "tech", "linux", "windows", "web", "dns", "pdf", "mermaid", "pptx", "cryptography"
-      ],
-      "### 人工智慧、Agent 架構與技能工程": [
-        "ai", "agent", "memory", "vibe", "skill", "secai"
-      ],
-      "### 職場實務、工作會議與職涯發展": [
-        "work", "career", "meeting", "interview", "resume", "job"
-      ],
-      "### 應用程式與 Web 站點安全": [
-        "appsec", "web", "csp", "cwe", "va", "middleware", "fuzzing", "sast"
-      ],
-      "### 端點系統、網路協定與暴險防禦": [
-        "linux", "windows", "os_audit", "kernel", "easm", "osint", "dns", "zero-trust", "zero_trust"
-      ]
     }
   },
   "sanitize": {

@@ -1,5 +1,5 @@
 ---
-tags: [entity]
+tags: [entity, {{DOMAIN}}]
 alias: [{{ZH_ALIASES}}, {{EN_ALIASES}}, {{ABBR}}]
 created: {{DATE}}
 updated: {{DATE}}
@@ -17,7 +17,7 @@ confidence: EXTRACTED
 
 # {{TITLE}}
 
-> (One-sentence definitive factual statement in Traditional Chinese describing what this entity is without formulaic AI syntax)
+> (One-sentence definitive factual statement in the source material's native language — English for English sources, Traditional Chinese for Chinese sources — without formulaic AI syntax)
 
 ## Core Definition
 (Foundational description and domain positioning)

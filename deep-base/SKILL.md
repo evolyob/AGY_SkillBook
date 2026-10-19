@@ -7,7 +7,7 @@ dependencies: []
 # Deep Base: Personal Compounding Knowledge Base
 
 ## Objective
-Operate a local-first personal knowledge base at `~/.gemini/wiki/` (or `~/wiki/`). User-provided materials serve as primary ground truth before any external search. Synthesize technical knowledge cards with Bilingual Dual-Track Indexing (Traditional Chinese aliases for direct CJK retrieval and conversational triggering, English for technical tables and parameters).
+Operate a local-first personal knowledge base at `~/.gemini/wiki/` (or `~/wiki/`). User-provided materials serve as primary ground truth before any external search. Synthesize technical knowledge cards with Source-Language Fidelity (native English for English sources, native Traditional Chinese for Chinese sources; frontmatter Traditional Chinese aliases enable instant CJK retrieval).
 
 ## 1. Directory Boundaries
 - `~/.gemini/wiki/raw/`: Immutable flattened sources (`articles/<slug>/chapters/*.md`, `assets/`) and monthly note buffers (`notes/YYYY-MM.md`, `notes/archive/YYYY-MM.md`).
@@ -26,9 +26,9 @@ Operate a local-first personal knowledge base at `~/.gemini/wiki/` (or `~/wiki/`
 | | Register summary hash | `python3 scripts/cache.py update <file> <summary_page>` |
 | | Gate-1 Syntax Sanitizer | `python3 scripts/sanitize.py <file_or_dir> --fix` |
 | **3. Query (`query`)** | FTS5 & alias lookup | `python3 scripts/query.py ~/.gemini/wiki --filter <kw>` or `--entity <name>` (`--format markdown\|json`) |
-| **4. Audit (`lint`)** | Link, size & quote check | `python3 scripts/lint_links.py ~/.gemini/wiki --strict --verify-quotes` |
-| | Dynamic backlinks | `python3 scripts/lint_links.py ~/.gemini/wiki --backlinks <entity>` |
-| | Layer telemetry | `python3 scripts/stats.py ~/.gemini/wiki` |
+| | Dynamic backlinks | `python3 scripts/query.py ~/.gemini/wiki --backlinks <entity>` |
+| **4. Audit (`lint`)** | Link, size & quote check | `python3 scripts/lint_links.py ~/.gemini/wiki --strict --verify-tags --verify-quotes` |
+| | Layer telemetry | `python3 scripts/lint_links.py ~/.gemini/wiki --stats` |
 | | Automated Index Compiler | `python3 scripts/assemble.py --update-index --path ~/.gemini/wiki` |
 
 ## 3. Operational & Synthesis Specifications

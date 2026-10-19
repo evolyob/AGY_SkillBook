@@ -25,6 +25,8 @@ FENCE_RX = re.compile(PATTERNS.get("fence", r"^\s*(```|~~~)"))
 QUOTE_HEADER_RX = re.compile(PATTERNS.get("quote_header", r"^#{1,6}\s+.*(?:quote|citation|notable).*$"), re.I)
 EXEMPT_FILES = tuple(CFG.get("exempt_files", ["index.md", "log.md"]))
 EXEMPT_PREFIXES = tuple(CFG.get("exempt_prefixes", [".", "raw/"]))
+VALID_DOMAINS = tuple(CFG.get("valid_domains", ["ai", "tech", "rmf", "compliance", "work"]))
+REQUIRED_ENTITY_TAGS = tuple(CFG.get("required_entity_tags", ["entity"]))
 
 
 
@@ -171,7 +173,62 @@ def collect_structural_issues(rel_file: str, struct: dict) -> list[dict]:
     return issues
 
 
-def scan_wiki(wiki_root: Path, verify_quotes: bool = False, verify_structure: bool = True) -> dict:
+def verify_entity_tags(content: str, rel_file: str) -> list[dict]:
+    """Verify entity card tags conform to required type and canonical domains."""
+    if not (rel_file.startswith("wiki/entities/") or rel_file.startswith("entities/")):
+        return []
+    fm_match = re.search(r"^---\s*\n(.*?)\n---", content, re.DOTALL)
+    if not fm_match:
+        return [{"file": rel_file, "type": "missing_frontmatter", "detail": "Missing YAML frontmatter"}]
+    fm_text = fm_match.group(1)
+    tags_match = re.search(r"^tags:\s*\[(.*?)\]", fm_text, re.M)
+    if not tags_match:
+        m_list = re.search(r"^tags:\s*\n((?:\s*-\s*[^\n]+\n?)+)", fm_text, re.M)
+        if m_list:
+            tags = [re.sub(r"^-\s*", "", l).strip().strip("'\"") for l in m_list.group(1).splitlines() if l.strip()]
+        else:
+            return [{"file": rel_file, "type": "missing_tags", "detail": "Missing 'tags' in frontmatter"}]
+    else:
+        tags = [t.strip().strip("'\"") for t in tags_match.group(1).split(",") if t.strip()]
+
+    issues = []
+    for req in REQUIRED_ENTITY_TAGS:
+        if req not in tags:
+            issues.append({"file": rel_file, "type": "missing_required_tag", "detail": f"Missing required tag '{req}' (current: {tags})"})
+
+    domains_present = [t for t in tags if t in VALID_DOMAINS]
+    if not domains_present:
+        issues.append({"file": rel_file, "type": "missing_domain_tag", "detail": f"No canonical domain tag {list(VALID_DOMAINS)} found in {tags}"})
+
+    return issues
+
+
+def verify_glossary_tags(wiki_root: Path) -> list[dict]:
+    """Verify data/glossary.json terms adhere to canonical domains."""
+    glossary_path = wiki_root / "data" / "glossary.json"
+    if not glossary_path.exists():
+        return []
+    try:
+        raw_data = json.loads(glossary_path.read_text(encoding="utf-8"))
+        data = raw_data if isinstance(raw_data, list) else raw_data.get("terms", [])
+    except Exception as e:
+        return [{"file": "data/glossary.json", "type": "invalid_json", "detail": str(e)}]
+    issues = []
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        term = item.get("abbr") or item.get("term_en") or item.get("entity") or "unknown"
+        tags = item.get("tags", [])
+        if not tags:
+            issues.append({"file": "data/glossary.json", "type": "empty_glossary_tags", "detail": f"Term '{term}' has empty tags"})
+            continue
+        invalid = [t for t in tags if t not in VALID_DOMAINS]
+        if invalid:
+            issues.append({"file": "data/glossary.json", "type": "invalid_glossary_domain", "detail": f"Term '{term}' has non-canonical domain tags: {invalid}"})
+    return issues
+
+
+def scan_wiki(wiki_root: Path, verify_quotes: bool = False, verify_structure: bool = True, verify_tags: bool = False) -> dict:
     if wiki_root.is_file():
         all_md_files = [wiki_root]
         base_dir = wiki_root.parent
@@ -179,7 +236,7 @@ def scan_wiki(wiki_root: Path, verify_quotes: bool = False, verify_structure: bo
         all_md_files = sorted(wiki_root.rglob("*.md"))
         base_dir = wiki_root
 
-    broken_links, oversized_files, structural_issues = [], [], []
+    broken_links, oversized_files, structural_issues, tag_issues = [], [], [], []
     incoming_counts = {f.resolve(): 0 for f in all_md_files}
     total_links = 0
 
@@ -208,6 +265,9 @@ def scan_wiki(wiki_root: Path, verify_quotes: bool = False, verify_structure: bo
             struct = verify_markdown_structure(content)
             structural_issues.extend(collect_structural_issues(rel_file, struct))
 
+        if verify_tags:
+            tag_issues.extend(verify_entity_tags(content, rel_file))
+
         filtered = strip_markdown_code(content)
         for match in WIKILINK_PATTERN.finditer(filtered):
             total_links += 1
@@ -234,55 +294,31 @@ def scan_wiki(wiki_root: Path, verify_quotes: bool = False, verify_structure: bo
         "oversized_files": oversized_files,
         "structural_issues": structural_issues,
     }
+    if verify_tags and wiki_root.is_dir():
+        tag_issues.extend(verify_glossary_tags(wiki_root))
+    if verify_tags:
+        results["tag_issues"] = tag_issues
     if verify_quotes and wiki_root.is_dir():
         results["unverified_quotes"] = verify_quotes_in_sources(wiki_root)
     return results
 
 
-def find_backlinks(wiki_root: Path, entity_name: str) -> list[dict]:
-    clean_target = entity_name.split('|')[0].split('#')[0].strip()
-    target_stem = Path(clean_target).stem.lower()
-    resolved_target = resolve_target(wiki_root, clean_target)
-    target_path = resolved_target.resolve() if resolved_target else None
-
-    backlinks = []
-    for md_file in sorted(wiki_root.rglob("*.md")):
-        if target_path and md_file.resolve() == target_path:
-            continue
-        try:
-            rel = str(md_file.relative_to(wiki_root))
-            if any(rel.startswith(p) for p in EXEMPT_PREFIXES):
-                continue
-        except Exception:
-            pass
-        try:
-            lines = md_file.read_text(encoding="utf-8", errors="replace").splitlines()
-        except Exception:
-            continue
-
-        for idx, line in enumerate(lines, 1):
-            cleaned_line = strip_markdown_code(line)
-            matches = WIKILINK_PATTERN.findall(cleaned_line)
-            matched = False
-            for m in matches:
-                link_clean = m.split('|')[0].split('#')[0].strip()
-                res = resolve_target(wiki_root, link_clean)
-                if (target_path and res and res.resolve() == target_path) or Path(link_clean).stem.lower() == target_stem:
-                    matched = True
-                    break
-            if matched:
-                backlinks.append({"source": str(md_file.relative_to(wiki_root)), "line": idx, "context": line.strip()})
-    return backlinks
+def get_wiki_telemetry(wiki_root: Path) -> dict:
+    raw = [f for f in (wiki_root / "raw").glob("**/*") if f.is_file() and not f.name.startswith(".")] if (wiki_root / "raw").exists() else []
+    subdirs = ["entities", "topics", "sources", "comparisons", "synthesis", "queries"]
+    counts = {s: len(list((wiki_root / "wiki" / s).glob("*.md"))) if (wiki_root / "wiki" / s).exists() else 0 for s in subdirs}
+    return {"raw_sources": len(raw), "total_synthesized": sum(counts.values()), "layers": counts}
 
 
 def main():
     parser = argparse.ArgumentParser(description="Deterministic Wikilink & Health Scanner for deep-base.")
     parser.add_argument("wiki_root", nargs="?", default="~/.gemini/wiki", help="Root path of wiki or markdown file")
-    parser.add_argument("--strict", action="store_true", help="Exit code 2 on broken links, oversized files, structural issues, or unverified quotes")
+    parser.add_argument("--strict", action="store_true", help="Exit code 2 on broken links, oversized files, structural issues, unverified quotes, or tag issues")
+    parser.add_argument("--verify-tags", action="store_true", help="Verify entity tags conform to required type and canonical domains (ai, tech, rmf, compliance, work)")
     parser.add_argument("--verify-quotes", action="store_true", help="Verify quotes in wiki/sources/*.md against raw files")
     parser.add_argument("--verify-structure", dest="verify_structure", action="store_true", default=True, help="Verify markdown structural integrity (collapsed tables, unbalanced code fences; default: True)")
     parser.add_argument("--no-verify-structure", dest="verify_structure", action="store_false", help="Disable markdown structural integrity checks")
-    parser.add_argument("--backlinks", metavar="ENTITY", help="List all markdown files referencing the entity with context excerpts")
+    parser.add_argument("--stats", action="store_true", help="Display Layer 1/2 scale and telemetry dashboard")
     parser.add_argument("--json", action="store_true", help="Output JSON format")
     args = parser.parse_args()
 
@@ -290,18 +326,20 @@ def main():
     if not wiki_root.exists():
         sys.exit(f"Error: Target path does not exist: {wiki_root}")
 
-    if args.backlinks:
-        bl = find_backlinks(wiki_root, args.backlinks)
+    if args.stats:
+        telemetry = get_wiki_telemetry(wiki_root)
         if args.json:
-            print(json.dumps({"entity": args.backlinks, "backlinks": bl}, ensure_ascii=False, indent=2))
+            print(json.dumps(telemetry, ensure_ascii=False, indent=2))
         else:
-            print(f"=== Backlinks for '{args.backlinks}': {wiki_root} ===")
-            print(f"Total References Found: {len(bl)}")
-            for b in bl:
-                print(f"  - {b['source']}:{b['line']}: {b['context']}")
+            print(f"=== Personal Knowledge Base Telemetry ({wiki_root.name}) ===")
+            print(f"• Raw Sources (Layer 1)     : {telemetry['raw_sources']} files")
+            print(f"• Synthesized Pages (Layer 2): {telemetry['total_synthesized']} pages")
+            labels = {"entities": "Entities", "topics": "Topics", "sources": "Source Summaries", "comparisons": "Comparisons", "synthesis": "Synthesis", "queries": "Cached Queries"}
+            for k, lbl in labels.items():
+                print(f"    - {lbl:<22}: {telemetry['layers'].get(k, 0)}")
         sys.exit(0)
 
-    results = scan_wiki(wiki_root, verify_quotes=args.verify_quotes, verify_structure=args.verify_structure)
+    results = scan_wiki(wiki_root, verify_quotes=args.verify_quotes, verify_structure=args.verify_structure, verify_tags=args.verify_tags)
 
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
@@ -314,11 +352,14 @@ def main():
         print(f"Oversized Files (>45K): {len(results['oversized_files'])}")
         if args.verify_structure:
             print(f"Structural Issues    : {len(results['structural_issues'])}")
+        if args.verify_tags:
+            print(f"Tag Issues Found     : {len(results.get('tag_issues', []))}")
         if args.verify_quotes:
             print(f"Unverified Quotes    : {len(results.get('unverified_quotes', []))}")
 
         categories = [
             ("Structural Issues", results.get("structural_issues", []), lambda i: f"{i['file']}:{i.get('line', '')} [{i['type']}]: {i['detail']}"),
+            ("Tag Issues", results.get("tag_issues", []), lambda t: f"{t['file']} [{t['type']}]: {t['detail']}"),
             ("Broken Links", results["broken_links"], lambda b: f"{b['source']} -> [[{b['target']}]]"),
             ("Oversized Files (>45KB)", results["oversized_files"], lambda o: f"{o['file']} ({o['size']} bytes)"),
             ("Orphan Pages", results["orphan_pages"], lambda op: str(op)),
@@ -335,6 +376,7 @@ def main():
             bool(results["broken_links"])
             or bool(results["oversized_files"])
             or bool(results.get("structural_issues"))
+            or (args.verify_tags and bool(results.get("tag_issues")))
             or (args.verify_quotes and bool(results.get("unverified_quotes")))
         )
         if has_errors:

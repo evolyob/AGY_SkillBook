@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Knowledge Base Scaffolding & Assembly Engine for deep-base.
 
-Supports scaffolding initialization and parent-agent automated index compilation.
+Supports scaffolding initialization and lightweight index synchronization.
 """
 
 import argparse
@@ -9,7 +9,6 @@ from datetime import datetime
 import json
 from pathlib import Path
 import re
-import sys
 
 
 def default_wiki_path() -> str:
@@ -17,35 +16,16 @@ def default_wiki_path() -> str:
     return "~/.gemini/wiki" if gemini_wiki.exists() else "~/wiki"
 
 
-def load_config() -> tuple[dict, dict]:
+def load_config() -> dict:
     cfg_path = Path(__file__).resolve().parent / "config.json"
     try:
         raw = json.loads(cfg_path.read_text(encoding="utf-8"))
-        return raw.get("scaffold", {}), raw.get("assemble", {}).get("section_tag_map", {})
+        return raw.get("scaffold", {})
     except Exception:
-        return {}, {}
+        return {}
 
 
-CFG, SECTION_TAG_MAP = load_config()
-
-
-def resolve_section(tags: list[str], content: str = "", section_map: dict | None = None) -> tuple[str | None, str]:
-    mapping = section_map or SECTION_TAG_MAP
-    lower_tags = {t.lower() for t in tags}
-    lines = content.splitlines() if content else []
-    for sec, kw_list in mapping.items():
-        if lower_tags & set(kw_list):
-            if not content:
-                return sec, sec
-            for line in lines:
-                if line.startswith(sec):
-                    return sec, line
-            sec_clean = re.sub(r"^#+\s*(?:\d+(?:\.\d+)*\s*)?", "", sec).strip()
-            for line in lines:
-                if line.startswith("#") and sec_clean and sec_clean in line:
-                    return sec, line
-            return sec, ""
-    return None, ""
+CFG = load_config()
 
 
 def init_knowledge_base(target_path: Path):
@@ -101,7 +81,7 @@ def parse_entity_metadata(e_path: Path, meta_cache: dict) -> tuple[list[str], st
 
 
 def update_index(wiki_path: Path, metadata_json: Path | None = None) -> dict:
-    """Authoritative parent-agent index compilation to eliminate orphan pages."""
+    """Deterministic index update to refresh header metrics and register untabled entities."""
     target = wiki_path.expanduser().resolve()
     index_file = target / "index.md"
     if not index_file.exists():
@@ -143,49 +123,40 @@ def update_index(wiki_path: Path, metadata_json: Path | None = None) -> dict:
         except Exception:
             pass
 
-    custom_section_map = dict(SECTION_TAG_MAP)
-    taxonomy_file = target / "data" / "taxonomy.json"
-    if taxonomy_file.exists():
-        try:
-            t_data = json.loads(taxonomy_file.read_text(encoding="utf-8"))
-            if "section_tag_map" in t_data:
-                custom_section_map.update(t_data["section_tag_map"])
-        except Exception:
-            pass
-
     newly_added = []
     untabled = [e for e in entities if f"[[{e}]]" not in content]
-    for e in untabled:
-        tags, context = parse_entity_metadata(entities_dir / f"{e}.md", metadata_map)
-        primary_tag = tags[1] if len(tags) > 1 and tags[0] == "entity" else (tags[0] if tags else "tech")
-        row = f"| [[{e}]] | `#{primary_tag}` | {context} |"
-        sec_key, matched_line = resolve_section(tags, content, section_map=custom_section_map)
-        matched_pos = content.find(matched_line) if matched_line else -1
+    if untabled:
+        new_rows = []
+        for e in untabled:
+            tags, context = parse_entity_metadata(entities_dir / f"{e}.md", metadata_map)
+            primary_tag = tags[1] if len(tags) > 1 and tags[0] == "entity" else (tags[0] if tags else "tech")
+            new_rows.append(f"- [[{e}]]: `#{primary_tag}` - {context}")
+            newly_added.append(e)
 
-        if matched_pos != -1:
-            next_idx = content.find("\n### ", matched_pos + len(matched_line))
-            end_idx = next_idx if next_idx != -1 else len(content)
-            content = content[:matched_pos] + content[matched_pos:end_idx].rstrip() + "\n" + row + "\n" + content[end_idx:]
+        recent_idx = content.find("## Recent Entries")
+        if recent_idx != -1:
+            next_h2 = content.find("\n## ", recent_idx + 17)
+            insert_pt = next_h2 if next_h2 != -1 else len(content)
+            content = content[:insert_pt].rstrip() + "\n" + "\n".join(new_rows) + "\n\n" + content[insert_pt:].lstrip()
         else:
-            print(f"Warning: Section '{sec_key}' not found in index.md for entity '{e}'. Appending to Recent Entries.", file=sys.stderr)
-            recent_idx = content.find("## Recent Entries")
-            if recent_idx != -1:
-                next_h2 = content.find("\n## ", recent_idx + 17)
-                insert_pt = next_h2 if next_h2 != -1 else len(content)
-                content = content[:insert_pt].rstrip() + f"\n- {row}\n\n" + content[insert_pt:].lstrip()
-            else:
-                content = content.rstrip() + f"\n{row}\n"
-        newly_added.append(e)
+            content = content.rstrip() + "\n\n## Recent Entries\n" + "\n".join(new_rows) + "\n"
 
     index_file.write_text(content.strip() + "\n", encoding="utf-8")
-    return {"status": "SUCCESS", "index_file": str(index_file), "total_entities": len(entities), "total_topics": len(topics), "total_sources": len(sources), "newly_added_to_index": newly_added}
+    return {
+        "status": "SUCCESS",
+        "index_file": str(index_file),
+        "total_entities": len(entities),
+        "total_topics": len(topics),
+        "total_sources": len(sources),
+        "newly_added_to_index": newly_added
+    }
 
 
 def main():
     parser = argparse.ArgumentParser(description="Assemble & Scaffold Knowledge Base.")
     parser.add_argument("--init", action="store_true", help="Initialize a fresh knowledge base")
     parser.add_argument("--path", default=default_wiki_path(), help="Target path for knowledge base")
-    parser.add_argument("--update-index", action="store_true", help="Compile and update index.md with live entities and topics")
+    parser.add_argument("--update-index", action="store_true", help="Synchronize index.md metrics and append new entities")
     parser.add_argument("--metadata-json", help="Optional path to metadata JSON from subagent batch execution")
     parser.add_argument("--json", action="store_true", help="Output JSON result summary")
     args = parser.parse_args()
