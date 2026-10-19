@@ -7,7 +7,7 @@ dependencies: []
 # Deep Base: Personal Compounding Knowledge Base
 
 ## Objective
-Operate a local-first personal knowledge base at `~/.gemini/wiki/` (or `~/wiki/`). User-provided materials serve as primary ground truth before any external search. Synthesize technical knowledge cards with Bilingual Dual-Track Indexing (Traditional Chinese aliases and lead quotes for conversational triggering, English for technical tables and parameters).
+Operate a local-first personal knowledge base at `~/.gemini/wiki/` (or `~/wiki/`). User-provided materials serve as primary ground truth before any external search. Synthesize technical knowledge cards with Bilingual Dual-Track Indexing (Traditional Chinese aliases for direct CJK retrieval and conversational triggering, English for technical tables and parameters).
 
 ## 1. Directory Boundaries
 - `~/.gemini/wiki/raw/`: Immutable flattened sources (`articles/<slug>/chapters/*.md`, `assets/`) and monthly note buffers (`notes/YYYY-MM.md`, `notes/archive/YYYY-MM.md`).
