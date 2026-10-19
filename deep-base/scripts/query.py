@@ -84,6 +84,11 @@ def extract_heading(text: str) -> str:
     return ""
 
 
+def extract_meta_anchors(text: str) -> str:
+    m = re.search(r"^alias(?:es)?:\s*\[(.*?)\]", text, re.M)
+    return m.group(1).replace(",", " ") if m else ""
+
+
 def index_file(conn: sqlite3.Connection, wiki_root: Path, md_path: Path):
     """Index markdown file paragraphs and title metadata into SQLite FTS5 table."""
     try:
@@ -92,7 +97,8 @@ def index_file(conn: sqlite3.Connection, wiki_root: Path, md_path: Path):
         return
     rel = str(md_path.relative_to(wiki_root))
     stem = md_path.stem
-    title_str = tokenize_cjk(f"{stem} {stem.replace('_', ' ').replace('-', ' ')} {extract_heading(text)}")
+    anchors = extract_meta_anchors(text)
+    title_str = tokenize_cjk(f"{stem} {stem.replace('_', ' ').replace('-', ' ')} {extract_heading(text)} {anchors}")
     paras = [p.strip() for p in re.split(r"\n{2,}", text) if p.strip()]
     rows = [(rel, p, title_str, tokenize_cjk(p)) for p in paras]
     if rows:

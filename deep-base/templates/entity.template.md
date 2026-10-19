@@ -1,6 +1,6 @@
 ---
 tags: [entity]
-alias: [{{ALIASES}}]
+alias: [{{ZH_ALIASES}}, {{EN_ALIASES}}, {{ABBR}}]
 created: {{DATE}}
 updated: {{DATE}}
 fact_type: world # world | experience | observation
@@ -17,7 +17,7 @@ confidence: EXTRACTED
 
 # {{TITLE}}
 
-> One-sentence definitive statement of what this entity is.
+> (One-sentence definitive factual statement in Traditional Chinese describing what this entity is without formulaic AI syntax)
 
 ## Core Definition
 (Foundational description and domain positioning)
