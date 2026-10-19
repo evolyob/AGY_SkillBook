@@ -61,11 +61,9 @@ Every synthesized file under `~/wiki/wiki/` must stay within `45 KB` (`46,080 by
    - `subagent_parallel`: dispatch subagents by `recommended_batches`; each subagent writes exclusively to its assigned `wiki/entities/<entity_slug>.md` and returns JSON metadata to prevent race conditions on `index.md` and `log.md`. Parent agent automatically runs `assemble.py --update-index ~/wiki` upon batch completion to eliminate orphan pages and mount entries into domain tables.
    - **Pre-Dispatch Sharding Gate (`> 75 KB` Raw Input per Entity)**: Whenever the raw chapters mapped to a single entity exceed `75 KB` (or `>= 3` lessons), proactively split the target into sub-domain entity cards (Mode A) **before** invoking subagents so no synthesized card approaches the `45 KB` ceiling.
 3. **No-Elision Enumeration & Quantitative Fidelity**: Preserve 100% of enumerated items (modules, APIs, CLI flags, algorithm steps, clauses) in Markdown tables and retain exact numbers, bounds, formulas, and defaults so `wiki/` requires zero `raw/` lookback.
-4. **Bilingual Dual-Track Indexing Specification (中英雙軌對照標準)**:
-   - **Index Anchors (Frontmatter & Lead Quote)**: Every card under `wiki/` must include both Traditional Chinese and English aliases in `alias: [ZH_Term, EN_Term, Abbr]` and open with a 1-sentence factual Traditional Chinese lead quote (`> 引言`). This guarantees instant, high-weight CJK FTS5 keyword matching and natural conversational triggering without translation latency.
-   - **Specification Layer (Tables & Invariants)**: Detailed specification tables, CLI flags, APIs, configuration schemas, formulas, and code blocks MUST remain in **English** by default. Never force-translate technical identifiers into artificial Chinese prose.
-   - **Hook-Safe Chinese Phrasing**: Chinese text in headers and glossaries must use standard professional terminology (e.g., 程式碼, 資料庫, 範本, 審核) and strictly avoid formulaic AI syntax, ensuring 100% clean pass-through under active Anti-AI gates.
-   - **Glossary Bridge (`data/glossary.json`)**: Every entity must register `term_zh`, `term_en`, and bilingual aliases to support deterministic two-way entity resolution in `query.py`.
+4. **Bilingual Dual-Track Indexing Specification**:
+   - **Frontmatter Aliases**: When an entity has common Traditional Chinese and English terms, include both in `alias: [ZH_Term, EN_Term, Abbr]` to enable direct CJK FTS5 matching without translation latency.
+   - **Technical Precision**: Maintain specification tables, CLI flags, APIs, configuration schemas, formulas, and code blocks in **English** by default.
 
 ### 3.3 Pattern A Glossary Schema (`data/glossary.json`)
 After distillation or ingestion, list newly detected acronyms/terms for user confirmation before appending to `data/glossary.json` using these 7 invariant keys:

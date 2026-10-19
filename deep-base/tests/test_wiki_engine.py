@@ -11,6 +11,8 @@ from pathlib import Path
 
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS_DIR = SKILL_ROOT / "scripts"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
 
 
 class TestWikiEngine(unittest.TestCase):
@@ -292,6 +294,21 @@ class TestWikiEngine(unittest.TestCase):
         
         self.assertTrue(pos_25 < pos_web < pos_24)
         self.assertTrue(pos_24 < pos_linux)
+
+    def test_15_extract_meta_anchors(self):
+        from query import extract_meta_anchors
+
+        text1 = "---\ntags: [entity]\nalias: [ZH_Term, EN_Term, Abbr]\n---\n# Title\n"
+        self.assertEqual(extract_meta_anchors(text1), "ZH_Term  EN_Term  Abbr")
+
+        text2 = "---\ntags: [entity]\naliases: [foo, bar]\n---\n# Title\n"
+        self.assertEqual(extract_meta_anchors(text2), "foo  bar")
+
+        text3 = "# Just Title\nNo frontmatter here."
+        self.assertEqual(extract_meta_anchors(text3), "")
+
+        text4 = "---\ntags: [entity]\n---\n# Title\n"
+        self.assertEqual(extract_meta_anchors(text4), "")
 
 
 if __name__ == "__main__":
