@@ -30,11 +30,32 @@ def load_glossary(wiki_root: Path) -> dict:
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 
 
+def load_definitions(wiki_root: Path) -> dict:
+    """Load specialized compliance definitions and aliases from data/definitions.json."""
+    p = wiki_root / "data" / "definitions.json"
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+
+
 def find_glossary_term(terms: list[dict], query: str) -> dict | None:
-    """Resolve an entity by query matching primary names or aliases."""
+    """Resolve an entity by query matching primary names or aliases from glossary.json."""
     q = query.strip().lower()
     for t in terms:
         names = {str(t.get(k, "")).lower() for k in GLOSSARY_FIELDS} | {a.lower() for a in t.get("aliases", [])}
+        if q in names:
+            return t
+    return None
+
+
+def find_definition_term(terms: list[dict], query: str) -> dict | None:
+    """Resolve a term by query matching term_en, term_zh, or aliases from definitions.json."""
+    q = query.strip().lower()
+    for t in terms:
+        en = str(t.get("term_en", "")).lower()
+        zh = str(t.get("term_zh", "")).lower()
+        names = {en, zh} | {a.lower() for a in t.get("aliases", [])}
+        m = re.findall(r"\(([a-zA-Z0-9_\-]+)\)", en)
+        for paren in m:
+            names.add(paren.lower())
         if q in names:
             return t
     return None
@@ -55,9 +76,18 @@ def locate_entity_file(wiki_root: Path, term: dict | None, query: str) -> Path |
 
 
 def query_entity(wiki_root: Path, name: str) -> dict:
-    """Lookup entity metadata and corresponding markdown file."""
+    """Lookup entity metadata and corresponding markdown file across glossary and definitions."""
     glossary = load_glossary(wiki_root)
+    definitions = load_definitions(wiki_root)
+    
     term = find_glossary_term(glossary.get("terms", []), name)
+    source_type = "glossary" if term else None
+    
+    if not term:
+        term = find_definition_term(definitions.get("terms", []), name)
+        if term:
+            source_type = "definitions"
+            
     file_path = locate_entity_file(wiki_root, term, name)
     rel_file = str(file_path.relative_to(wiki_root)) if file_path else None
     content = file_path.read_text(encoding="utf-8", errors="replace") if file_path else ""
@@ -65,6 +95,7 @@ def query_entity(wiki_root: Path, name: str) -> dict:
         "entity": name,
         "matched": term is not None or file_path is not None,
         "term": term,
+        "source_type": source_type,
         "file": rel_file,
         "content": content,
     }
@@ -160,13 +191,16 @@ def render_entity_view(res: dict) -> str:
     if not res.get("matched"):
         return f"No entity or authoritative term matched '{res.get('entity', '')}'."
     t = res.get("term") or {}
-    lines = [f"### Entity Resolution: {res['entity']}\n"]
+    src_badge = " [Definitions]" if res.get("source_type") == "definitions" else ""
+    lines = [f"### Entity Resolution: {res['entity']}{src_badge}\n"]
     if t.get("term_zh") or t.get("term_en"):
         lines.append(f"- **Standard Term**: {t.get('term_zh', '')} ({t.get('term_en', '')})")
     for k, lbl in ENTITY_LABELS.items():
         if t.get(k):
             val = ", ".join(t[k]) if isinstance(t[k], list) else t[k]
             lines.append(f"- **{lbl}**: {val}")
+    if t.get("compliance_ref"):
+        lines.append(f"- **Compliance Reference**: {t['compliance_ref']}")
     if res.get("file"):
         lines.append(f"- **Entity File**: `{res['file']}`")
     if res.get("content"):
