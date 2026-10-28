@@ -137,17 +137,20 @@ def extract_pdf(path: Path) -> tuple[str, dict]:
     reader = pypdf.PdfReader(str(path))
     total_pages = len(reader.pages)
     raw_pages = [page.extract_text() or "" for page in reader.pages]
+    visual_pages = [idx + 1 for idx, page in enumerate(reader.pages) if len(page.images) > 0]
     avg_chars = sum(len(p.strip()) for p in raw_pages) // max(1, total_pages)
+    meta = {"total_pages": total_pages, "avg_chars_per_page": avg_chars}
+    if visual_pages:
+        meta["visual_pages"] = visual_pages
     if total_pages > 0 and avg_chars < MIN_CHARS_PER_PAGE_OCR:
         return "", {
             "error": "OCR_REQUIRED",
             "message": f"Average character density ({avg_chars} chars/page < {MIN_CHARS_PER_PAGE_OCR}) indicates a scanned PDF.",
-            "total_pages": total_pages,
-            "avg_chars_per_page": avg_chars,
+            **meta,
         }
     full_text = unwrap_broken_lines("\n".join(strip_running_headers_and_toc(raw_pages)))
     full_text = re.sub(r"(?m)^#\s+", "// ", full_text)
-    return full_text, {"total_pages": total_pages, "avg_chars_per_page": avg_chars}
+    return full_text, meta
 
 
 def extract_document(path: Path) -> tuple[str, dict]:
@@ -337,6 +340,8 @@ def main():
         "recommended_batches": batches,
         "chapters": catalog,
     }
+    if "visual_pages" in meta:
+        report["visual_pages"] = meta["visual_pages"]
 
     if args.list_only or not args.split_dir:
         print(json.dumps(report, ensure_ascii=False, indent=2))
