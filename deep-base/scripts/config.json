@@ -71,6 +71,23 @@
       "page_num": "^(?:[-－—–]\\s*\\d+\\s*[-－—–]|\\(\\s*共\\s*\\d+\\s*頁\\s*\\)|Page\\s+\\d+(?:\\s+of\\s+\\d+)?|:20\\d{2}|CNS\\s+\\d+[\\d\\s\\-:]*)$",
       "heading": "^(?:#{1,2}\\s+.+|第\\s*[0-9一二三四五六七八九十百]+\\s*[章節編篇條](?:\\s+.+)?|(?:Chapter|Section|Module|Lesson|Domain|Unit)\\s+[0-9A-Z]+(?:[:\\s-].*)?|\\d{1,2}\\.\\s*(?:[\\u4e00-\\u9fffA-Za-z].*)|[一二三四五六七八九十]+、\\s*[\\u4e00-\\u9fffA-Za-z].*|(?:前言|簡介|附錄\\s*[A-Z0-9一二三四五六七八九十]+|參考資料|參考文獻|名詞對照)(?:\\s+.*)?$)$",
       "sub_heading": "^(?:#{2,4}\\s+.+|\\d{1,2}\\.\\d+(?:\\.\\d+)?\\s+[\\u4e00-\\u9fffA-Za-z].+)$"
+    },
+    "raw_slice_schema": {
+      "deconstruction_contracts": {
+        "metric_chart": {
+          "description": "Deconstruct quantitative bar, line, and pie charts into structured data tables",
+          "markdown_header": "| 統計指標/維度 (Metric/Dimension) | 測量數值與單位 (Value) | 基準線對比增減 (Delta) | 實體脈絡與關鍵成因 (Context) |"
+        },
+        "timeline_gantt": {
+          "description": "Deconstruct Gantt charts, roadmaps, and phase schedules into dependency tables",
+          "markdown_header": "| 階段代號 (Phase) | 任務名稱 (Task) | 工期/時程 (Duration) | 前置依賴項 (Prerequisites) | 負責角色與關鍵交付物 (Owner/Deliverables) |"
+        },
+        "topology_diagram": {
+          "description": "Deconstruct architecture, network, and dataflow diagrams into native Mermaid and flow tables",
+          "mermaid_type": "flowchart TD or flowchart LR",
+          "markdown_header": "| 傳輸來源節點 (Source) | 目標節點 (Destination) | 安全協定與通訊埠 (Protocol/Port) | 資料流動作與防護檢核 (Action/Controls) |"
+        }
+      }
     }
   },
   "sanitize": {
