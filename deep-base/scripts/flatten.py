@@ -35,7 +35,7 @@ PATS = CFG.get("patterns", {})
 TOC_DOT_LEADER_RX = re.compile(PATS.get("toc_dot", r"(?:\.{3,}|(?:\.\s*){3,}|·{3,}|…{2,})\s*\d+\s*$"))
 PAGE_NUM_RX = re.compile(PATS.get("page_num", r"^(?:[-－—–]\s*\d+\s*[-－—–]|Page\s+\d+)$"), re.I)
 HEADING_RX = re.compile(PATS.get("heading", r"^#{1,2}\s+.+$"), re.M)
-SUB_HEADING_RX = re.compile(PATS.get("sub_heading", r"^#{2,4}\s+.+$"), re.M)
+SUB_HEADING_RX = re.compile(PATS.get("sub_heading", r"^(?:#{2,4}\s+.+|(?:\d+\.\d+|\b[A-Z]{2,3}-\d+)\s+.+)$"), re.M)
 SECRET_TOKEN_RX = re.compile(HYGIENE_PATS.get("secret_token", r"\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35})\b"))
 PRIVATE_KEY_RX = re.compile(HYGIENE_PATS.get("private_key", r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----"))
 TW_MOBILE_RX = re.compile(HYGIENE_PATS.get("tw_phone", r"(?<!\d)09\d{2}[-\s]?\d{3}[-\s]?\d{3}(?!\d)"))
@@ -109,25 +109,79 @@ def strip_running_headers_and_toc(pages: list[str]) -> list[str]:
 
 
 STRUCT_SOLO_RX = re.compile(r"^(?:Module|Lesson|Chapter|Section|Domain|Unit)\s+[0-9A-Z]+$", re.I)
+COMMON_SUBSECTIONS = {
+    "overview", "purpose", "good practice", "definitions", "examples",
+    "customized approach objective", "sections", "document changes",
+    "testing procedures", "applicability notes", "defined approach requirements",
+    "defined approach testing procedures"
+}
+
+
+def elevate_body_headings(body: str) -> str:
+    """Elevate standard sections, requirement numbers, and keywords to Markdown headings."""
+    lines = body.splitlines()
+    out: list[str] = []
+    in_fence = False
+
+    for ln in lines:
+        s = ln.strip()
+        if re.match(r"^\s*(```|~~~)", s):
+            in_fence = not in_fence
+            out.append(ln)
+            continue
+        if in_fence or not s or s.startswith(("#", ">", "|", "---", "***")):
+            out.append(ln)
+            continue
+
+        if s.lower() in COMMON_SUBSECTIONS:
+            out.append(f"### {s}")
+            continue
+
+        if re.match(r"^Requirement\s+\d+[:\s]", s, re.I):
+            out.append(f"## {s}")
+            continue
+
+        if re.match(r"^\d{1,2}\.\d{1,2}\s+[A-Za-z\u4e00-\u9fff]", s) and len(s) <= 120 and not s.endswith(("。", "！", "？", ".", "!", "?")):
+            out.append(f"## {s}")
+            continue
+
+        if re.match(r"^\d{1,2}\.\d{1,2}\.\d{1,2}\s+[A-Za-z\u4e00-\u9fff]", s) and len(s) <= 150:
+            out.append(f"### {s}")
+            continue
+
+        if re.match(r"^第\s*[0-9一二三四五六七八九十]+\s*[節條段](?:[:\s].*)?$", s) and len(s) <= 60:
+            out.append(f"## {s}")
+            continue
+
+        out.append(ln)
+
+    return "\n".join(out)
 
 
 def unwrap_broken_lines(text: str) -> str:
-    """Rejoin mid-sentence PDF line wraps while preserving headings, lists, and tables."""
-    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    """Rejoin mid-sentence PDF line wraps while preserving paragraphs, headings, lists, and tables."""
+    raw_lines = text.splitlines()
     out: list[str] = []
-    for ln in lines:
-        if out and STRUCT_SOLO_RX.match(out[-1]) and not is_valid_heading(ln) and len(ln) <= 75:
+    for raw_ln in raw_lines:
+        ln = raw_ln.strip()
+        if not ln:
+            if out and out[-1] != "":
+                out.append("")
+            continue
+        if out and out[-1] != "" and STRUCT_SOLO_RX.match(out[-1]) and not is_valid_heading(ln) and len(ln) <= 75:
             out[-1] = f"{out[-1]}: {ln}"
             continue
-        is_struct = any(ln.startswith(p) for p in ("#", ">", "|", "```", "---")) or bool(re.match(r"^(?:[-*+]|\(\d+\)|\([a-zA-Z]\)|\d+[\.\)])\s*", ln)) or is_valid_heading(ln)
-        prev = out[-1] if out else ""
+        is_struct = any(ln.startswith(p) for p in ("#", ">", "|", "```", "---")) or bool(re.match(r"^(?:[-*+]|●|\(\d+\)|\([a-zA-Z]\)|\d+[\.\)])\s*", ln)) or is_valid_heading(ln)
+        prev = out[-1] if (out and out[-1] != "") else ""
         prev_struct = any(prev.startswith(p) for p in ("#", ">", "|", "```", "---")) or is_valid_heading(prev)
-        can_join = bool(out) and not is_struct and not prev_struct and not prev.endswith((".", ":", "!", "?", ";", "。", "！", "？", "；", "：")) and (ln[0].islower() or prev.endswith("-") or (len(prev) >= 28 and "\u4e00" <= ln[0] <= "\u9fff"))
+        can_join = bool(prev) and not is_struct and not prev_struct and not prev.endswith((".", ":", "!", "?", ";", "。", "！", "？", "；", "：")) and (ln[0].islower() or prev.endswith("-") or (len(prev) >= 28 and "\u4e00" <= ln[0] <= "\u9fff"))
         if can_join:
             sep = "" if ("\u4e00" <= prev[-1] <= "\u9fff" and "\u4e00" <= ln[0] <= "\u9fff") else " "
             out[-1] += sep + ln
         else:
             out.append(ln)
+    while out and out[-1] == "":
+        out.pop()
     return "\n".join(out)
 
 
@@ -149,7 +203,6 @@ def extract_pdf(path: Path) -> tuple[str, dict]:
             **meta,
         }
     full_text = unwrap_broken_lines("\n".join(strip_running_headers_and_toc(raw_pages)))
-    full_text = re.sub(r"(?m)^#\s+", "// ", full_text)
     return full_text, meta
 
 
@@ -267,7 +320,8 @@ def segment_chapters(text: str, redact: bool = True) -> list[dict]:
     chapters = []
     for i, (title, body) in enumerate(raw_sections, 1):
         safe_slug = re.sub(r'[\\/*?:"<>|#\s]+', "_", title).strip("_")[:45].strip("_") or f"section_{i:02d}"
-        full_md = f"# {title}\n\n{body}\n"
+        formatted_body = elevate_body_headings(body.strip())
+        full_md = f"# {title}\n\n{formatted_body}\n"
         chapters.append({
             "index": i,
             "title": title,
