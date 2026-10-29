@@ -36,16 +36,20 @@ TOC_DOT_LEADER_RX = re.compile(PATS.get("toc_dot", r"(?:\.{3,}|(?:\.\s*){3,}|·{
 PAGE_NUM_RX = re.compile(PATS.get("page_num", r"^(?:[-－—–]\s*\d+\s*[-－—–]|Page\s+\d+)$"), re.I)
 HEADING_RX = re.compile(PATS.get("heading", r"^#{1,2}\s+.+$"), re.M)
 SUB_HEADING_RX = re.compile(PATS.get("sub_heading", r"^(?:#{2,4}\s+.+|(?:\d+\.\d+|\b[A-Z]{2,3}-\d+)\s+.+)$"), re.M)
+FENCE_LINE_RX = re.compile(r"^\s*(```|~~~)")
+MD_BLOCK_RX = re.compile(r"^(?:[-*+]|●|\(\d+\)|\([a-zA-Z]\)|\d+[\.\)])\s*")
 SECRET_TOKEN_RX = re.compile(HYGIENE_PATS.get("secret_token", r"\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35})\b"))
 PRIVATE_KEY_RX = re.compile(HYGIENE_PATS.get("private_key", r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----"))
 TW_MOBILE_RX = re.compile(HYGIENE_PATS.get("tw_phone", r"(?<!\d)09\d{2}[-\s]?\d{3}[-\s]?\d{3}(?!\d)"))
 
 
+HOME_STR = str(Path.home())
+
+
 def sanitize_sensitive_text(text: str, redact: bool = True) -> str:
     """Scrub host user-home absolute paths, private keys, API tokens, personal mobile numbers, and markdown syntax at Gate 1."""
-    home_str = str(Path.home())
-    if home_str and home_str != "/":
-        text = text.replace(home_str, "~")
+    if HOME_STR and HOME_STR != "/":
+        text = text.replace(HOME_STR, "~")
     if redact:
         text = PRIVATE_KEY_RX.sub("[REDACTED_PRIVATE_KEY]", text)
         text = SECRET_TOKEN_RX.sub("[REDACTED_SECRET]", text)
@@ -115,6 +119,12 @@ COMMON_SUBSECTIONS = {
     "testing procedures", "applicability notes", "defined approach requirements",
     "defined approach testing procedures"
 }
+ELEVATE_RULES = [
+    ("##", re.compile(r"^Requirement\s+\d+[:\s]", re.I), 200, None),
+    ("##", re.compile(r"^\d{1,2}\.\d{1,2}\s+(?!(?:億|萬|元|公尺|公分|kg|ms|%|[a-z0-9_.]+\s*=))[A-Za-z\u4e00-\u9fff]"), 120, ("。", "！", "？", ".", "!", "?")),
+    ("###", re.compile(r"^\d{1,2}\.\d{1,2}\.\d{1,2}\s+(?!(?:億|萬|元|公尺|公分|kg|ms|%|[a-z0-9_.]+\s*=))[A-Za-z\u4e00-\u9fff]"), 150, None),
+    ("##", re.compile(r"^第\s*[0-9一二三四五六七八九十]+\s*[節條段](?:[:\s].*)?$"), 60, None),
+]
 
 
 def elevate_body_headings(body: str) -> str:
@@ -125,7 +135,7 @@ def elevate_body_headings(body: str) -> str:
 
     for ln in lines:
         s = ln.strip()
-        if re.match(r"^\s*(```|~~~)", s):
+        if FENCE_LINE_RX.match(s):
             in_fence = not in_fence
             out.append(ln)
             continue
@@ -137,23 +147,15 @@ def elevate_body_headings(body: str) -> str:
             out.append(f"### {s}")
             continue
 
-        if re.match(r"^Requirement\s+\d+[:\s]", s, re.I):
-            out.append(f"## {s}")
-            continue
+        matched = False
+        for prefix, rx, max_len, end_punct in ELEVATE_RULES:
+            if len(s) <= max_len and (not end_punct or not s.endswith(end_punct)) and rx.match(s):
+                out.append(f"{prefix} {s}")
+                matched = True
+                break
 
-        if re.match(r"^\d{1,2}\.\d{1,2}\s+[A-Za-z\u4e00-\u9fff]", s) and len(s) <= 120 and not s.endswith(("。", "！", "？", ".", "!", "?")):
-            out.append(f"## {s}")
-            continue
-
-        if re.match(r"^\d{1,2}\.\d{1,2}\.\d{1,2}\s+[A-Za-z\u4e00-\u9fff]", s) and len(s) <= 150:
-            out.append(f"### {s}")
-            continue
-
-        if re.match(r"^第\s*[0-9一二三四五六七八九十]+\s*[節條段](?:[:\s].*)?$", s) and len(s) <= 60:
-            out.append(f"## {s}")
-            continue
-
-        out.append(ln)
+        if not matched:
+            out.append(ln)
 
     return "\n".join(out)
 
@@ -171,7 +173,7 @@ def unwrap_broken_lines(text: str) -> str:
         if out and out[-1] != "" and STRUCT_SOLO_RX.match(out[-1]) and not is_valid_heading(ln) and len(ln) <= 75:
             out[-1] = f"{out[-1]}: {ln}"
             continue
-        is_struct = any(ln.startswith(p) for p in ("#", ">", "|", "```", "---")) or bool(re.match(r"^(?:[-*+]|●|\(\d+\)|\([a-zA-Z]\)|\d+[\.\)])\s*", ln)) or is_valid_heading(ln)
+        is_struct = any(ln.startswith(p) for p in ("#", ">", "|", "```", "---")) or bool(MD_BLOCK_RX.match(ln)) or is_valid_heading(ln)
         prev = out[-1] if (out and out[-1] != "") else ""
         prev_struct = any(prev.startswith(p) for p in ("#", ">", "|", "```", "---")) or is_valid_heading(prev)
         can_join = bool(prev) and not is_struct and not prev_struct and not prev.endswith((".", ":", "!", "?", ";", "。", "！", "？", "；", "：")) and (ln[0].islower() or prev.endswith("-") or (len(prev) >= 28 and "\u4e00" <= ln[0] <= "\u9fff"))
@@ -251,9 +253,6 @@ def pack_segments_by_budget(title: str, segments: list[str]) -> list[tuple[str, 
         label = f"{title} (Part {len(parts) + 1})" if parts else title
         parts.append((label, "\n".join(buf).strip()))
     return parts
-
-
-FENCE_LINE_RX = re.compile(r"^\s*(```|~~~)")
 
 
 def non_fenced_indices(lines: list[str], predicate) -> list[int]:
@@ -406,8 +405,7 @@ def main():
     for c in chapters:
         (out_dir / c["file"]).write_text(c["content"], encoding="utf-8")
     (out_dir / "index.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    home_str = str(Path.home())
-    out_str = str(out_dir).replace(home_str, "~", 1) if str(out_dir).startswith(home_str) else str(out_dir)
+    out_str = str(out_dir).replace(HOME_STR, "~", 1) if HOME_STR and str(out_dir).startswith(HOME_STR) else str(out_dir)
     report["output_dir"] = out_str
     print(json.dumps(report, ensure_ascii=False, indent=2) if args.json else f"Flattened {src_path.name} -> {len(chapters)} chapters in {out_str} (mode: {dispatch_mode})")
 
