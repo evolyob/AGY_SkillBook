@@ -56,10 +56,18 @@ def init_knowledge_base(target_path: Path):
     if not log_path.exists():
         log_path.write_text(f"# Wiki Operation Log\n- {today}: Initialized personal knowledge base structure at {display_target}.\n", encoding="utf-8")
 
-    glossary_path = target / "data" / "glossary.json"
-    if not glossary_path.exists():
-        initial_glossary = {"version": "1.0.0", "last_updated": today, "terms": CFG.get("initial_terms", [])}
-        glossary_path.write_text(json.dumps(initial_glossary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    glossary_dir = target / "data" / "glossary"
+    definitions_dir = target / "data" / "definitions"
+    glossary_dir.mkdir(parents=True, exist_ok=True)
+    definitions_dir.mkdir(parents=True, exist_ok=True)
+    for g_shard in ["tech.json", "compliance.json"]:
+        p = glossary_dir / g_shard
+        if not p.exists():
+            p.write_text("[]\n", encoding="utf-8")
+    for d_shard in ["tech.json", "compliance.json"]:
+        p = definitions_dir / d_shard
+        if not p.exists():
+            p.write_text("[]\n", encoding="utf-8")
     print(f"Knowledge base successfully initialized at {target}")
 
 
@@ -101,11 +109,15 @@ def update_index(wiki_path: Path, metadata_json: Path | None = None) -> dict:
     content = header_rx.sub(new_header, content) if header_rx.search(content) else content
 
     metadata_map = {}
-    glossary_file = target / "data" / "glossary.json"
-    if glossary_file.exists():
+    glossary_dir = target / "data" / "glossary"
+    glossary_files = sorted(glossary_dir.glob("*.json")) if glossary_dir.is_dir() else ([target / "data" / "glossary.json"] if (target / "data" / "glossary.json").exists() else [])
+    for g_file in glossary_files:
         try:
-            g_data = json.loads(glossary_file.read_text(encoding="utf-8"))
-            for term in g_data.get("terms", []):
+            raw_data = json.loads(g_file.read_text(encoding="utf-8"))
+            terms = raw_data if isinstance(raw_data, list) else raw_data.get("terms", [])
+            for term in terms:
+                if not isinstance(term, dict):
+                    continue
                 ent = term.get("entity")
                 if ent and ent not in metadata_map:
                     metadata_map[ent] = {

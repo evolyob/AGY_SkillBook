@@ -38,7 +38,9 @@ class TestWikiEngine(unittest.TestCase):
         self.assertTrue((self.test_dir / "raw" / "articles").is_dir())
         self.assertTrue((self.test_dir / "wiki" / "entities").is_dir())
         self.assertTrue((self.test_dir / "wiki" / "comparisons").is_dir())
-        self.assertTrue((self.test_dir / "data" / "glossary.json").exists())
+        self.assertTrue((self.test_dir / "data" / "glossary").is_dir())
+        self.assertTrue((self.test_dir / "data" / "glossary" / "tech.json").exists())
+        self.assertTrue((self.test_dir / "data" / "glossary" / "compliance.json").exists())
 
     def test_02_cache_check_and_update(self):
         self.init_wiki()

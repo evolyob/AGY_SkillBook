@@ -12,7 +12,8 @@ Operate a local-first personal knowledge base at `~/.gemini/wiki/` (or `~/wiki/`
 ## 1. Directory Boundaries
 - `~/.gemini/wiki/raw/`: Immutable flattened sources (`articles/<slug>/chapters/*.md`, `assets/`) and monthly note buffers (`notes/YYYY-MM.md`, `notes/archive/YYYY-MM.md`).
 - `~/.gemini/wiki/wiki/`: Synthesized compounding cards (`<= 45 KB` per file: `entities/`, `topics/`, `sources/`, `comparisons/`, `synthesis/`, `queries/`).
-- `~/.gemini/wiki/data/glossary.json`: Pattern A flat terminology and alias array with domain `tags` (`ai`, `tech`, `rmf`, `compliance`, `work`).
+- `~/.gemini/wiki/data/glossary/{tech,compliance}.json`: Pattern A flat terminology shards with domain `tags` (`ai`, `tech`, `rmf` -> `tech.json`; `compliance`, `work` -> `compliance.json`).
+- `~/.gemini/wiki/data/definitions/{tech,compliance}.json`: Specialized statutory & baseline definition shards.
 - `~/.gemini/wiki/index.md`, `~/.gemini/wiki/log.md`, `~/.gemini/wiki/.wiki-cache.json`: Global index, append-only audit trail, and SHA-256 cache registry.
 
 ## 2. Core Workflows & CLI Routing

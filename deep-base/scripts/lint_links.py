@@ -204,27 +204,31 @@ def verify_entity_tags(content: str, rel_file: str) -> list[dict]:
 
 
 def verify_glossary_tags(wiki_root: Path) -> list[dict]:
-    """Verify data/glossary.json terms adhere to canonical domains."""
-    glossary_path = wiki_root / "data" / "glossary.json"
-    if not glossary_path.exists():
-        return []
-    try:
-        raw_data = json.loads(glossary_path.read_text(encoding="utf-8"))
-        data = raw_data if isinstance(raw_data, list) else raw_data.get("terms", [])
-    except Exception as e:
-        return [{"file": "data/glossary.json", "type": "invalid_json", "detail": str(e)}]
+    """Verify data/glossary/*.json (or data/glossary.json) terms adhere to canonical domains."""
+    glossary_dir = wiki_root / "data" / "glossary"
+    files = sorted(glossary_dir.glob("*.json")) if glossary_dir.is_dir() else [wiki_root / "data" / "glossary.json"]
     issues = []
-    for item in data:
-        if not isinstance(item, dict):
+    for f in files:
+        if not f.exists():
             continue
-        term = item.get("abbr") or item.get("term_en") or item.get("entity") or "unknown"
-        tags = item.get("tags", [])
-        if not tags:
-            issues.append({"file": "data/glossary.json", "type": "empty_glossary_tags", "detail": f"Term '{term}' has empty tags"})
+        rel_file = str(f.relative_to(wiki_root))
+        try:
+            raw_data = json.loads(f.read_text(encoding="utf-8"))
+            data = raw_data if isinstance(raw_data, list) else raw_data.get("terms", [])
+        except Exception as e:
+            issues.append({"file": rel_file, "type": "invalid_json", "detail": str(e)})
             continue
-        invalid = [t for t in tags if t not in VALID_DOMAINS]
-        if invalid:
-            issues.append({"file": "data/glossary.json", "type": "invalid_glossary_domain", "detail": f"Term '{term}' has non-canonical domain tags: {invalid}"})
+        for item in data:
+            if not isinstance(item, dict):
+                continue
+            term = item.get("abbr") or item.get("term_en") or item.get("entity") or "unknown"
+            tags = item.get("tags", [])
+            if not tags:
+                issues.append({"file": rel_file, "type": "empty_glossary_tags", "detail": f"Term '{term}' has empty tags"})
+                continue
+            invalid = [t for t in tags if t not in VALID_DOMAINS]
+            if invalid:
+                issues.append({"file": rel_file, "type": "invalid_glossary_domain", "detail": f"Term '{term}' has non-canonical domain tags: {invalid}"})
     return issues
 
 

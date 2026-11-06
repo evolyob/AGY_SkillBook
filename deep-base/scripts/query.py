@@ -25,15 +25,41 @@ ENTITY_LABELS = CFG.get("entity_labels", {"abbr": "Abbreviation", "aliases": "Al
 
 
 def load_glossary(wiki_root: Path) -> dict:
-    """Load terminology glossary from data/glossary.json."""
+    """Load terminology glossary from data/glossary/*.json or fallback to data/glossary.json."""
+    terms = []
+    glossary_dir = wiki_root / "data" / "glossary"
+    if glossary_dir.is_dir():
+        for f in sorted(glossary_dir.glob("*.json")):
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                terms.extend(data if isinstance(data, list) else data.get("terms", []))
+            except Exception:
+                pass
+        return {"terms": terms}
     p = wiki_root / "data" / "glossary.json"
-    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    if p.exists():
+        raw = json.loads(p.read_text(encoding="utf-8"))
+        return {"terms": raw if isinstance(raw, list) else raw.get("terms", [])}
+    return {"terms": []}
 
 
 def load_definitions(wiki_root: Path) -> dict:
-    """Load specialized compliance definitions and aliases from data/definitions.json."""
+    """Load specialized compliance definitions from data/definitions/*.json or fallback to data/definitions.json."""
+    terms = []
+    definitions_dir = wiki_root / "data" / "definitions"
+    if definitions_dir.is_dir():
+        for f in sorted(definitions_dir.glob("*.json")):
+            try:
+                data = json.loads(f.read_text(encoding="utf-8"))
+                terms.extend(data if isinstance(data, list) else data.get("terms", []))
+            except Exception:
+                pass
+        return {"terms": terms}
     p = wiki_root / "data" / "definitions.json"
-    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    if p.exists():
+        raw = json.loads(p.read_text(encoding="utf-8"))
+        return {"terms": raw if isinstance(raw, list) else raw.get("terms", [])}
+    return {"terms": []}
 
 
 def find_glossary_term(terms: list[dict], query: str) -> dict | None:
@@ -52,10 +78,10 @@ def find_definition_term(terms: list[dict], query: str) -> dict | None:
     for t in terms:
         en = str(t.get("term_en", "")).lower()
         zh = str(t.get("term_zh", "")).lower()
-        names = {en, zh} | {a.lower() for a in t.get("aliases", [])}
-        m = re.findall(r"\(([a-zA-Z0-9_\-]+)\)", en)
-        for paren in m:
-            names.add(paren.lower())
+        clean_en = re.sub(r"\s*\(.*?\)", "", en).strip()
+        clean_zh = re.sub(r"\s*\(.*?\)", "", zh).strip()
+        parens = re.findall(r"\((.*?)\)", en) + re.findall(r"\((.*?)\)", zh)
+        names = {en, zh, clean_en, clean_zh} | {p.lower().strip() for p in parens} | {a.lower() for a in t.get("aliases", [])}
         if q in names:
             return t
     return None

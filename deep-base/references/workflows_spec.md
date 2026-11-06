@@ -42,7 +42,7 @@ Every synthesized file under `~/wiki/wiki/` must stay within `45 KB` (`46,080 by
 ### 3.1 Daily Fragmented Notes & Tag Anatomy (`note` & `distill`)
 1. **Monthly Buffer Creation**: On the first note of a month, create `~/wiki/raw/notes/YYYY-MM.md` with `# Notes YYYY-MM` if absent.
 2. **Tag Anatomy (`#<domain>/<entity_slug>`)**:
-   - `<domain>` (e.g., `ai`, `tech`, `rmf`, `compliance`, `work`): maps to the `tags` array in `data/glossary.json`.
+   - `<domain>` (e.g., `ai`, `tech`, `rmf`, `compliance`, `work`): maps to the `tags` array in `data/glossary/{tech,compliance}.json`.
    - `<entity_slug>` (e.g., `ebpf`, `iso27001`): maps directly to target card `wiki/entities/<entity_slug>.md`.
 3. **Header-Only Block Schema**: Split blocks strictly on `^## \d{4}-\d{2}-\d{2}` headers (do not use `---` horizontal rules as block delimiters):
    ```markdown
@@ -68,8 +68,8 @@ Every synthesized file under `~/wiki/wiki/` must stay within `45 KB` (`46,080 by
      - **No Mixed-Language Mutations**: Never create fragmented mixed-language cards by translating parts (e.g. tables) while leaving other parts in another language. Maintain 100% document-level language coherence.
    - **Frontmatter Aliases for Dual-Track Retrieval**: For English cards, include common Traditional Chinese terms and abbreviations in `alias: [ZH_Term, EN_Term, Abbr]` to enable direct CJK FTS5 matching and conversational triggering without mutating card body prose.
 
-### 3.3 Pattern A Glossary Schema (`data/glossary.json`)
-After distillation or ingestion, list newly detected acronyms/terms for user confirmation before appending to `data/glossary.json` using these 7 invariant keys:
+### 3.3 Pattern A Glossary Schema (`data/glossary/{tech,compliance}.json`)
+After distillation or ingestion, list newly detected acronyms/terms for user confirmation before appending to `data/glossary/tech.json` (for `tags[0]` in `tech`, `ai`, `rmf`) or `data/glossary/compliance.json` (for `tags[0]` in `compliance`, `work`) using these 7 invariant keys:
 ```json
 {
   "term_zh": "模型上下文協定",

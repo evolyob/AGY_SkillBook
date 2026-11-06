@@ -13,7 +13,7 @@
 - **Secret & PII Redaction**: Strip or replace personal identifiers and credentials with `<REDACTED>` before ingestion or note buffering.
 
 ## Execution
-- File write operations are constrained to `~/.gemini/wiki/raw/`, `~/.gemini/wiki/wiki/` (including `entities/`, `topics/`, `sources/`, `comparisons/`, `synthesis/`, `queries/`, `archive/`), `~/.gemini/wiki/data/` (including `glossary.json`), `~/.gemini/wiki/index.md`, `~/.gemini/wiki/log.md`, `~/.gemini/wiki/.wiki-schema.md`, and `~/.gemini/wiki/.wiki-cache.json`.
+- File write operations are constrained to `~/.gemini/wiki/raw/`, `~/.gemini/wiki/wiki/` (including `entities/`, `topics/`, `sources/`, `comparisons/`, `synthesis/`, `queries/`, `archive/`), `~/.gemini/wiki/data/` (including `glossary/` and `definitions/` shards), `~/.gemini/wiki/index.md`, `~/.gemini/wiki/log.md`, `~/.gemini/wiki/.wiki-schema.md`, and `~/.gemini/wiki/.wiki-cache.json`.
 - Cache mutation adopts atomic write-replace (`.wiki-cache.tmp.<pid>` -> `.wiki-cache.json`) and aborts on corrupt cache files to protect existing indexing state.
 - Link and quote validation in `scripts/lint_links.py` performs local-only deterministic verification against raw sources without remote network calls.
 - In-memory SQLite FTS5 queries in `scripts/query.py` operate ephemerally with zero persistent disk overhead.
