@@ -25,41 +25,49 @@ ENTITY_LABELS = CFG.get("entity_labels", {"abbr": "Abbreviation", "aliases": "Al
 
 
 def load_glossary(wiki_root: Path) -> dict:
-    """Load terminology glossary from data/glossary/*.json or fallback to data/glossary.json."""
-    terms = []
+    """Load terminology glossary from data/glossary/*.json shards or data/glossary.json."""
     glossary_dir = wiki_root / "data" / "glossary"
     if glossary_dir.is_dir():
+        terms = []
+        seen = set()
         for f in sorted(glossary_dir.glob("*.json")):
             try:
-                data = json.loads(f.read_text(encoding="utf-8"))
-                terms.extend(data if isinstance(data, list) else data.get("terms", []))
+                items = json.loads(f.read_text(encoding="utf-8"))
+                for it in (items if isinstance(items, list) else items.get("terms", [])):
+                    key = (it.get("term_zh"), it.get("abbr"), it.get("entity"))
+                    if key not in seen:
+                        seen.add(key)
+                        terms.append(it)
             except Exception:
                 pass
-        return {"terms": terms}
+        if terms:
+            return {"version": "2.0.0", "terms": terms}
+
     p = wiki_root / "data" / "glossary.json"
-    if p.exists():
-        raw = json.loads(p.read_text(encoding="utf-8"))
-        return {"terms": raw if isinstance(raw, list) else raw.get("terms", [])}
-    return {"terms": []}
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 
 
 def load_definitions(wiki_root: Path) -> dict:
-    """Load specialized compliance definitions from data/definitions/*.json or fallback to data/definitions.json."""
-    terms = []
-    definitions_dir = wiki_root / "data" / "definitions"
-    if definitions_dir.is_dir():
-        for f in sorted(definitions_dir.glob("*.json")):
+    """Load specialized compliance definitions and aliases from data/definitions/*.json shards or data/definitions.json."""
+    defs_dir = wiki_root / "data" / "definitions"
+    if defs_dir.is_dir():
+        terms = []
+        seen = set()
+        for f in sorted(defs_dir.glob("*.json")):
             try:
-                data = json.loads(f.read_text(encoding="utf-8"))
-                terms.extend(data if isinstance(data, list) else data.get("terms", []))
+                items = json.loads(f.read_text(encoding="utf-8"))
+                for it in (items if isinstance(items, list) else items.get("terms", [])):
+                    key = (it.get("term_zh"), it.get("term_en"))
+                    if key not in seen:
+                        seen.add(key)
+                        terms.append(it)
             except Exception:
                 pass
-        return {"terms": terms}
+        if terms:
+            return {"version": "2.2.0", "terms": terms}
+
     p = wiki_root / "data" / "definitions.json"
-    if p.exists():
-        raw = json.loads(p.read_text(encoding="utf-8"))
-        return {"terms": raw if isinstance(raw, list) else raw.get("terms", [])}
-    return {"terms": []}
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
 
 
 def find_glossary_term(terms: list[dict], query: str) -> dict | None:
@@ -81,7 +89,7 @@ def find_definition_term(terms: list[dict], query: str) -> dict | None:
         clean_en = re.sub(r"\s*\(.*?\)", "", en).strip()
         clean_zh = re.sub(r"\s*\(.*?\)", "", zh).strip()
         parens = re.findall(r"\((.*?)\)", en) + re.findall(r"\((.*?)\)", zh)
-        names = {en, zh, clean_en, clean_zh} | {p.lower().strip() for p in parens} | {a.lower() for a in t.get("aliases", [])}
+        names = {en, zh, clean_en, clean_zh} | {p.lower().strip() for p in parens} | {a.lower() for a in (t.get("aliases") or []) if isinstance(a, str)}
         if q in names:
             return t
     return None
@@ -105,15 +113,15 @@ def query_entity(wiki_root: Path, name: str) -> dict:
     """Lookup entity metadata and corresponding markdown file across glossary and definitions."""
     glossary = load_glossary(wiki_root)
     definitions = load_definitions(wiki_root)
-    
+
     term = find_glossary_term(glossary.get("terms", []), name)
     source_type = "glossary" if term else None
-    
+
     if not term:
         term = find_definition_term(definitions.get("terms", []), name)
         if term:
             source_type = "definitions"
-            
+
     file_path = locate_entity_file(wiki_root, term, name)
     rel_file = str(file_path.relative_to(wiki_root)) if file_path else None
     content = file_path.read_text(encoding="utf-8", errors="replace") if file_path else ""
@@ -312,7 +320,7 @@ def handle_query(root: Path, args) -> str:
 def main():
     """CLI entrypoint for deep-base knowledge query engine."""
     p = argparse.ArgumentParser(description="Terminal FTS5 Knowledge Query & Entity Resolution Engine.")
-    p.add_argument("wiki_root", nargs="?", default="~/.gemini/wiki", help="Wiki root directory (default: ~/.gemini/wiki)")
+    p.add_argument("wiki_root", nargs="?", default="~/wiki", help="Wiki root directory (default: ~/wiki)")
     p.add_argument("--filter", dest="keyword", help="Full-text keyword search across wiki markdown files")
     p.add_argument("--entity", dest="entity", help="Lookup entity using data/glossary.json alias resolution")
     p.add_argument("--backlinks", dest="backlinks", help="List all markdown files referencing the entity with context excerpts")
