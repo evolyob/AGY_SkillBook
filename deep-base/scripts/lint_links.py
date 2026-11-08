@@ -18,11 +18,11 @@ def load_linter_config() -> dict:
 CFG = load_linter_config()
 MAX_FILE_SIZE = CFG.get("max_file_size_bytes", 46080)
 PATTERNS = CFG.get("patterns", {})
-WIKILINK_PATTERN = re.compile(PATTERNS.get("wikilink", r"\[\[(.*?)\]\]"))
-SEP_CELL_RX = re.compile(PATTERNS.get("sep_cell", r"\|\s*:?-{2,}:?\s*\|"))
-PURE_SEP_RX = re.compile(PATTERNS.get("pure_sep", r"^\s*\|?[\s:|-]+\|?\s*$"))
-FENCE_RX = re.compile(PATTERNS.get("fence", r"^\s*(```|~~~)"))
-QUOTE_HEADER_RX = re.compile(PATTERNS.get("quote_header", r"^#{1,6}\s+.*(?:quote|citation|notable).*$"), re.I)
+WIKILINK_PATTERN = re.compile(PATTERNS["wikilink"])
+SEP_CELL_RX = re.compile(PATTERNS["sep_cell"])
+PURE_SEP_RX = re.compile(PATTERNS["pure_sep"])
+FENCE_RX = re.compile(PATTERNS["fence"])
+QUOTE_HEADER_RX = re.compile(PATTERNS["quote_header"], re.I)
 EXEMPT_FILES = tuple(CFG.get("exempt_files", ["index.md", "log.md"]))
 EXEMPT_PREFIXES = tuple(CFG.get("exempt_prefixes", [".", "raw/"]))
 VALID_DOMAINS = tuple(CFG.get("valid_domains", ["ai", "tech", "rmf", "compliance", "work"]))
@@ -204,25 +204,25 @@ def verify_entity_tags(content: str, rel_file: str) -> list[dict]:
 
 
 def verify_glossary_tags(wiki_root: Path) -> list[dict]:
-    """Verify data/glossary/*.json (or data/glossary.json) terms adhere to canonical domains."""
+    """Verify data/glossary/*.json terms adhere to canonical domains."""
     glossary_dir = wiki_root / "data" / "glossary"
-    files = sorted(glossary_dir.glob("*.json")) if glossary_dir.is_dir() else [wiki_root / "data" / "glossary.json"]
+    target_files = sorted(glossary_dir.glob("*.json")) if glossary_dir.is_dir() else ([wiki_root / "data" / "glossary.json"] if (wiki_root / "data" / "glossary.json").exists() else [])
+    if not target_files:
+        return []
     issues = []
-    for f in files:
-        if not f.exists():
-            continue
-        rel_file = str(f.relative_to(wiki_root))
+    for g_path in target_files:
         try:
-            raw_data = json.loads(f.read_text(encoding="utf-8"))
+            raw_data = json.loads(g_path.read_text(encoding="utf-8"))
             data = raw_data if isinstance(raw_data, list) else raw_data.get("terms", [])
         except Exception as e:
-            issues.append({"file": rel_file, "type": "invalid_json", "detail": str(e)})
+            issues.append({"file": str(g_path.relative_to(wiki_root)), "type": "invalid_json", "detail": str(e)})
             continue
         for item in data:
             if not isinstance(item, dict):
                 continue
             term = item.get("abbr") or item.get("term_en") or item.get("entity") or "unknown"
             tags = item.get("tags", [])
+            rel_file = str(g_path.relative_to(wiki_root))
             if not tags:
                 issues.append({"file": rel_file, "type": "empty_glossary_tags", "detail": f"Term '{term}' has empty tags"})
                 continue
@@ -316,7 +316,7 @@ def get_wiki_telemetry(wiki_root: Path) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="Deterministic Wikilink & Health Scanner for deep-base.")
-    parser.add_argument("wiki_root", nargs="?", default="~/.gemini/wiki", help="Root path of wiki or markdown file")
+    parser.add_argument("wiki_root", nargs="?", default="~/wiki", help="Root path of wiki or markdown file (default: ~/wiki)")
     parser.add_argument("--strict", action="store_true", help="Exit code 2 on broken links, oversized files, structural issues, unverified quotes, or tag issues")
     parser.add_argument("--verify-tags", action="store_true", help="Verify entity tags conform to required type and canonical domains (ai, tech, rmf, compliance, work)")
     parser.add_argument("--verify-quotes", action="store_true", help="Verify quotes in wiki/sources/*.md against raw files")

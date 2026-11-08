@@ -38,9 +38,7 @@ class TestWikiEngine(unittest.TestCase):
         self.assertTrue((self.test_dir / "raw" / "articles").is_dir())
         self.assertTrue((self.test_dir / "wiki" / "entities").is_dir())
         self.assertTrue((self.test_dir / "wiki" / "comparisons").is_dir())
-        self.assertTrue((self.test_dir / "data" / "glossary").is_dir())
-        self.assertTrue((self.test_dir / "data" / "glossary" / "tech.json").exists())
-        self.assertTrue((self.test_dir / "data" / "glossary" / "compliance.json").exists())
+        self.assertTrue((self.test_dir / "data" / "glossary.json").exists())
 
     def test_02_cache_check_and_update(self):
         self.init_wiki()
@@ -202,6 +200,127 @@ class TestWikiEngine(unittest.TestCase):
         self.assertEqual(data["raw_sources"], 1)
         self.assertEqual(data["total_synthesized"], 1)
         self.assertEqual(data["layers"]["entities"], 1)
+
+    def test_12_sanitize_structural_normalizer(self):
+        self.init_wiki()
+        # 1. Glued heading and code fence protection
+        sample_md = self.test_dir / "raw" / "notes" / "sample_note.md"
+        sample_md.parent.mkdir(parents=True, exist_ok=True)
+        raw_content = (
+            "2.1 系統架構 本系統採用微服務架構設計與容器化部署。\n\n"
+            "```markdown\n"
+            "## 範例標題保留\n"
+            "[[legacy/pseudo_link]]\n"
+            "```\n\n"
+            "[[docs/legacy_note]]\n"
+        )
+        sample_md.write_text(raw_content, encoding="utf-8")
+
+        res_fix = self.run_cmd("sanitize.py", str(sample_md), "--fix", "--json")
+        self.assertEqual(res_fix.returncode, 0)
+        fixed_text = sample_md.read_text(encoding="utf-8")
+
+        # Heading was de-glued to H2
+        self.assertIn("## 2.1 系統架構\n\n本系統採用微服務架構設計與容器化部署。", fixed_text)
+        # Outside fence pseudo-wikilink was fixed
+        self.assertIn("`docs/legacy_note`", fixed_text)
+        # Inside fence content was strictly preserved (fence masking)
+        self.assertIn("## 範例標題保留", fixed_text)
+        self.assertIn("[[legacy/pseudo_link]]", fixed_text)
+
+        # 2. CJK Heading Elevation and Bracket List Normalization
+        cjk_md = self.test_dir / "raw" / "notes" / "cjk_note.md"
+        cjk_raw = (
+            "# 總則\n\n"
+            "三、行為主體：網絡服務提供者\n"
+            "(一) 保證人地位之確立\n"
+            "(1) 服務提供者不知悉內容具有違法性\n"
+            "(2) 經通知後及時採取必要處置\n\n"
+            "被告具備兩項特徵：一、未成年；二、初犯，深具悔意。\n"
+            "(九)》最高人民法院關於司法解釋之規定。\n"
+        )
+        cjk_md.write_text(cjk_raw, encoding="utf-8")
+        res_cjk = self.run_cmd("sanitize.py", str(cjk_md), "--fix", "--json")
+        self.assertEqual(res_cjk.returncode, 0)
+        cjk_fixed = cjk_md.read_text(encoding="utf-8")
+
+        # CJK H3 / H4 elevated
+        self.assertIn("### 三、行為主體：網絡服務提供者", cjk_fixed)
+        self.assertIn("#### (一) 保證人地位之確立", cjk_fixed)
+        # List items bulleted
+        self.assertIn("- (1) 服務提供者不知悉內容具有違法性", cjk_fixed)
+        self.assertIn("- (2) 經通知後及時採取必要處置", cjk_fixed)
+        # Sentence with 一、 ending with punctuation is NOT elevated
+        self.assertIn("被告具備兩項特徵：一、未成年；二、初犯，深具悔意。", cjk_fixed)
+        # Citation with (九)》 is NOT elevated
+        self.assertIn("(九)》最高人民法院關於司法解釋之規定。", cjk_fixed)
+
+        # 3. Plain text without headings warning
+        plain_md = self.test_dir / "raw" / "notes" / "plain.md"
+        plain_md.write_text("This is pure plain text without any markdown headings.\n", encoding="utf-8")
+        res_warn = self.run_cmd("sanitize.py", str(plain_md), "--json")
+        self.assertEqual(res_warn.returncode, 0)
+        warn_data = json.loads(res_warn.stdout)[0]
+        self.assertEqual(warn_data["status"], "WARN")
+        self.assertTrue(any("NO_HEADINGS" in w for w in warn_data["warnings"]))
+
+    def test_13_assemble_semantic_chunker(self):
+        self.init_wiki()
+        # 1. Glossary test
+        raw_glossary = self.test_dir / "raw" / "articles" / "sample_glossary.md"
+        raw_glossary.parent.mkdir(parents=True, exist_ok=True)
+        raw_glossary.write_text("词汇表\nA\nASCII：字符编码标准\nB\n白箱测试：基于代码逻辑的测试\n", encoding="utf-8")
+
+        res_chunk = self.run_cmd("assemble.py", "--semantic-chunk", str(raw_glossary), "--write", "--json")
+        self.assertEqual(res_chunk.returncode, 0)
+        chunked_text = raw_glossary.read_text(encoding="utf-8")
+        self.assertIn("# 词汇表", chunked_text)
+        self.assertIn("## A", chunked_text)
+        self.assertIn("## B", chunked_text)
+
+        # Sanitize should report CLEAN
+        res_san = self.run_cmd("sanitize.py", str(raw_glossary), "--json")
+        self.assertEqual(res_san.returncode, 0)
+        san_data = json.loads(res_san.stdout)[0]
+        self.assertEqual(san_data["status"], "CLEAN")
+
+        # 2. QA Context & Negative False-Positive Prevention Test
+        qa_doc = self.test_dir / "raw" / "articles" / "qa_doc.md"
+        raw_qa = (
+            "Overview\nThis is an overview section.\n\n"
+            "Questions\n"
+            "1-1 What is the primary benefit of microservices?\n"
+            "3.5 meters is the length of the pipe\n"
+            "A\n"
+        )
+        qa_doc.write_text(raw_qa, encoding="utf-8")
+        res_qa = self.run_cmd("assemble.py", "--semantic-chunk", str(qa_doc), "--write", "--json")
+        self.assertEqual(res_qa.returncode, 0)
+        qa_text = qa_doc.read_text(encoding="utf-8")
+
+        self.assertIn("# Overview", qa_text)
+        self.assertIn("## Questions", qa_text)
+        self.assertIn("### 1-1 What is the primary benefit of microservices?", qa_text)
+        # Negative tests: decimals and isolated prose letters must NOT become headings
+        self.assertIn("\n3.5 meters is the length of the pipe\n", qa_text)
+        self.assertNotIn("### 3.5 meters", qa_text)
+        self.assertIn("\nA\n", qa_text)
+        self.assertNotIn("## A", qa_text)
+
+        # 3. Idempotence: Second run produces 0 changes
+        res_idempotent = self.run_cmd("assemble.py", "--semantic-chunk", str(qa_doc), "--write", "--json")
+        self.assertEqual(res_idempotent.returncode, 0)
+        data_idem = json.loads(res_idempotent.stdout)[0]
+        self.assertFalse(data_idem["changed"])
+
+        # 4. Structured Document Protection: Existing H1+H2 must NOT be mutated
+        structured_doc = self.test_dir / "raw" / "articles" / "structured.md"
+        structured_doc.write_text("# Original Title\n\n## Section 1\nContent.\n", encoding="utf-8")
+        res_struct = self.run_cmd("assemble.py", "--semantic-chunk", str(structured_doc), "--write", "--json")
+        self.assertEqual(res_struct.returncode, 0)
+        data_struct = json.loads(res_struct.stdout)[0]
+        self.assertFalse(data_struct["changed"])
+        self.assertEqual(structured_doc.read_text(encoding="utf-8"), "# Original Title\n\n## Section 1\nContent.\n")
 
 
 if __name__ == "__main__":

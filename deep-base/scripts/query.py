@@ -18,10 +18,10 @@ def load_query_config() -> dict:
 
 
 CFG = load_query_config()
-DEFAULT_LIMIT = CFG.get("default_limit", 5)
-TITLE_WEIGHT = float(CFG.get("title_weight", 10.0))
-GLOSSARY_FIELDS = tuple(CFG.get("glossary_fields", ["entity", "abbr", "term_zh", "term_en"]))
-ENTITY_LABELS = CFG.get("entity_labels", {"abbr": "Abbreviation", "aliases": "Aliases", "definition": "Definition"})
+DEFAULT_LIMIT = CFG["default_limit"]
+TITLE_WEIGHT = float(CFG["title_weight"])
+GLOSSARY_FIELDS = tuple(CFG["glossary_fields"])
+ENTITY_LABELS = CFG["entity_labels"]
 
 
 def load_glossary(wiki_root: Path) -> dict:

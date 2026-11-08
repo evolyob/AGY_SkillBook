@@ -27,7 +27,7 @@ Every synthesized file under `~/wiki/wiki/` must stay within `45 KB` (`46,080 by
 | `wiki/sources/` | Source chapter map & key takeaways | Created once per ingested document `<slug>` | `templates/source.template.md` |
 | `wiki/entities/` | Atomic tool, spec, module, or standard | Extracted from documents or `#<domain>/<entity_slug>` notes | `templates/entity.template.md` |
 | `wiki/topics/` | Cross-entity conceptual architecture | Connects multiple related entity cards | `templates/topic.template.md` |
-| `wiki/comparisons/` | Multi-subject tradeoff matrix | Side-by-side benchmark or architecture comparison | `templates/synthesis.template.md` |
+| `wiki/comparisons/` | Multi-subject tradeoff matrix | Side-by-side benchmark or architecture comparison | `templates/comparison.template.md` |
 | `wiki/synthesis/` | Long-term architectural conclusion | Complex multi-turn engineering decision or debate | `templates/synthesis.template.md` |
 | `wiki/queries/` | High-frequency Q&A cache | Reusable deterministic answer for recurring lookups | `templates/query.template.md` |
 | `wiki/archive/` | Retired or obsolete entity cards | Moved from `wiki/entities/` when deprecated | Retains original entity structure |
@@ -68,8 +68,8 @@ Every synthesized file under `~/wiki/wiki/` must stay within `45 KB` (`46,080 by
      - **No Mixed-Language Mutations**: Never create fragmented mixed-language cards by translating parts (e.g. tables) while leaving other parts in another language. Maintain 100% document-level language coherence.
    - **Frontmatter Aliases for Dual-Track Retrieval**: For English cards, include common Traditional Chinese terms and abbreviations in `alias: [ZH_Term, EN_Term, Abbr]` to enable direct CJK FTS5 matching and conversational triggering without mutating card body prose.
 
-### 3.3 Pattern A Glossary Schema (`data/glossary/{tech,compliance}.json`)
-After distillation or ingestion, list newly detected acronyms/terms for user confirmation before appending to `data/glossary/tech.json` (for `tags[0]` in `tech`, `ai`, `rmf`) or `data/glossary/compliance.json` (for `tags[0]` in `compliance`, `work`) using these 7 invariant keys:
+### 3.3 Pattern A Glossary Schema (`data/glossary/`)
+After distillation or ingestion, list newly detected acronyms/terms for user confirmation before appending to `data/glossary/tech.json` (for `tech`, `ai`, `rmf`) or `data/glossary/compliance.json` (for `compliance`, `work`) using these 7 invariant keys:
 ```json
 {
   "term_zh": "模型上下文協定",
