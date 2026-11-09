@@ -32,15 +32,16 @@ SINGLE_AGENT_MAX_CHAPTERS = CFG.get("single_agent_max_chapters", 6)
 BATCH_TARGET_BYTES = CFG.get("batch_target_bytes", 65536)
 
 PATS = CFG.get("patterns", {})
-TOC_DOT_LEADER_RX = re.compile(PATS["toc_dot"])
-PAGE_NUM_RX = re.compile(PATS["page_num"], re.I)
-HEADING_RX = re.compile(PATS["heading"], re.M)
-SUB_HEADING_RX = re.compile(PATS["sub_heading"], re.M)
-FENCE_LINE_RX = re.compile(r"^\s*(```+|~~~+)")
+TOC_DOT_LEADER_RX = re.compile(PATS.get("toc_dot", r"(?:\.{3,}|(?:\.\s*){3,}|·{3,}|…{2,})\s*\d+\s*$"))
+PAGE_NUM_RX = re.compile(PATS.get("page_num", r"^(?:[-－—–]\s*\d+\s*[-－—–]|Page\s+\d+)$"), re.I)
+HEADING_RX = re.compile(PATS.get("heading", r"^#{1,2}\s+.+$"), re.M)
+SUB_HEADING_RX = re.compile(PATS.get("sub_heading", r"^(?:#{2,4}\s+.+|(?:\d+\.\d+|\b[A-Z]{2,3}-\d+)\s+.+)$"), re.M)
+FENCE_LINE_RX = re.compile(r"^\s*(```|~~~)")
 MD_BLOCK_RX = re.compile(r"^(?:[-*+]|●|\(\d+\)|\([a-zA-Z]\)|\d+[\.\)])\s*")
-SECRET_TOKEN_RX = re.compile(HYGIENE_PATS["secret_token"])
-PRIVATE_KEY_RX = re.compile(HYGIENE_PATS["private_key"])
-TW_MOBILE_RX = re.compile(HYGIENE_PATS["tw_phone"])
+SECRET_TOKEN_RX = re.compile(HYGIENE_PATS.get("secret_token", r"\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35})\b"))
+PRIVATE_KEY_RX = re.compile(HYGIENE_PATS.get("private_key", r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----"))
+TW_MOBILE_RX = re.compile(HYGIENE_PATS.get("tw_phone", r"(?<!\d)09\d{2}[-\s]?\d{3}[-\s]?\d{3}(?!\d)"))
+
 
 HOME_STR = str(Path.home())
 
@@ -111,9 +112,6 @@ def strip_running_headers_and_toc(pages: list[str]) -> list[str]:
     return [c for c in cleaned if c]
 
 
-STRUCT_SOLO_RX = re.compile(r"^(?:Module|Lesson|Chapter|Section|Domain|Unit)\s+[0-9A-Z]+$", re.I)
-
-
 def unwrap_broken_lines(text: str) -> str:
     """Rejoin mid-sentence PDF line wraps while preserving paragraphs, headings, lists, and tables."""
     raw_lines = text.splitlines()
@@ -147,18 +145,19 @@ def extract_pdf(path: Path) -> tuple[str, dict]:
     reader = pypdf.PdfReader(str(path))
     total_pages = len(reader.pages)
     raw_pages = [page.extract_text() or "" for page in reader.pages]
-    visual_pages = [i + 1 for i, page in enumerate(reader.pages) if len(page.images) > 0]
+    visual_pages = [idx + 1 for idx, page in enumerate(reader.pages) if len(page.images) > 0]
     avg_chars = sum(len(p.strip()) for p in raw_pages) // max(1, total_pages)
+    meta = {"total_pages": total_pages, "avg_chars_per_page": avg_chars}
+    if visual_pages:
+        meta["visual_pages"] = visual_pages
     if total_pages > 0 and avg_chars < MIN_CHARS_PER_PAGE_OCR:
         return "", {
             "error": "OCR_REQUIRED",
             "message": f"Average character density ({avg_chars} chars/page < {MIN_CHARS_PER_PAGE_OCR}) indicates a scanned PDF.",
-            "total_pages": total_pages,
-            "avg_chars_per_page": avg_chars,
-            "visual_pages": visual_pages,
+            **meta,
         }
     full_text = unwrap_broken_lines("\n".join(strip_running_headers_and_toc(raw_pages)))
-    return full_text, {"total_pages": total_pages, "avg_chars_per_page": avg_chars, "visual_pages": visual_pages}
+    return full_text, meta
 
 
 def extract_document(path: Path) -> tuple[str, dict]:
@@ -216,9 +215,6 @@ def pack_segments_by_budget(title: str, segments: list[str]) -> list[tuple[str, 
     return parts
 
 
-FENCE_LINE_RX = re.compile(r"^\s*(```|~~~)")
-
-
 def non_fenced_indices(lines: list[str], predicate) -> list[int]:
     """Return line indices matching predicate outside fenced code blocks."""
     indices: list[int] = []
@@ -274,9 +270,9 @@ def merge_and_split_headings(lines: list[str], heading_indices: list[int]) -> li
     return raw_sections
 
 
-def segment_chapters(text: str) -> list[dict]:
+def segment_chapters(text: str, redact: bool = True) -> list[dict]:
     """Segment cleaned document text into chapter dicts without dropping short sections."""
-    text = sanitize_sensitive_text(text)
+    text = sanitize_sensitive_text(text, redact=redact)
     lines = text.splitlines()
     heading_indices = non_fenced_indices(lines, is_valid_heading)
     raw_sections = split_oversized_section("Full Document", text.strip()) if not heading_indices else merge_and_split_headings(lines, heading_indices)
@@ -322,6 +318,7 @@ def main():
     parser.add_argument("input", help="Source document path (PDF, DOCX, XLSX, HTML, MD, TXT)")
     parser.add_argument("--list-only", action="store_true", help="Output reconnaissance JSON without writing files")
     parser.add_argument("--split-dir", help="Target directory to write flattened chapter .md files")
+    parser.add_argument("--no-redact", action="store_true", help="Skip PII and credential redaction during flattening")
     parser.add_argument("--json", action="store_true", help="Output JSON result summary")
     args = parser.parse_args()
 
@@ -341,14 +338,13 @@ def main():
             sys.stderr.write(f"[!] OCR_REQUIRED: {meta['message']}\n")
         sys.exit(3)
 
-    chapters = segment_chapters(full_text)
+    chapters = segment_chapters(full_text, redact=not args.no_redact)
     dispatch_mode, batches = plan_batches(chapters)
     catalog = [{k: v for k, v in c.items() if k != "content"} for c in chapters]
     report = {
         "source_file": src_path.name,
         "total_pages": meta.get("total_pages", 1),
         "avg_chars_per_page": meta.get("avg_chars_per_page", 0),
-        "visual_pages": meta.get("visual_pages", []),
         "total_chapters": len(catalog),
         "total_bytes": sum(c["bytes"] for c in catalog),
         "total_est_tokens": sum(c["est_tokens"] for c in catalog),
@@ -356,6 +352,8 @@ def main():
         "recommended_batches": batches,
         "chapters": catalog,
     }
+    if "visual_pages" in meta:
+        report["visual_pages"] = meta["visual_pages"]
 
     if args.list_only or not args.split_dir:
         print(json.dumps(report, ensure_ascii=False, indent=2))

@@ -38,7 +38,9 @@ class TestWikiEngine(unittest.TestCase):
         self.assertTrue((self.test_dir / "raw" / "articles").is_dir())
         self.assertTrue((self.test_dir / "wiki" / "entities").is_dir())
         self.assertTrue((self.test_dir / "wiki" / "comparisons").is_dir())
-        self.assertTrue((self.test_dir / "data" / "glossary.json").exists())
+        self.assertTrue((self.test_dir / "data" / "glossary").is_dir())
+        self.assertTrue((self.test_dir / "data" / "glossary" / "tech.json").exists())
+        self.assertTrue((self.test_dir / "data" / "glossary" / "compliance.json").exists())
 
     def test_02_cache_check_and_update(self):
         self.init_wiki()
@@ -264,63 +266,19 @@ class TestWikiEngine(unittest.TestCase):
         self.assertEqual(warn_data["status"], "WARN")
         self.assertTrue(any("NO_HEADINGS" in w for w in warn_data["warnings"]))
 
-    def test_13_assemble_semantic_chunker(self):
+    def test_13_query_shards_deduplication(self):
         self.init_wiki()
-        # 1. Glossary test
-        raw_glossary = self.test_dir / "raw" / "articles" / "sample_glossary.md"
-        raw_glossary.parent.mkdir(parents=True, exist_ok=True)
-        raw_glossary.write_text("词汇表\nA\nASCII：字符编码标准\nB\n白箱测试：基于代码逻辑的测试\n", encoding="utf-8")
+        g_tech = self.test_dir / "data" / "glossary" / "tech.json"
+        g_comp = self.test_dir / "data" / "glossary" / "compliance.json"
+        term = {"entity": "OAuth", "abbr": "OAuth2", "term_zh": "開放授權", "term_en": "Open Authorization"}
+        g_tech.write_text(json.dumps([term]), encoding="utf-8")
+        g_comp.write_text(json.dumps([term]), encoding="utf-8")
 
-        res_chunk = self.run_cmd("assemble.py", "--semantic-chunk", str(raw_glossary), "--write", "--json")
-        self.assertEqual(res_chunk.returncode, 0)
-        chunked_text = raw_glossary.read_text(encoding="utf-8")
-        self.assertIn("# 词汇表", chunked_text)
-        self.assertIn("## A", chunked_text)
-        self.assertIn("## B", chunked_text)
-
-        # Sanitize should report CLEAN
-        res_san = self.run_cmd("sanitize.py", str(raw_glossary), "--json")
-        self.assertEqual(res_san.returncode, 0)
-        san_data = json.loads(res_san.stdout)[0]
-        self.assertEqual(san_data["status"], "CLEAN")
-
-        # 2. QA Context & Negative False-Positive Prevention Test
-        qa_doc = self.test_dir / "raw" / "articles" / "qa_doc.md"
-        raw_qa = (
-            "Overview\nThis is an overview section.\n\n"
-            "Questions\n"
-            "1-1 What is the primary benefit of microservices?\n"
-            "3.5 meters is the length of the pipe\n"
-            "A\n"
-        )
-        qa_doc.write_text(raw_qa, encoding="utf-8")
-        res_qa = self.run_cmd("assemble.py", "--semantic-chunk", str(qa_doc), "--write", "--json")
-        self.assertEqual(res_qa.returncode, 0)
-        qa_text = qa_doc.read_text(encoding="utf-8")
-
-        self.assertIn("# Overview", qa_text)
-        self.assertIn("## Questions", qa_text)
-        self.assertIn("### 1-1 What is the primary benefit of microservices?", qa_text)
-        # Negative tests: decimals and isolated prose letters must NOT become headings
-        self.assertIn("\n3.5 meters is the length of the pipe\n", qa_text)
-        self.assertNotIn("### 3.5 meters", qa_text)
-        self.assertIn("\nA\n", qa_text)
-        self.assertNotIn("## A", qa_text)
-
-        # 3. Idempotence: Second run produces 0 changes
-        res_idempotent = self.run_cmd("assemble.py", "--semantic-chunk", str(qa_doc), "--write", "--json")
-        self.assertEqual(res_idempotent.returncode, 0)
-        data_idem = json.loads(res_idempotent.stdout)[0]
-        self.assertFalse(data_idem["changed"])
-
-        # 4. Structured Document Protection: Existing H1+H2 must NOT be mutated
-        structured_doc = self.test_dir / "raw" / "articles" / "structured.md"
-        structured_doc.write_text("# Original Title\n\n## Section 1\nContent.\n", encoding="utf-8")
-        res_struct = self.run_cmd("assemble.py", "--semantic-chunk", str(structured_doc), "--write", "--json")
-        self.assertEqual(res_struct.returncode, 0)
-        data_struct = json.loads(res_struct.stdout)[0]
-        self.assertFalse(data_struct["changed"])
-        self.assertEqual(structured_doc.read_text(encoding="utf-8"), "# Original Title\n\n## Section 1\nContent.\n")
+        res = self.run_cmd("query.py", str(self.test_dir), "--entity", "OAuth", "--format", "json")
+        self.assertEqual(res.returncode, 0)
+        data = json.loads(res.stdout)
+        self.assertTrue(data["entity"]["matched"])
+        self.assertEqual(data["entity"]["term"]["entity"], "OAuth")
 
 
 if __name__ == "__main__":

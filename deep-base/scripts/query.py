@@ -18,10 +18,10 @@ def load_query_config() -> dict:
 
 
 CFG = load_query_config()
-DEFAULT_LIMIT = CFG["default_limit"]
-TITLE_WEIGHT = float(CFG["title_weight"])
-GLOSSARY_FIELDS = tuple(CFG["glossary_fields"])
-ENTITY_LABELS = CFG["entity_labels"]
+DEFAULT_LIMIT = CFG.get("default_limit", 5)
+TITLE_WEIGHT = float(CFG.get("title_weight", 10.0))
+GLOSSARY_FIELDS = tuple(CFG.get("glossary_fields", ["entity", "abbr", "term_zh", "term_en"]))
+ENTITY_LABELS = CFG.get("entity_labels", {"abbr": "Abbreviation", "aliases": "Aliases", "definition": "Definition"})
 
 
 def load_glossary(wiki_root: Path) -> dict:
@@ -113,15 +113,15 @@ def query_entity(wiki_root: Path, name: str) -> dict:
     """Lookup entity metadata and corresponding markdown file across glossary and definitions."""
     glossary = load_glossary(wiki_root)
     definitions = load_definitions(wiki_root)
-
+    
     term = find_glossary_term(glossary.get("terms", []), name)
     source_type = "glossary" if term else None
-
+    
     if not term:
         term = find_definition_term(definitions.get("terms", []), name)
         if term:
             source_type = "definitions"
-
+            
     file_path = locate_entity_file(wiki_root, term, name)
     rel_file = str(file_path.relative_to(wiki_root)) if file_path else None
     content = file_path.read_text(encoding="utf-8", errors="replace") if file_path else ""
@@ -320,7 +320,7 @@ def handle_query(root: Path, args) -> str:
 def main():
     """CLI entrypoint for deep-base knowledge query engine."""
     p = argparse.ArgumentParser(description="Terminal FTS5 Knowledge Query & Entity Resolution Engine.")
-    p.add_argument("wiki_root", nargs="?", default="~/wiki", help="Wiki root directory (default: ~/wiki)")
+    p.add_argument("wiki_root", nargs="?", default="~/.gemini/wiki", help="Wiki root directory (default: ~/.gemini/wiki)")
     p.add_argument("--filter", dest="keyword", help="Full-text keyword search across wiki markdown files")
     p.add_argument("--entity", dest="entity", help="Lookup entity using data/glossary.json alias resolution")
     p.add_argument("--backlinks", dest="backlinks", help="List all markdown files referencing the entity with context excerpts")
