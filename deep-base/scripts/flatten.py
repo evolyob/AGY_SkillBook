@@ -41,6 +41,9 @@ MD_BLOCK_RX = re.compile(r"^(?:[-*+]|●|\(\d+\)|\([a-zA-Z]\)|\d+[\.\)])\s*")
 SECRET_TOKEN_RX = re.compile(HYGIENE_PATS.get("secret_token", r"\b(?:sk-(?:proj-)?[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35})\b"))
 PRIVATE_KEY_RX = re.compile(HYGIENE_PATS.get("private_key", r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----"))
 TW_MOBILE_RX = re.compile(HYGIENE_PATS.get("tw_phone", r"(?<!\d)09\d{2}[-\s]?\d{3}[-\s]?\d{3}(?!\d)"))
+DISCLAIMER_FOOTER_RX = re.compile(r"^(?:(?:\d+\s+)?©\s*\d{4}\s+.*(?:All rights reserved|affiliates).*|All rights reserved\..*|.*prides itself on its reputation for independence.*|\*All trademarks are the property of their respective owners.*)$", re.I)
+STRUCT_SOLO_RX = re.compile(r"^(?:Module|Lesson|Chapter|Section|Domain|Unit)\s+[0-9A-Z]+$", re.I)
+STRUCT_SOLO_RX = re.compile(r"^(?:Module|Lesson|Chapter|Section|Domain|Unit)\s+[0-9A-Z]+$", re.I)
 
 
 HOME_STR = str(Path.home())
@@ -97,6 +100,7 @@ def clean_single_page(lines: list[str], repeated_edges: set[str]) -> str:
         ln for idx, ln in enumerate(lines)
         if not TOC_DOT_LEADER_RX.search(ln)
         and not PAGE_NUM_RX.match(ln)
+        and not DISCLAIMER_FOOTER_RX.match(ln)
         and not ((idx < 3 or idx >= len(lines) - 3) and ln in repeated_edges)
     ]
     return "\n".join(kept)
@@ -169,8 +173,8 @@ def extract_document(path: Path) -> tuple[str, dict]:
         with zipfile.ZipFile(path) as z:
             tree = ET.fromstring(z.read("word/document.xml"))
             ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
-            paras = ["".join(t.text for t in n.findall(".//w:t", ns) if t.text) for n in tree.findall(".//w:p", ns)]
-        txt = unwrap_broken_lines(normalize_cjk_spacing("\n".join(paras)))
+            paras = [normalize_cjk_spacing("".join(t.text for t in n.findall(".//w:t", ns) if t.text).strip()) for n in tree.findall(".//w:p", ns)]
+        txt = "\n\n".join(p for p in paras if p)
         return txt, {"total_pages": 1, "avg_chars_per_page": len(txt)}
     if ext == ".xlsx":
         openpyxl = importlib.import_module("openpyxl")

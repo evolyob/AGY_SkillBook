@@ -5,8 +5,6 @@ author knows which was meant.
 """
 
 
-from __future__ import annotations
-
 import re
 from typing import Mapping
 

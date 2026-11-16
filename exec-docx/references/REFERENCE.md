@@ -143,3 +143,21 @@ Validate OOXML integrity and schema compliance directly:
 python3 <skill_dir>/scripts/office/validate.py <output_deck_or_docx>
 ```
 
+---
+
+## 5. Regulatory Amendment Comparison Table Specification (規章條文修正對照表規範)
+
+- **Specification Template**: `templates/comparison_table_template.md` (Contract)
+- **Page Layout**: A4 Landscape (`w:16838`, `h:11906`), Margins (Top/Bottom `1361`, Left/Right `1021`).
+- **Table Structure**: 3 Columns equal-split (`gridCol`: `4912`, `4912`, `4913`), Vertical Alignment `center`.
+- **Formatting Standards**:
+  - `Col 0 (修正條文)`: Additions marked with `#FF0000` + Underline.
+  - `Col 1 (現行條文)`: Deletions marked with `#FF0000` + Underline.
+  - `Col 2 (說明)`: Action classification (`新增。`, `調整。`, `刪除。`). If whole article added/deleted, mark `<ins><font color="#FF0000">整條新增。</font></ins>`.
+- **Typography**: EastAsia `標楷體` (or `Noto Sans TC`), Latin `Times New Roman`. Body font `12pt`, Title `14pt bold`.
+- **Generation CLI**:
+  ```bash
+  python3 <skill_dir>/scripts/diff_builder.py --old <old.docx> --new <new.docx> --output <out.docx> --title "<title>" --revision "<rev>"
+  ```
+
+

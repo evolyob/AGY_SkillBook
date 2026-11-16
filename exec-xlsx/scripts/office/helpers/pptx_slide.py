@@ -5,8 +5,6 @@ than a false alarm.
 """
 
 
-from __future__ import annotations
-
 import re
 
 SLIDE_PART_RE = re.compile(

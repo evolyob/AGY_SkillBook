@@ -4,7 +4,7 @@
 This skill is a local-first semantic routing and intent matrix scanner. It performs read-only static analysis on Skill directories (`SKILL.md`, `SECURITY.md`, `scripts/`, `references/`). It does not upload data, collect telemetry, or run network daemons.
 
 ## Dependencies
-- Standard library prioritized (Python >= 3.13: `ast`, `re`, `json`, `pathlib`, `argparse`).
+- Standard library prioritized (Python >= 3.14: `ast`, `re`, `json`, `pathlib`, `argparse`).
 - Declared dependencies: `[]` (zero external package overhead).
 - Zero silent background installations: package installs require explicit user confirmation.
 

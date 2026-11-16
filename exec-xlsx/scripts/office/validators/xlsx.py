@@ -131,7 +131,7 @@ class XLSXSchemaValidator(BaseSchemaValidator):
                 text = match.group(1)
                 if ('\n' in text or '  ' in text) and 'xml:space="preserve"' not in full_tag:
                     repairs += 1
-                    return f'<t xml:space="preserve">{text}</t>'
+                    return '<t xml:space="preserve">' + text + '</t>'
                 return full_tag
 
             new_content = re.sub(r'<t(?:\s+[^>]*)?>([\s\S]*?)</t>', fix_t, content)

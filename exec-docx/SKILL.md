@@ -14,7 +14,8 @@ dependencies: [docx, defusedxml, lxml]
 |---|---|---|
 | **Create New Document** | Python `DOCXLayoutEngine` (`scripts/docx_engine.py`) with `Noto Sans TC` (11pt standard) & brand palettes | `references/REFERENCE.md` |
 | **Edit Existing Document** | Unpack docx archive, merge runs, edit XML, track changes | `references/REFERENCE.md` |
-| **Read / Inspect Content** | `pandoc -t markdown <file.docx>` | `references/REFERENCE.md` |
+| **Generate Comparison Table** | Follow `templates/comparison_table_template.md` | `references/REFERENCE.md` |
+| **Read / Inspect Content** | Python ingester (`scripts/ingest.py <file.docx>`) | `references/REFERENCE.md` |
 
 ---
 
@@ -30,7 +31,8 @@ dependencies: [docx, defusedxml, lxml]
 ### Step 3: Execute Operation
 - **Create**: Follow the Visual-First Decision Matrix in `REFERENCE.md`, apply `Noto Sans TC 11pt`, and save to `~/Downloads/<doc_name>.docx`.
 - **Edit**: Unpack archive, strip symlinks, run `merge_runs.py`, edit `word/document.xml`, and rezip.
-- **Read**: Run `pandoc -t markdown <file.docx>`.
+- **Generate Comparison Table**: Follow schema in `templates/comparison_table_template.md` (A4 landscape, 3-column, red underline `#FF0000`, whole-article additions) and save to `~/Downloads/<doc_name>.docx`.
+- **Read**: Run `python3 <skill_dir>/scripts/ingest.py <file.docx>`.
 
 ### Step 4: Programmatic Verification & QA
 - Execute lightweight validation: `python3 <skill_dir>/scripts/office/validate.py <output_path>`.

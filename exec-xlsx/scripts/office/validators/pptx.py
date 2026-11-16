@@ -226,7 +226,7 @@ class PPTXSchemaValidator(BaseSchemaValidator):
         return xml_doc
 
     def validate_uuid_ids(self):
-        import lxml.etree
+        from lxml import etree
 
         errors = []
         uuid_pattern = re.compile(
@@ -235,7 +235,7 @@ class PPTXSchemaValidator(BaseSchemaValidator):
 
         for xml_file in self.xml_files:
             try:
-                root = lxml.etree.parse(str(xml_file)).getroot()
+                root = etree.parse(str(xml_file)).getroot()
 
                 for elem in root.iter():
                     for attr, value in elem.attrib.items():
@@ -248,7 +248,7 @@ class PPTXSchemaValidator(BaseSchemaValidator):
                                 f"Line {elem.sourceline}: ID '{value}' appears to be a UUID but contains invalid hex characters"
                             )
 
-            except (lxml.etree.XMLSyntaxError, Exception) as e:
+            except (etree.XMLSyntaxError, Exception) as e:
                 errors.append(
                     f"  {xml_file.relative_to(self.unpacked_dir)}: Error: {e}"
                 )
@@ -268,7 +268,7 @@ class PPTXSchemaValidator(BaseSchemaValidator):
         return len(clean_value) == 32 and all(c.isalnum() for c in clean_value)
 
     def validate_slide_layout_ids(self):
-        import lxml.etree
+        from lxml import etree
 
         errors = []
 
@@ -281,7 +281,7 @@ class PPTXSchemaValidator(BaseSchemaValidator):
 
         for slide_master in slide_masters:
             try:
-                root = lxml.etree.parse(str(slide_master)).getroot()
+                root = etree.parse(str(slide_master)).getroot()
 
                 rels_file = slide_master.parent / "_rels" / f"{slide_master.name}.rels"
 
@@ -292,7 +292,7 @@ class PPTXSchemaValidator(BaseSchemaValidator):
                     )
                     continue
 
-                rels_root = lxml.etree.parse(str(rels_file)).getroot()
+                rels_root = etree.parse(str(rels_file)).getroot()
 
                 valid_layout_rids = set()
                 for rel in rels_root.findall(
@@ -317,7 +317,7 @@ class PPTXSchemaValidator(BaseSchemaValidator):
                             f"references r:id='{r_id}' which is not found in slide layout relationships"
                         )
 
-            except (lxml.etree.XMLSyntaxError, Exception) as e:
+            except (etree.XMLSyntaxError, Exception) as e:
                 errors.append(
                     f"  {slide_master.relative_to(self.unpacked_dir)}: Error: {e}"
                 )
@@ -336,14 +336,14 @@ class PPTXSchemaValidator(BaseSchemaValidator):
             return True
 
     def validate_no_duplicate_slide_layouts(self):
-        import lxml.etree
+        from lxml import etree
 
         errors = []
         slide_rels_files = list(self.unpacked_dir.glob("ppt/slides/_rels/*.xml.rels"))
 
         for rels_file in slide_rels_files:
             try:
-                root = lxml.etree.parse(str(rels_file)).getroot()
+                root = etree.parse(str(rels_file)).getroot()
 
                 layout_rels = [
                     rel
@@ -374,7 +374,7 @@ class PPTXSchemaValidator(BaseSchemaValidator):
             return True
 
     def validate_notes_slide_references(self):
-        import lxml.etree
+        from lxml import etree
 
         errors = []
         notes_slide_references = {}  
@@ -388,7 +388,7 @@ class PPTXSchemaValidator(BaseSchemaValidator):
 
         for rels_file in slide_rels_files:
             try:
-                root = lxml.etree.parse(str(rels_file)).getroot()
+                root = etree.parse(str(rels_file)).getroot()
 
                 for rel in root.findall(
                     f".//{{{self.PACKAGE_RELATIONSHIPS_NAMESPACE}}}Relationship"
@@ -409,7 +409,7 @@ class PPTXSchemaValidator(BaseSchemaValidator):
                                 (slide_name, rels_file)
                             )
 
-            except (lxml.etree.XMLSyntaxError, Exception) as e:
+            except (etree.XMLSyntaxError, Exception) as e:
                 errors.append(
                     f"  {rels_file.relative_to(self.unpacked_dir)}: Error: {e}"
                 )

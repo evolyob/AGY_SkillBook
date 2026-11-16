@@ -4,7 +4,7 @@
 This skill provides create, read, edit, or convert word documents (. It operates on local files or declared network targets provided via arguments. It does not collect telemetry, run silent daemons, or mutate unauthorized paths.
 
 ## Dependencies
-- Standard library prioritized (Python >= 3.13).
+- Standard library prioritized (Python >= 3.14).
 - Declared dependencies: `[docx, defusedxml, lxml]`.
 - Zero silent background installations: package installs require explicit user confirmation.
 

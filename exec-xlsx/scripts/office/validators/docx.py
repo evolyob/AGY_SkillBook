@@ -8,8 +8,8 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-import defusedxml.minidom
-import lxml.etree
+from defusedxml import minidom
+from lxml import etree
 
 from helpers import safe_extract
 
@@ -74,7 +74,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
                 continue
 
             try:
-                root = lxml.etree.parse(str(xml_file)).getroot()
+                root = etree.parse(str(xml_file)).getroot()
 
                 for elem in root.iter(f"{{{self.WORD_2006_NAMESPACE}}}t"):
                     text = elem.text
@@ -95,7 +95,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
                             f"Line {elem.sourceline}: w:t element with whitespace missing xml:space='preserve': {text_preview}"
                         )
 
-            except (lxml.etree.XMLSyntaxError, Exception) as e:
+            except (etree.XMLSyntaxError, Exception) as e:
                 errors.append(
                     f"  {xml_file.relative_to(self.unpacked_dir)}: Error: {e}"
                 )
@@ -118,7 +118,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
                 continue
 
             try:
-                root = lxml.etree.parse(str(xml_file)).getroot()
+                root = etree.parse(str(xml_file)).getroot()
                 namespaces = {"w": self.WORD_2006_NAMESPACE}
 
                 for t_elem in root.xpath(".//w:del//w:t", namespaces=namespaces):
@@ -146,7 +146,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
                         f"Line {instr_elem.sourceline}: <w:instrText> found within <w:del> (use <w:delInstrText>): {text_preview}"
                     )
 
-            except (lxml.etree.XMLSyntaxError, Exception) as e:
+            except (etree.XMLSyntaxError, Exception) as e:
                 errors.append(
                     f"  {xml_file.relative_to(self.unpacked_dir)}: Error: {e}"
                 )
@@ -169,7 +169,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
                 continue
 
             try:
-                root = lxml.etree.parse(str(xml_file)).getroot()
+                root = etree.parse(str(xml_file)).getroot()
                 paragraphs = root.findall(f".//{{{self.WORD_2006_NAMESPACE}}}p")
                 count = len(paragraphs)
             except Exception as e:
@@ -190,7 +190,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
                     safe_extract(zip_ref, Path(temp_dir))
 
                 doc_xml_path = temp_dir + "/word/document.xml"
-                root = lxml.etree.parse(doc_xml_path).getroot()
+                root = etree.parse(doc_xml_path).getroot()
 
                 paragraphs = root.findall(f".//{{{self.WORD_2006_NAMESPACE}}}p")
                 count = len(paragraphs)
@@ -208,7 +208,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
                 continue
 
             try:
-                root = lxml.etree.parse(str(xml_file)).getroot()
+                root = etree.parse(str(xml_file)).getroot()
                 namespaces = {"w": self.WORD_2006_NAMESPACE}
 
                 invalid_elements = root.xpath(
@@ -226,7 +226,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
                         f"Line {elem.sourceline}: <w:delText> within <w:ins>: {text_preview}"
                     )
 
-            except (lxml.etree.XMLSyntaxError, Exception) as e:
+            except (etree.XMLSyntaxError, Exception) as e:
                 errors.append(
                     f"  {xml_file.relative_to(self.unpacked_dir)}: Error: {e}"
                 )
@@ -262,7 +262,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
 
         for xml_file in self.xml_files:
             try:
-                for elem in lxml.etree.parse(str(xml_file)).iter():
+                for elem in etree.parse(str(xml_file)).iter():
                     if val := elem.get(para_id_attr):
                         try:
                             if self._parse_id_value(val, base=16) >= 0x80000000:
@@ -290,7 +290,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
                                 f"  {xml_file.name}:{elem.sourceline}: "
                                 f"durableId={val} must be {err_type}"
                             )
-            except lxml.etree.XMLSyntaxError:
+            except etree.XMLSyntaxError:
                 continue  
 
         if errors:
@@ -318,7 +318,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
             return True
 
         try:
-            doc_root = lxml.etree.parse(str(document_xml)).getroot()
+            doc_root = etree.parse(str(document_xml)).getroot()
             namespaces = {"w": self.WORD_2006_NAMESPACE}
 
             range_starts = {
@@ -358,7 +358,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
 
             comment_ids = set()
             if comments_xml and comments_xml.exists():
-                comments_root = lxml.etree.parse(str(comments_xml)).getroot()
+                comments_root = etree.parse(str(comments_xml)).getroot()
                 comment_ids = {
                     elem.get(f"{{{self.WORD_2006_NAMESPACE}}}id")
                     for elem in comments_root.xpath(
@@ -376,7 +376,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
                             f'  document.xml: marker id="{comment_id}" references non-existent comment'
                         )
 
-        except (lxml.etree.XMLSyntaxError, Exception) as e:
+        except (etree.XMLSyntaxError, Exception) as e:
             errors.append(f"  Error parsing XML: {e}")
 
         if errors:
@@ -402,7 +402,7 @@ class DOCXSchemaValidator(BaseSchemaValidator):
         for xml_file in self.xml_files:
             try:
                 content = xml_file.read_text(encoding="utf-8")
-                dom = defusedxml.minidom.parseString(content)
+                dom = minidom.parseString(content)
                 is_numbering = xml_file.name == "numbering.xml"
                 base = 10 if is_numbering else 16
                 pending = []  

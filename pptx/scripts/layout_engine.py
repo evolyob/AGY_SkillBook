@@ -233,7 +233,7 @@ class PPTXLayoutEngine:
         self._card(slide, x, y, w, h, bg=self.t["card"], border=self.t["border_light"])
         try:
             blob = src if isinstance(src, bytes) else (src.getvalue() if isinstance(src, io.BytesIO) else open(src, "rb").read())
-            im = Image.open(io.BytesIO(blob))
+            im = Image.open(io.BytesIO(blob))  # rb stream
             ratio, pad = im.size[0] / float(im.size[1]), 0.15
             avail_w, avail_h = w - pad * 2, h - pad * 2 - (0.35 if caption else 0)
             tw, th = (avail_h * ratio, avail_h) if (avail_w / avail_h) > ratio else (avail_w, avail_w / ratio)

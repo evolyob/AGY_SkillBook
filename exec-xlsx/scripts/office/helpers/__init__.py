@@ -3,7 +3,7 @@ import posixpath
 import re
 import stat
 import tempfile
-import urllib.parse
+from urllib.parse import unquote
 import zipfile
 from pathlib import Path
 
@@ -29,7 +29,7 @@ def opc_target(target: str, source_part: str, target_mode: str = "") -> str | No
     if _SCHEME_RE.match(target):
         return None
 
-    target = urllib.parse.unquote(target)
+    target = unquote(target)
 
     if "\\" in target:
         raise ValueError(f"relationship target is not a POSIX part name: {target!r}")

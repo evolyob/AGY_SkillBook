@@ -5,8 +5,6 @@ Reports only; the fix is to move <p:notesMasterIdLst> back to directly after
 """
 
 
-from __future__ import annotations
-
 import posixpath
 import re
 from typing import Mapping

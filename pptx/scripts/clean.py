@@ -20,14 +20,14 @@ import re
 import sys
 from pathlib import Path
 
-import defusedxml.minidom
+from defusedxml import minidom
 
 from office.helpers import SLIDE_REL_TYPE, opc_target, rels_source_part
 
 
 def _slide_rids(pres_rels_path: Path, unpacked_dir: Path) -> dict[str, str]:
     source_part = rels_source_part(pres_rels_path, unpacked_dir)
-    rels_dom = defusedxml.minidom.parse(str(pres_rels_path))
+    rels_dom = minidom.parse(str(pres_rels_path))
 
     rids: dict[str, str] = {}
     for rel in rels_dom.getElementsByTagName("Relationship"):
@@ -84,7 +84,7 @@ def remove_orphaned_slides(unpacked_dir: Path) -> list[str]:
         )
         if listed:
             raise RefusedToClean(
-                f"<p:sldIdLst> lists {len(listed)} slide(s) and none of the "
+                f"The <p:sldIdLst> lists {len(listed)} slide(s) and none of the "
                 f"{len(on_disk)} slide(s) on disk match any of them. Refusing to "
                 f"delete them all — this is a parse failure, not an empty deck."
             )
@@ -103,7 +103,7 @@ def remove_orphaned_slides(unpacked_dir: Path) -> list[str]:
                 removed.append(str(rels_file.relative_to(unpacked_dir)))
 
     if removed and pres_rels_path.exists():
-        rels_dom = defusedxml.minidom.parse(str(pres_rels_path))
+        rels_dom = minidom.parse(str(pres_rels_path))
         source_part = rels_source_part(pres_rels_path, unpacked_dir)
         changed = False
 
@@ -146,7 +146,7 @@ def _referenced_by(rels_files, unpacked_dir: Path) -> set:
 
     for rels_file in rels_files:
         source_part = rels_source_part(rels_file, unpacked_dir)
-        dom = defusedxml.minidom.parse(str(rels_file))
+        dom = minidom.parse(str(rels_file))
         for rel in dom.getElementsByTagName("Relationship"):
             part = opc_target(
                 rel.getAttribute("Target"), source_part, rel.getAttribute("TargetMode")
@@ -236,7 +236,7 @@ def update_content_types(unpacked_dir: Path, removed_files: list[str]) -> None:
     if not ct_path.exists():
         return
 
-    dom = defusedxml.minidom.parse(str(ct_path))
+    dom = minidom.parse(str(ct_path))
     changed = False
 
     for override in list(dom.getElementsByTagName("Override")):
