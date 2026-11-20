@@ -1,6 +1,6 @@
 # How to Write a Novel Detailed Outline: Chapter Template and Fill-in Example
 
-A detailed outline (`细纲`, *xìgāng*) breaks upcoming chapters down into an actionable plan you can draft from directly: where the reader's emotions travel from and to, what choices the characters face, which plot beats need to be expanded in full, and which trump cards must stay hidden for now. A chapter outline (`章纲`, *zhānggāng*) can be as rough as one line stating a single purpose, and different authors use different names for these layers. This guide provides a practical fill-in template; if you use Oh Story to draft the main text, the skill will save outlines using the project's built-in detailed outline template. Stakes/trade-offs, foreshadowing payoffs, and pacing/detail allocation are used as needed—you do not have to fill in every field for every chapter.
+A detailed outline (`細綱`, *xìgāng*) breaks upcoming chapters down into an actionable plan you can draft from directly: where the reader's emotions travel from and to, what choices the characters face, which plot beats need to be expanded in full, and which trump cards must stay hidden for now. A chapter outline (`章綱`, *zhānggāng*) can be as rough as one line stating a single purpose, and different authors use different names for these layers. This guide provides a practical fill-in template; if you use Oh Story to draft the main text, the skill will save outlines using the project's built-in detailed outline template. Stakes/trade-offs, foreshadowing payoffs, and pacing/detail allocation are used as needed—you do not have to fill in every field for every chapter.
 
 ## What Is the Difference Between a Detailed Outline and a Chapter Outline?
 
@@ -11,7 +11,7 @@ A chapter outline governs the broad direction, while a detailed outline governs 
 | Chapter Outline | One sentence plus a purpose tag, or one paragraph governing a single event; notes the chapter range, hooks, and foreshadowing. How many chapters it covers is decided by the event itself, not fixed to three to five chapters. |
 | Detailed Outline | Clearly states the target emotion, character choices, plot beats, what to withhold for now, and where the ending stops—ready to draft prose from immediately. |
 
-There is no need to write two sets of duplicate content. Oh Story's long-form novel project uses a full-book outline, volume outlines, and per-chapter files saved at `大纲/细纲_第XXX章.md`. When you are only discussing ideas or planning, it stops once the outline is delivered and will not automatically proceed to drafting the chapter prose.
+There is no need to write two sets of duplicate content. Oh Story's long-form novel project uses a full-book outline, volume outlines, and per-chapter files saved at `大綱/細綱_第XXX章.md`. When you are only discussing ideas or planning, it stops once the outline is delivered and will not automatically proceed to drafting the chapter prose.
 
 ### Quick Chapter Outline Table
 
@@ -108,7 +108,7 @@ A condensed detailed outline for Chapter 12 of an original urban-fiction novel. 
 > Beat 1 (Setup, sparse / `铺垫，疏`): The customer quotes the other shop's 3,000 price to replace the movement. Forbidden: Do not reveal the watch's origin early.
 > Beat 2 (Setup, medium / `铺垫，中`): The rival store's appraiser declares the movement rusted solid and offers 800 to buy the watch. Allowed: He can use Kuang Xiaohe's young age against her in front of the customer.
 > Beat 3 (Characterization, dense / `人物塑造，密`): Kuang Xiaohe decides to open the watch. Allowed: She can declare in public, "If I break it, I pay," putting the stakes right on the counter.
-> Beat 4 (Satisfaction beat, dense / `爽点，密`): Mainspring resets; the second hand starts moving. Allowed: The customer can say on the spot that he won't replace the 3,000 movement and won't sell for 800 either.
+> Beat 4 (Satisfaction beat, dense / `爽點，密`): Mainspring resets; the second hand starts moving. Allowed: The customer can say on the spot that he won't replace the 3,000 movement and won't sell for 800 either.
 > Beat 5 (Setup, sparse / `铺垫，疏`): The customer agrees to bring several other watches from home next week; the appraiser takes his leave. Forbidden: Do not reveal the contents of the engraving.
 
 Once the second hand moves, the reader sees the "beyond saving" verdict overturned. That still does not prove how much the pocket watch is worth, nor has the apprentice received 3,000 or 800. The customer promising to return next week is only a new opportunity; actual repair fees, orders, and rent will land in later chapters. The watch's origin is handed off to that photograph at the chapter's end. For how a detailed outline becomes prose, see From Chapter Outline to Prose.

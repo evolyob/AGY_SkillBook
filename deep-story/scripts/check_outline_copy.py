@@ -22,16 +22,16 @@ NON_HAN_RE = re.compile(r'[^\u4e00-\u9fff]')
 HEADING_RE = re.compile(r'^ {0,3}(#{1,6})[\t ]+(.*)$')
 FIELD_ITEM_RE = re.compile(r'^[-*+][\t ]+')
 COMPLETION_FIELD_RE = re.compile(
-    r'^[-*+][\t ]+(?:\*\*|__)?实际完成情况[^：:]*[：:]'
+    r'^[-*+][\t ]+(?:\*\*|__)?實際完成情況[^：:]*[：:]'
 )
 ANCHOR_BLOCK_RE = re.compile(
-    r'(?:原样出现的原话|复沓锚句)[^：:\n]*[：:]([\s\S]*?)(?=\n[-*+]\s|\n#{1,6}\s|$)'
+    r'(?:原樣出現的原話|複沓锚句)[^：:\n]*[：:]([\s\S]*?)(?=\n[-*+]\s|\n#{1,6}\s|$)'
 )
 ANCHOR_PREFIX_RE = re.compile(
-    r'^\s*[-*+]?\s*(?:\d+[.、)]\s*)?(?:点\s*\d+\s*[：:])?'
+    r'^\s*[-*+]?\s*(?:\d+[.、)]\s*)?(?:點\s*\d+\s*[：:])?'
 )
 CHAPTER_PREFIX_RE = re.compile(r'^第\s*0*(\d+)\s*章')
-OUTLINE_FILE_RE = re.compile(r'^细纲_第0*(\d+)章.*\.md$')
+OUTLINE_FILE_RE = re.compile(r'^細綱_第0*(\d+)章.*\.md$')
 MARKDOWN_HEADING_RE = re.compile(r'^#.*$', re.MULTILINE)
 
 
@@ -50,19 +50,19 @@ def read_text_file(path_str: str) -> dict[str, Any]:
         if exc.errno == errno.ENOENT:
             return {'ok': False, 'reason': '不存在'}
         code_name = errno.errorcode.get(exc.errno or 0) or str(exc.errno)
-        return {'ok': False, 'reason': f'无法读取（{code_name}）'}
+        return {'ok': False, 'reason': f'無法讀取（{code_name}）'}
 
 
 def report_input_error(kind: str, file_path: str, reason: str) -> None:
     """Write a localized input read error to stderr."""
-    sys.stderr.write(f'错误: 无法读取{kind} "{file_path}"：{reason}。\n')
+    sys.stderr.write(f'錯誤: 無法讀取{kind} "{file_path}"：{reason}。\n')
 
 
 def report_usage_error(message: str) -> int:
     """Write a localized CLI usage error to stderr and return exit code 2."""
-    sys.stderr.write(f'错误: {message}。\n')
+    sys.stderr.write(f'錯誤: {message}。\n')
     sys.stderr.write(
-        '用法: node check-outline-copy.js [--outline <细纲路径>] <正文路径...>\n'
+        '用法: node check-outline-copy.js [--outline <細綱路徑>] <正文路徑...>\n'
     )
     return 2
 
@@ -88,7 +88,7 @@ def strip_completion_record(outline: str) -> str:
             if not heading and not FIELD_ITEM_RE.match(line):
                 continue
             in_field = False
-        if heading and '实际完成情况' in heading.group(2):
+        if heading and '實際完成情況' in heading.group(2):
             heading_level = len(heading.group(1))
             continue
         if COMPLETION_FIELD_RE.match(line):
@@ -161,14 +161,14 @@ def find_outline(prose_file: str) -> str | None:
     """Auto-discover the matching outline file for a prose file."""
     base = os.path.basename(prose_file)
     if base == '正文.md':
-        sibling = os.path.join(os.path.dirname(prose_file), '小节大纲.md')
+        sibling = os.path.join(os.path.dirname(prose_file), '小節大綱.md')
         return sibling if os.path.exists(sibling) else None
 
     match = CHAPTER_PREFIX_RE.match(base)
     if not match:
         return None
     chapter = match.group(1)
-    outline_dir = os.path.join(os.path.dirname(os.path.dirname(prose_file)), '大纲')
+    outline_dir = os.path.join(os.path.dirname(os.path.dirname(prose_file)), '大綱')
     try:
         entries = os.listdir(outline_dir)
     except OSError as exc:
@@ -243,40 +243,40 @@ def _format_report(
 ) -> str:
     """Format the overlap detection report for stdout."""
     rate = f'{(copied * 100) / prose_len:.1f}'
-    is_short = os.path.basename(outline_file) == '小节大纲.md'
+    is_short = os.path.basename(outline_file) == '小節大綱.md'
     if is_short:
         guidance = (
-            '逐条对照原文判断：确属把小节大纲叙述搬进正文就重写——大纲只锁功能与结果，'
-            '句子在正文现场写；誓词、关键原话、固定专名等功能性重合可保留。每条都要有结论，'
-            '不为归零机械改写。保留项由主会话登记进小节大纲.md 表格下方「原样出现的原话：」行下'
-            '（每行一条原话，缩进写；旧书叫「复沓锚句」，照认）再复检——子代理只重写正文或标 '
-            '`[需复核]` 交回，不改小节大纲。'
+            '逐條對照原文判斷：確屬把小節大綱敘述搬進正文就重寫——大綱只鎖功能與結果，'
+            '句子在正文現场寫；誓詞、關鍵原話、固定專名等功能性重合可保留。每條都要有結論，'
+            '不為歸零機械改寫。保留項由主會話登記進小節大綱.md 表格下方「原樣出現的原話：」行下'
+            '（每行一條原話，縮進寫；舊書叫「複沓锚句」，照認）再複檢——子代理只重寫正文或標 '
+            '`[需複核]` 交回，不改小節大綱。'
         )
     else:
         guidance = (
-            '逐条对照原文判断：确属把细纲叙述搬进正文就重写——细纲只锁功能与结果，'
-            '句子在正文现场写；系统面板、誓词、案卷原话、固定专名等功能性重合可保留。'
-            '每条都要有结论，不为归零机械改写。保留项由主会话补进细纲「原样出现的原话」——'
-            '子代理只重写正文或标 `[需复核]` 交回，不改大纲细纲。'
+            '逐條對照原文判斷：確屬把細綱敘述搬進正文就重寫——細綱只鎖功能與結果，'
+            '句子在正文現场寫；系統面板、誓詞、案卷原話、固定專名等功能性重合可保留。'
+            '每條都要有結論，不為歸零機械改寫。保留項由主會話補進細綱「原樣出現的原話」——'
+            '子代理只重寫正文或標 `[需複核]` 交回，不改大綱細綱。'
         )
 
-    title_kind = '小节大纲' if is_short else '细纲'
+    title_kind = '小節大綱' if is_short else '細綱'
     prose_base = os.path.basename(prose_file)
     outline_base = os.path.basename(outline_file)
     out = [
-        f'=== {title_kind}照搬检测（{prose_base}）===',
-        f'正文 {prose_len} 字，与 {outline_base} 连续重合 >{MIN_RUN - 1} 字的片段 '
-        f'{len(hits)} 处，共 {copied} 字（{rate}%）。',
+        f'=== {title_kind}照搬檢測（{prose_base}）===',
+        f'正文 {prose_len} 字，與 {outline_base} 連續重合 >{MIN_RUN - 1} 字的片段 '
+        f'{len(hits)} 處，共 {copied} 字（{rate}%）。',
         guidance,
     ]
     top_hits = sorted(hits, key=lambda h: h['len'], reverse=True)[:REPORT_TOP]
     for hit in top_hits:
         out.append(f"  · {hit['len']} 字「{hit['frag']}」")
     if len(hits) > REPORT_TOP:
-        out.append(f'  · …另有 {len(hits) - REPORT_TOP} 处')
+        out.append(f'  · …另有 {len(hits) - REPORT_TOP} 處')
     if anchored_count:
         out.append(
-            f'（另有 {anchored_count} 处 {anchored} 字为登记原话的逐字落地，不计入誊抄）'
+            f'（另有 {anchored_count} 處 {anchored} 字為登記原話的逐字落地，不計入誊抄）'
         )
     return '\n'.join(out) + '\n'
 
@@ -292,13 +292,13 @@ def check_one(prose_file: str, explicit_outline: str | None) -> int:
     outline_file = explicit_outline or find_outline(prose_file)
     if not outline_file:
         sys.stdout.write(
-            f'细纲照搬检测：跳过 "{prose_file}"（未自动发现细纲）。\n'
+            f'細綱照搬檢測：跳過 "{prose_file}"（未自動發現細綱）。\n'
         )
         return 0
 
     outline_res = read_text_file(outline_file)
     if not outline_res['ok']:
-        kind = '显式细纲' if explicit_outline else '自动发现的细纲'
+        kind = '顯式細綱' if explicit_outline else '自動發現的細綱'
         report_input_error(kind, outline_file, outline_res['reason'])
         return 2
     outline = outline_res['text']
@@ -316,8 +316,8 @@ def check_one(prose_file: str, explicit_outline: str | None) -> int:
         if anchored_count:
             base = os.path.basename(prose_file)
             sys.stdout.write(
-                f'细纲照搬检测（{base}）：无未授权誊抄；'
-                f'另有 {anchored_count} 处 {anchored} 字为登记原话的逐字落地。\n'
+                f'細綱照搬檢測（{base}）：無未授權誊抄；'
+                f'另有 {anchored_count} 處 {anchored} 字為登記原話的逐字落地。\n'
             )
         return 0
 
@@ -341,20 +341,20 @@ def parse_args(argv: list[str]) -> tuple[str | None, list[str]] | int:
             positional_only = True
         elif not positional_only and arg == '--outline':
             if explicit_outline is not None:
-                return report_usage_error('--outline 不能重复指定')
+                return report_usage_error('--outline 不能重複指定')
             val = argv[k + 1] if k + 1 < len(argv) else ''
             if not val or val.startswith('--'):
-                return report_usage_error('--outline 缺少路径')
+                return report_usage_error('--outline 缺少路徑')
             explicit_outline = val
             k += 1
         elif not positional_only and arg.startswith('--'):
-            return report_usage_error(f'未知选项: {arg}')
+            return report_usage_error(f'未知選項: {arg}')
         else:
             prose_files.append(arg)
         k += 1
 
     if not prose_files:
-        return report_usage_error('缺少正文路径')
+        return report_usage_error('缺少正文路徑')
     return explicit_outline, prose_files
 
 
@@ -375,5 +375,5 @@ if __name__ == '__main__':
     try:
         sys.exit(main())
     except Exception as exc:
-        sys.stderr.write(f'错误: 细纲照搬检测异常：{exc}。\n')
+        sys.stderr.write(f'錯誤: 細綱照搬檢測異常：{exc}。\n')
         sys.exit(2)

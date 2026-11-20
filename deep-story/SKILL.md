@@ -12,8 +12,8 @@ Manage long-form and short-form fiction projects using the pure Python 3 core (`
 ## Hard Invariants (Always Enforce)
 1. **No Outline, No Prose**: Never draft a chapter before its detailed outline passes `check_outline_contract.py`.
 2. **Planning Stop Point**: When asked to plan outlines or settings, deliver the plan and **stop**; do not auto-draft prose or initialize tracking.
-3. **Single-Ledger Authority**: Never manually edit derived Markdown files under `tracking/` (`追踪/`). Always mutate state via `tracking_commit.py` / `storyctl.py chapter commit` and verify via `tracking_commit.py check`.
-4. **Epistemic Isolation**: Keep `作者真相.md` separate from `读者已知.md` and each character's `known` / `misbelieved` / `concealed` fields.
+3. **Single-Ledger Authority**: Never manually edit derived Markdown files under `tracking/` (`追蹤/`). Always mutate state via `tracking_commit.py` / `storyctl.py chapter commit` and verify via `tracking_commit.py check`.
+4. **Epistemic Isolation**: Keep `作者真相.md` separate from `讀者已知.md` and each character's `known` / `misbelieved` / `concealed` fields.
 5. **Batch Cap**: Draft at most **3 chapters** per turn in long-form daily mode.
 
 ## End-to-End Logical Pipeline (1-to-1 SSOT Routing)

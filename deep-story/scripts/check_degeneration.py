@@ -16,19 +16,19 @@ from typing import Any
 USAGE = """Usage: python3 check_degeneration.py [--check] [--json] [--fail-on=blocking|all] <file...>
 
 Detect model-degeneration fingerprints that a degrading model cannot self-report:
-  - verbatim repetition (复读/打转): a long sentence repeated, or back-to-back identical lines
-  - mid-sentence truncation (截断): file ends without terminal/closing punctuation
-  - placeholder / refusal / meta leakage (元信息泄漏): 作为AI / 我无法继续 / 此处省略 / 乱码
-  - engineering-word leakage (工程词泄漏): 细纲 / 情节点 / 本章 / 下一章 / 任务描述 漏进正文
+  - verbatim repetition (複讀/打轉): a long sentence repeated, or back-to-back identical lines
+  - mid-sentence truncation (截斷): file ends without terminal/closing punctuation
+  - placeholder / refusal / meta leakage (元信息泄漏): 作為AI / 我無法继續 / 此處省略 / 亂碼
+  - engineering-word leakage (工程詞泄漏): 細綱 / 情節點 / 本章 / 下一章 / 任务描述 漏進正文
 
-Each finding carries severity: blocking (复读/截断/占位拒绝语/tier1 纯工程词，正文里永不合法，
-命中即重写) 或 advisory (tier2 章节/歧义词、对话行里的工程词，只提示、交人/LLM 判)。
---fail-on=blocking 只在出现 blocking finding 时退出 1；默认 --fail-on=all 有任何 finding 即退出 1。
+Each finding carries severity: blocking (複讀/截斷/占位拒絕語/tier1 純工程詞，正文里永不合法，
+命中即重寫) 或 advisory (tier2 章節/歧義詞、對話行里的工程詞，只提示、交人/LLM 判)。
+--fail-on=blocking 只在出現 blocking finding 時退出 1；默認 --fail-on=all 有任何 finding 即退出 1。
 
 Report-only. The script never rewrites — the safe response is to regenerate the
 affected unit (chapter / 摘要) with the finding fed back as a constraint, cap retries,
-then surface the evidence to the user. Conservative by design: 通俗网文 deliberately
-uses 排比/复沓/弹幕刷屏/重复台词 for rhythm, so short and dialogue repetition is exempt."""
+then surface the evidence to the user. Conservative by design: 通俗網文 deliberately
+uses 排比/複沓/弹幕刷屏/重複台詞 for rhythm, so short and dialogue repetition is exempt."""
 
 _DESLOP_RULES_PATH = Path(__file__).resolve().parent.parent / "data" / "deslop_rules.json"
 _DEGEN_CFG = json.loads(_DESLOP_RULES_PATH.read_text(encoding="utf-8"))["degeneration_rules"]
@@ -78,20 +78,20 @@ QUOTED_SPAN_PATTERNS: tuple[re.Pattern[str], ...] = (
 )
 
 META_TIER1_RE = re.compile(
-    r"细纲|(?<!剧)情节点|卷纲|功能标签|目标情绪|字数目标|字数口径|"
-    r"章首钩子|章尾钩子|这章不能说破|本章禁止提前释放|排纲笔记|排纲底稿|"
-    r"节尾停在哪|结尾承接"
+    r"細綱|(?<!剧)情節點|卷綱|功能標签|目標情绪|字數目標|字數口徑|"
+    r"章首钩子|章尾钩子|這章不能說破|本章禁止提前釋放|排綱筆記|排綱底稿|"
+    r"節尾停在哪|結尾承接"
 )
 META_TIER2_RE = re.compile(
-    r"第[一二三四五六七八九十百千万两0-9]+章|本章|这一章|上一章|下一章|"
-    r"上章|下章|前一章|后一章|前文|后文|伏笔|读者|任务描述"
+    r"第[一二三四五六七八九十百千万两0-9]+章|本章|這一章|上一章|下一章|"
+    r"上章|下章|前一章|後一章|前文|後文|伏筆|讀者|任务描述"
 )
 CHAPTER_HEADING_RE = re.compile(
-    r"^第[零〇一二三四五六七八九十百千万两0-9]+[章节回]"
+    r"^第[零〇一二三四五六七八九十百千万两0-9]+[章節回]"
     r"(?:$|[\s_：:——\-]+[^\n。；;]{0,28}$)"
 )
 END_SIGNOFF_RE = re.compile(
-    r"^[-—~～＜<【\[（(《\s]*(?:全文完|正文完|全书完|本卷完|完结|完|END|The\s+End)"
+    r"^[-—~～＜<【\[（(《\s]*(?:全文完|正文完|全書完|本卷完|完結|完|END|The\s+End)"
     r"[-—~～＞>】\]）)》.。！!\s]*$",
     re.IGNORECASE,
 )
@@ -187,7 +187,7 @@ def find_repetition(content: list[ContentLine]) -> list[dict[str, Any]]:
                     "column": 1,
                     "type": "verbatim-repeat",
                     "severity": "blocking",
-                    "message": "逐行复读（紧邻整行重复）：疑似模型打转，重写本段、删掉重复。",
+                    "message": "逐行複讀（紧鄰整行重複）：疑似模型打轉，重寫本段、刪掉重複。",
                     "excerpt": compact(body[i].trimmed),
                 }
             )
@@ -210,7 +210,7 @@ def find_repetition(content: list[ContentLine]) -> list[dict[str, Any]]:
                 "column": 1,
                 "type": "verbatim-repeat",
                 "severity": "blocking",
-                "message": f"长句复读（同句出现 {counts[s]} 次）：疑似模型打转，重写、保留一处。",
+                "message": f"長句複讀（同句出現 {counts[s]} 次）：疑似模型打轉，重寫、保留一處。",
                 "excerpt": compact(s),
             }
         )
@@ -237,7 +237,7 @@ def find_truncation(content: list[ContentLine]) -> list[dict[str, Any]]:
             "column": len(last.trimmed),
             "type": "truncated",
             "severity": "blocking",
-            "message": "疑似截断：正文末尾未以句末/收尾标点结束，可能被模型中途切断；补完结尾或重写收尾。",
+            "message": "疑似截斷：正文末尾未以句末/收尾標點結束，可能被模型中途切斷；補完結尾或重寫收尾。",
             "excerpt": compact(last.trimmed[-24:]),
         }
     ]
@@ -257,7 +257,7 @@ def _match_placeholder_line(trimmed: str, line_no: int) -> dict[str, Any] | None
             "column": index + 1,
             "type": "placeholder-leak",
             "severity": "blocking",
-            "message": f"{pattern.label}：正文混入元信息/拒绝语/占位符，重写本段干净落地。",
+            "message": f"{pattern.label}：正文混入元信息/拒絕語/占位符，重寫本段乾淨落地。",
             "excerpt": compact(trimmed[max(0, index - 4) : index + 20]),
         }
     return None
@@ -288,7 +288,7 @@ def _match_meta_leak_line(trimmed: str, line_no: int) -> dict[str, Any] | None:
 
     if match:
         suffix = (
-            "例外：角色为作者/编剧、在故事内真实讨论创作时，台词里可能合法。"
+            "例外：角色為作者/編剧、在故事內真實讨論創作時，台詞里可能合法。"
             if quoted_tier1
             else ""
         )
@@ -299,8 +299,8 @@ def _match_meta_leak_line(trimmed: str, line_no: int) -> dict[str, Any] | None:
             "type": "meta-leak",
             "severity": "advisory" if quoted_tier1 else "blocking",
             "message": (
-                f"工程词泄漏：「{match.group(0)}」是写作流水线术语，正文里不该出现；"
-                f"改成角色/场景内表达。{suffix}"
+                f"工程詞泄漏：「{match.group(0)}」是寫作流水線术語，正文里不該出現；"
+                f"改成角色/场景內表達。{suffix}"
             ),
             "excerpt": compact(trimmed[max(0, idx - 6) : idx + 18]),
         }
@@ -315,9 +315,9 @@ def _match_meta_leak_line(trimmed: str, line_no: int) -> dict[str, Any] | None:
         "type": "meta-leak",
         "severity": "advisory",
         "message": (
-            f"元信息泄漏：「{match.group(0)}」疑似工程/章节结构词混入正文；"
-            "改成角色当下可感知的事件锚点或相对时间。"
-            "例外：角色在故事内真实阅读/讨论「第X章」、真身为作者/读者、或故事内系统/界面用语。"
+            f"元信息泄漏：「{match.group(0)}」疑似工程/章節結構詞混入正文；"
+            "改成角色當下可感知的事件锚點或相對時間。"
+            "例外：角色在故事內真實閱讀/讨論「第X章」、真身為作者/讀者、或故事內系統/界面用語。"
         ),
         "excerpt": compact(trimmed[max(0, idx - 6) : idx + 18]),
     }

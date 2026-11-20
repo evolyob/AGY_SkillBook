@@ -27,7 +27,7 @@ class DeepStoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             proj = Path(tmp) / "book"
             proj.mkdir()
-            (proj / "大纲").mkdir()
+            (proj / "大綱").mkdir()
             (proj / "正文").mkdir()
             init_json = Path(tmp) / "init.json"
             init_json.write_text(
@@ -53,7 +53,7 @@ class DeepStoryTests(unittest.TestCase):
             )
             self.assertEqual(r_check.returncode, 0, r_check.stderr)
 
-            ctx = proj / "追踪" / "上下文.md"
+            ctx = proj / "追蹤" / "上下文.md"
             ctx.write_text(ctx.read_text(encoding="utf-8") + "\nManual tamper\n", encoding="utf-8")
             r_tamper = subprocess.run(
                 [sys.executable, str(SCRIPTS_DIR / "tracking_commit.py"), "check", "--project", str(proj)],
@@ -100,7 +100,7 @@ class DeepStoryTests(unittest.TestCase):
     def test_storyctl_chapter_check_e2e(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             proj = Path(tmp) / "book"
-            (proj / "大纲").mkdir(parents=True)
+            (proj / "大綱").mkdir(parents=True)
             (proj / "正文").mkdir(parents=True)
             init_json = Path(tmp) / "init.json"
             init_json.write_text(
@@ -118,8 +118,8 @@ class DeepStoryTests(unittest.TestCase):
                 [sys.executable, str(SCRIPTS_DIR / "tracking_commit.py"), "init", "--project", str(proj), "--input", str(init_json)],
                 check=True,
             )
-            (proj / "大纲" / "细纲_第001章.md").write_text("# 细纲 第1章\n- 核心事件: 测试\n- 字数目标: 2000字\n", encoding="utf-8")
-            (proj / "正文" / "第001章_测试.md").write_text("# 第一章 测试\n\n他推开值班室的门，桌上放着一张发黄的登记表。\n", encoding="utf-8")
+            (proj / "大綱" / "細綱_第001章.md").write_text("# 細綱 第1章\n- 核心事件: 測試\n- 字數目標: 2000字\n", encoding="utf-8")
+            (proj / "正文" / "第001章_測試.md").write_text("# 第一章 測試\n\n他推開值班室的門，桌上放着一張發黃的登記表。\n", encoding="utf-8")
             r_chk = subprocess.run(
                 [sys.executable, str(SCRIPTS_DIR / "storyctl.py"), "chapter", "check", "--project", str(proj), "--chapter", "1"],
                 capture_output=True, text=True, check=False,

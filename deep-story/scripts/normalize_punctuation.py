@@ -38,9 +38,9 @@ HAS_DASH_RE = re.compile(r'[—-]')
 OPENING_FENCE_RE = re.compile(r'^ {0,3}(`{3,}|~{3,})(.*)$')
 YAML_FIELD_RE = re.compile(r'^[A-Za-z0-9_-]+:\s*')
 COLON_AFTER_RE = re.compile(
-    r'^(因为|原来|这是|那是|也就是|换句话|说白了|所谓|答案|原因|结果|真相|问题在于)'
+    r'^(因為|原來|這是|那是|也就是|換句話|說白了|所謂|答案|原因|結果|真相|問題在於)'
 )
-COLON_BEFORE_RE = re.compile(r'(原因|答案|真相|结果|结论|问题|选择|意思)$')
+COLON_BEFORE_RE = re.compile(r'(原因|答案|真相|結果|結論|問題|選择|意思)$')
 SENTENCE_PUNCT_RE = re.compile(r'[，,。.!！?？;；:：…]$')
 PUNCT_RE = re.compile(r'[，,。.!！?？;；:：、…"“”\'‘’」』）)]')
 CLOSING_QUOTE_RE = re.compile(r'["”」』]')
@@ -275,7 +275,7 @@ def _replace_pause_match(
             'line': line_no,
             'column': start + 1,
             'type': 'double-hyphen' if token.startswith('-') else 'em-dash',
-            'message': '粘连的破折号与省略号统一为「……」。',
+            'message': '粘連的破折號與省略號統一為「……」。',
         }
         return output + original[last_index:start] + rep, end, finding
 
@@ -288,7 +288,7 @@ def _replace_pause_match(
                 'line': line_no,
                 'column': start + 1,
                 'type': 'ellipsis',
-                'message': '省略号统一为「……」。',
+                'message': '省略號統一為「……」。',
             }
         return output + original[last_index:start] + rep, end, finding
 
@@ -301,12 +301,12 @@ def _replace_pause_match(
                 'line': line_no,
                 'column': start + 1,
                 'type': get_pause_type(token),
-                'message': '引号内的破折号统一为「——」。',
+                'message': '引號內的破折號統一為「——」。',
             }
         return output + original[last_index:start] + rep, end, finding
 
     rep = choose_pause_replacement(original, start, len(token))
-    msg = f'替换为「{rep}」。' if rep else '移除重复标点。'
+    msg = f'替換為「{rep}」。' if rep else '移除重複標點。'
     finding = {
         'line': line_no,
         'column': start + 1,
@@ -419,7 +419,7 @@ def _normalize_quotes_curly(
                     'line': line_no,
                     'column': i + 1,
                     'type': 'quote-style',
-                    'message': '按显式 quote-mode 转为中文弯引号。',
+                    'message': '按顯式 quote-mode 轉為中文彎引號。',
                 }
             )
 
@@ -445,7 +445,7 @@ def normalize_quotes(
                     'line': line_no,
                     'column': i + 1,
                     'type': 'quote-style',
-                    'message': '按显式 quote-mode 转为半角双引号。',
+                    'message': '按顯式 quote-mode 轉為半角雙引號。',
                 }
             )
             continue
@@ -458,7 +458,7 @@ def normalize_quotes(
                     'line': line_no,
                     'column': i + 1,
                     'type': 'quote-style',
-                    'message': '按显式 quote-mode 转为盐言引号。',
+                    'message': '按顯式 quote-mode 轉為盐言引號。',
                 }
             )
             continue
@@ -494,7 +494,7 @@ def normalize_document(
                     'line': comment_start['line'] if comment_start else line_no,
                     'column': comment_start['column'] if comment_start else 1,
                     'type': 'html-comment-unclosed',
-                    'message': 'HTML 注释未闭合；后续内容仍按正文检查。',
+                    'message': 'HTML 注釋未閉合；後續內容仍按正文檢查。',
                 }
             )
             comment_open = False
@@ -524,7 +524,7 @@ def normalize_document(
                     'line': line_no,
                     'column': line.index('-') + 1,
                     'type': 'markdown-divider',
-                    'message': '正文中不要使用 markdown 分隔线；建议移除该行。',
+                    'message': '正文中不要使用 markdown 分隔線；建議移除該行。',
                 }
             )
             continue
@@ -551,7 +551,7 @@ def normalize_document(
                 'line': comment_start['line'] if comment_start else len(lines),
                 'column': comment_start['column'] if comment_start else 1,
                 'type': 'html-comment-unclosed',
-                'message': 'HTML 注释未闭合；后续内容仍按正文检查。',
+                'message': 'HTML 注釋未閉合；後續內容仍按正文檢查。',
             }
         )
 

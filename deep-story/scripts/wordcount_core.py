@@ -26,9 +26,9 @@ _FRONTMATTER_KEY_RE = re.compile(r"^[A-Za-z_\u3400-\u9FFF][^:\n]{0,80}:[ \t]*(?:
 _LEADING_BLANK_RE = re.compile(r"^[\u0009\u0020\u3000]*$")
 _ATX_HEADING_RE = re.compile(r"^[\u0009\u0020]{0,3}#{1,6}[\u0009\u0020]+\S")
 _POSITIVE_INTEGER_RE = re.compile(r"^[1-9]\d*$")
-# 细纲「字数目标」「字数范围」「字数口径」的唯一写法语法；check-outline-contract.js 逐字镜像同一组正则，
-# scripts/test-storyctl.py 用同一批写法同时跑两边，保证细纲验收过了、章节检查不会再拒。
-# 值里一个数字都没有的目标/范围行（「字数目标：按卷规划」）是说明文字，不参与取值。
+# 細綱「字數目標」「字數范围」「字數口徑」的唯一寫法語法；check-outline-contract.js 逐字鏡像同一組正則，
+# scripts/test-storyctl.py 用同一批寫法同時跑两邊，保证細綱驗收過了、章節檢查不會再拒。
+# 值里一個數字都沒有的目標/范围行（「字數目標：按卷規划」）是說明文字，不参與取值。
 _NUMBER = r"([1-9][0-9]{0,2}(?:[,，][0-9]{3})+|[1-9][0-9]*)"
 _NOTE = r"(?:[（(][^（）()]*[）)])?"
 _TARGET_VALUE_RE = re.compile(rf"^(?:约|大约)?[ \t]*{_NUMBER}[ \t]*字?(?:左右)?[ \t]*{_NOTE}$")
@@ -56,7 +56,7 @@ def _number(raw: str) -> int:
 
 def parse_target_field(text: str) -> dict[str, Any]:
     """Return {"status": ok|missing|invalid|conflict, "value": int|None, "raw": [...]}."""
-    raws = _numeric_field_values(normalize_newlines(text).lstrip("\ufeff"), "字数目标")
+    raws = _numeric_field_values(normalize_newlines(text).lstrip("\ufeff"), "字數目標")
     if not raws:
         return {"status": "missing", "value": None, "raw": raws}
     matches = [_TARGET_VALUE_RE.fullmatch(raw) for raw in raws]
@@ -69,8 +69,8 @@ def parse_target_field(text: str) -> dict[str, Any]:
 
 
 def parse_range_field(text: str) -> dict[str, Any]:
-    """Optional author range line 「字数范围：2000-2600」; same status vocabulary as parse_target_field."""
-    raws = _numeric_field_values(normalize_newlines(text).lstrip("\ufeff"), "字数范围")
+    """Optional author range line 「字數范围：2000-2600」; same status vocabulary as parse_target_field."""
+    raws = _numeric_field_values(normalize_newlines(text).lstrip("\ufeff"), "字數范围")
     if not raws:
         return {"status": "missing", "value": None, "raw": raws}
     matches = [_RANGE_VALUE_RE.fullmatch(raw) for raw in raws]
@@ -86,8 +86,8 @@ def parse_range_field(text: str) -> dict[str, Any]:
 
 
 def parse_metric_field(text: str) -> dict[str, Any]:
-    """「字数口径：visible_chars_v1（按可见字符）」可不写，没写按默认口径；写了就每行都得是口径名（可带括号备注），且只能是 METRIC。"""
-    raws = _field_values(normalize_newlines(text).lstrip("\ufeff"), "字数口径")
+    """「字數口徑：visible_chars_v1（按可見字符）」可不寫，沒寫按默認口徑；寫了就每行都得是口徑名（可帶括號備注），且只能是 METRIC。"""
+    raws = _field_values(normalize_newlines(text).lstrip("\ufeff"), "字數口徑")
     matches = [_METRIC_VALUE_RE.fullmatch(raw) for raw in raws]
     ok = not raws or (all(matches) and {match.group(1) for match in matches if match} == {METRIC})
     return {"ok": ok, "raw": raws}
@@ -102,12 +102,12 @@ def require(condition: bool, message: str) -> None:
         raise WordcountError(message)
 
 
-BOOK_DIRS = ("设定", "大纲", "正文", "追踪")
+BOOK_DIRS = ("設定", "大綱", "正文", "追蹤")
 
 
 def resolve_book_dir(project: Path) -> Path:
-    """`--project` 给书目录或给放 `.active-book` 的工作区根都行：后者按 `.active-book`
-    第一行（相对工作区根的书路径）落到那本书。已经像书目录、或没有 `.active-book` 时原样返回。"""
+    """`--project` 給書目錄或給放 `.active-book` 的工作區根都行：後者按 `.active-book`
+    第一行（相對工作區根的書路徑）落到那本書。已經像書目錄、或沒有 `.active-book` 時原樣返回。"""
     root = Path(project)
     marker = root / ".active-book"
     if any((root / name).is_dir() for name in BOOK_DIRS) or not marker.is_file():
@@ -118,7 +118,7 @@ def resolve_book_dir(project: Path) -> Path:
     real = book.resolve()
     inside = real == root.resolve() or root.resolve() in real.parents
     require(bool(active) and inside and book.is_dir(),
-            f"{marker} 没有指向工作区里的书目录（写的是「{active}」）；--project 直接传书目录")
+            f"{marker} 沒有指向工作區里的書目錄（寫的是「{active}」）；--project 直接傳書目錄")
     return book
 
 
@@ -164,7 +164,7 @@ def parse_target(value: Any) -> int:
 
 
 def normalize_author_range(value: Any) -> dict[str, int] | None:
-    """作者明确给出的上下限；None 表示沿用默认 ±12% / ±15% 双层带。"""
+    """作者明確給出的上下限；None 表示沿用默認 ±12% / ±15% 雙層帶。"""
     if value is None:
         return None
     require(isinstance(value, dict) and set(value) == {"min", "max"}, "author range must be {min, max}")
@@ -181,7 +181,7 @@ def compute_wordcount_bands(value: Any, author_range: Any = None) -> dict[str, d
     target = parse_target(value)
     author = normalize_author_range(author_range)
     if author is not None:
-        # 作者给定区间原样优先：内部带与用户带都取它，不再有 borderline。
+        # 作者給定區間原樣優先：內部帶與用户帶都取它，不再有 borderline。
         return {"internal": dict(author), "user": dict(author)}
     return {
         "internal": {"min": (target * 88 + 99) // 100, "max": target * 112 // 100},
@@ -280,25 +280,25 @@ def target_from_outline(value: str) -> int:
     if text.startswith("\ufeff"):
         text = text[1:]
     parsed = parse_target_field(text)
-    require(parsed["status"] == "ok", f"字数目标 {_FIELD_ERRORS.get(parsed['status'], '')}: {parsed['raw']}")
-    require(parse_metric_field(text)["ok"], f"字数口径 must be {METRIC} when written")
+    require(parsed["status"] == "ok", f"字數目標 {_FIELD_ERRORS.get(parsed['status'], '')}: {parsed['raw']}")
+    require(parse_metric_field(text)["ok"], f"字數口徑 must be {METRIC} when written")
     return parse_target(parsed["value"])
 
 
 def range_from_outline(value: str) -> dict[str, int] | None:
-    """细纲可选行「字数范围：2000-2600」；没写返回 None，写了但写不对就报错而不是静默回落默认带。"""
+    """細綱可選行「字數范围：2000-2600」；沒寫返回 None，寫了但寫不對就报錯而不是靜默回落默認帶。"""
     parsed = parse_range_field(value)
     if parsed["status"] == "missing":
         return None
-    require(parsed["status"] == "ok", f"字数范围 must be one min-max pair with min <= max: {parsed['raw']}")
+    require(parsed["status"] == "ok", f"字數范围 must be one min-max pair with min <= max: {parsed['raw']}")
     return parsed["value"]
 
 
 def _chapter_number_from_name(name: str, *, outline: bool) -> int | None:
-    # 改稿流程把原文备份为 第N章_章名_原稿_{日期}.md，与 hooks 一样不把它当本章正文。
+    # 改稿流程把原文備份為 第N章_章名_原稿_{日期}.md，與 hooks 一樣不把它當本章正文。
     if not outline and "_原稿_" in name:
         return None
-    pattern = r"^细纲_第0*(\d+)章.*\.md$" if outline else r"^第0*(\d+)章(?:[_\- 　].*)?\.md$"
+    pattern = r"^細綱_第0*(\d+)章.*\.md$" if outline else r"^第0*(\d+)章(?:[_\- 　].*)?\.md$"
     match = re.match(pattern, name)
     return int(match.group(1)) if match else None
 
@@ -316,7 +316,7 @@ def find_chapter_file(directory: Path, chapter: int, *, outline: bool) -> Path:
 
 
 def read_chapter_outline(project: Path, chapter: int) -> tuple[Path, str]:
-    outline_path = find_chapter_file(project.resolve() / "大纲", chapter, outline=True)
+    outline_path = find_chapter_file(project.resolve() / "大綱", chapter, outline=True)
     try:
         return outline_path, outline_path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
@@ -324,14 +324,14 @@ def read_chapter_outline(project: Path, chapter: int) -> tuple[Path, str]:
 
 
 def effective_author_range(outline: str, author_range: Any = None) -> dict[str, int] | None:
-    """命令行给了上下限就以它为准（细纲「字数范围」写错也不阻断）；否则读细纲。"""
+    """命令行給了上下限就以它為準（細綱「字數范围」寫錯也不阻斷）；否則讀細綱。"""
     return normalize_author_range(author_range) if author_range is not None else range_from_outline(outline)
 
 
 def read_project_chapter(
     project: Path, chapter: int, author_range: Any = None,
 ) -> tuple[Path, Path, int, dict[str, int] | None]:
-    """定位本章细纲与正文，读出字数目标和生效的作者字数范围。"""
+    """定位本章細綱與正文，讀出字數目標和生效的作者字數范围。"""
     outline_path, outline = read_chapter_outline(project, chapter)
     body_path = find_chapter_file(project.resolve() / "正文", chapter, outline=False)
     return outline_path, body_path, target_from_outline(outline), effective_author_range(outline, author_range)
@@ -340,7 +340,7 @@ def read_project_chapter(
 def build_project_wordcount_record(
     project: Path, chapter: int, *, resolution: str, author_range: Any = None,
 ) -> dict[str, Any]:
-    """author_range=None 时读细纲「字数范围」；显式传入（命令行 --min-chars/--max-chars）时以它为准。"""
+    """author_range=None 時讀細綱「字數范围」；顯式傳入（命令行 --min-chars/--max-chars）時以它為準。"""
     require(resolution in RESOLUTIONS, f"unsupported wordcount resolution: {resolution}")
     _, body_path, target, author = read_project_chapter(project, chapter, author_range)
     try:
@@ -395,13 +395,13 @@ def normalize_wordcount_record(value: object) -> dict[str, Any]:
 
 
 def wordcount_record_drift(project: Path, chapter: int, value: object) -> list[str]:
-    """已提交的字数记录对当前文件过期了哪几项：只核对记录钉住的正文字节与字数目标。
+    """已提交的字數記錄對當前文件過期了哪几項：只核對記錄釘住的正文字節與字數目標。
 
-    作者事后在细纲补/改「字数范围」只影响下次计数的判定带，不让已提交的记录过期。
+    作者事後在細綱補/改「字數范围」只影响下次計數的判定帶，不讓已提交的記錄過期。
     """
     record = normalize_wordcount_record(value)
     root = project.resolve()
-    outline_path = find_chapter_file(root / "大纲", chapter, outline=True)
+    outline_path = find_chapter_file(root / "大綱", chapter, outline=True)
     body_path = find_chapter_file(root / "正文", chapter, outline=False)
     try:
         outline = outline_path.read_text(encoding="utf-8")
@@ -412,7 +412,7 @@ def wordcount_record_drift(project: Path, chapter: int, value: object) -> list[s
     if hashlib.sha256(body_bytes).hexdigest() != record["body_sha256"]:
         drift.append("正文")
     if target_from_outline(outline) != record["target"]:
-        drift.append("字数目标")
+        drift.append("字數目標")
     return drift
 
 

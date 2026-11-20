@@ -13,18 +13,18 @@
     "draft_inline_snapshots_max_bytes": 16384,
     "active_character_max": 20,
     "context_headings": [
-      "## 当前位置",
-      "## 长期约束",
-      "## 核心角色状态",
-      "## 活跃伏笔",
-      "## 近三章速记",
+      "## 當前位置",
+      "## 長期约束",
+      "## 核心角色狀態",
+      "## 活躍伏筆",
+      "## 近三章速記",
       "## 下一章承诺",
-      "## 连贯性风险"
+      "## 連貫性風險"
     ],
     "foreshadow_statuses": [
       "已埋",
       "已回收",
-      "已过期",
+      "已過期",
       "放弃"
     ],
     "foreshadow_importance": [
@@ -47,18 +47,18 @@
       "resolve": "upsert",
       "insert": "upsert",
       "新增": "upsert",
-      "埋设": "upsert",
+      "埋設": "upsert",
       "更新": "upsert",
-      "推进": "upsert",
+      "推進": "upsert",
       "回收": "upsert",
       "remove": "delete",
-      "删除": "delete"
+      "刪除": "delete"
     },
     "foreshadow_action_status": {
       "resolve": "已回收",
       "回收": "已回收",
       "advance": "已埋",
-      "推进": "已埋"
+      "推進": "已埋"
     },
     "foreshadow_key_aliases": {
       "planned_chapter": "planned_resolution_chapter",
@@ -90,11 +90,11 @@
     ],
     "retired_tracking_paths": [
       "_tracking-meta.json",
-      "阶段摘要.md",
-      "角色状态.md",
-      "时间线.md",
+      "階段摘要.md",
+      "角色狀態.md",
+      "時間線.md",
       "摘要",
-      "时间线/事件库.json"
+      "時間線/事件庫.json"
     ]
   },
   "outline_contract": {
@@ -104,24 +104,24 @@
         "Core Event"
       ],
       [
-        "字数目标",
+        "字數目標",
         "字數目標",
         "Word Count Target"
       ],
       [
-        "属于哪段剧情",
-        "单元ID/位置",
+        "屬於哪段剧情",
+        "單元ID/位置",
         "屬於哪段劇情",
         "單元ID/位置",
         "Unit Position"
       ],
       [
-        "目标情绪",
+        "目標情绪",
         "目標情緒",
         "Target Emotion"
       ],
       [
-        "主角目标/关键选择",
+        "主角目標/關鍵選择",
         "主角目標/關鍵選擇",
         "Protagonist Goal / Key Choice"
       ],
@@ -131,14 +131,14 @@
         "Opening Hook"
       ],
       [
-        "爽点",
+        "爽點",
         "爽點",
         "Payoff"
       ]
     ],
     "release_fields": [
-      "这章不能说破",
-      "本章禁止提前释放",
+      "這章不能說破",
+      "本章禁止提前釋放",
       "這章不能說破",
       "本章禁止提前釋放",
       "Forbidden Reveals"
@@ -146,25 +146,25 @@
     "release_max_items": 3,
     "subsection_names": [
       [
-        "这章怎么走",
-        "内容概括",
+        "這章怎麼走",
+        "內容概括",
         "這章怎麼走",
         "內容概括",
         "Chapter Flow",
         "Content Summary"
       ],
       [
-        "情节安排",
+        "情節安排",
         "情節安排",
         "Plot Arrangement"
       ],
       [
-        "人物关系和出场顺序",
+        "人物關系和出场順序",
         "人物關係和出場順序",
         "Character Relationships & Presence Order"
       ],
       [
-        "情节细化",
+        "情節細化",
         "情節細化",
         "Plot Beats"
       ]
@@ -175,12 +175,12 @@
         "Cause"
       ],
       [
-        "发展",
+        "發展",
         "發展",
         "Escalation"
       ],
       [
-        "转折",
+        "轉折",
         "轉折",
         "Turn"
       ],
@@ -189,21 +189,21 @@
         "Climax"
       ],
       [
-        "结尾",
+        "結尾",
         "結尾",
         "Ending"
       ]
     ],
     "caliber": "visible_chars_v1",
     "contract_risk_levels": [
-      "没问题",
-      "要补",
-      "有硬伤"
+      "沒問題",
+      "要補",
+      "有硬傷"
     ],
     "legacy_risk_levels": {
-      "契约安全": "没问题",
-      "需补强": "要补",
-      "契约破坏": "有硬伤"
+      "契约安全": "沒問題",
+      "需補強": "要補",
+      "契约破壞": "有硬傷"
     }
   }
 }

@@ -8,7 +8,7 @@
 - **S4 (`Optional`)**: Minor wording polish or optional detail alignment.
 
 ## Review Checklist
-1. **Epistemic & Timeline Integrity**: Cross-check `prose` against `时间线/作者真相.md`, `时间线/读者已知.md`, and `角色状态/*.md`. Flag any character acting on unrevealed information.
+1. **Epistemic & Timeline Integrity**: Cross-check `prose` against `時間線/作者真相.md`, `時間線/讀者已知.md`, and `角色狀態/*.md`. Flag any character acting on unrevealed information.
 2. **Plot Loop & Climax**: Verify tight chapters contain `Goal -> Obstacle -> Action -> Cost/Feedback -> New Expectation`.
 3. **Narrative Focus**: Flag scenes where minor logistics are over-detailed while key confrontations are summarized.
 4. **User-Facing Output Rule**: Present findings in plain domain language citing `Chapter N, "quote"`, never internal script names or raw `S1-S4` codes in the main body.

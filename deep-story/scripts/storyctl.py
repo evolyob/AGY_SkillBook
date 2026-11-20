@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Measure, checkpoint, check, and commit long-form story chapters.
 
-`chapter check --plain` 把同一份检查结果说成作者能懂的话（单章检查一条命令出白话结论），
-并报本章碎度两个数：短段占比与叙述句长中位数，附真人参照；碎度只提示、不拦。
+`chapter check --plain` 把同一份檢查結果說成作者能懂的話（單章檢查一條命令出白話結論），
+並报本章碎度两個數：短段占比與敘述句長中位數，附真人参照；碎度只提示、不拦。
 """
 
 from __future__ import annotations
@@ -37,24 +37,24 @@ for _name in dir(core):
 
 CHAPTER_CHECK_SCHEMA = "story-chapter-check/v1"
 CHAPTER_ERROR_SCHEMA = "story-chapter-error/v1"
-# 书内工作目录：分组 segment、writer prompt 留档、逐章事务 JSON 的唯一落点。
-# 提交成功后整目录删除，失败时原样保留供重跑。
+# 書內工作目錄：分組 segment、writer prompt 留檔、逐章事务 JSON 的唯一落點。
+# 提交成功後整目錄刪除，失敗時原樣保留供重跑。
 WORK_ROOT = (".story", "work")
 
 
 # ---- 碎度（只提示，不拦）----
-# 先去掉 # 开头的行；短段＝非空行里去空白后不到 20 字的占比（对话段也算）；
-# 叙述句＝逐段去掉“…”「…」『…』"..."里的对话后按 。！？!?… 切句，取每句去空白后的字数求中位数。
-# 真人参照：番茄、七猫、纵横 970 本长篇抽样 5458 章标定，短段中位数约 38%（P10–P90 16%–62%），
-# 叙述句长中位数约 23 字（P10–P90 15–35 字）。
+# 先去掉 # 開頭的行；短段＝非空行里去空白後不到 20 字的占比（對話段也算）；
+# 敘述句＝逐段去掉“…”「…」『…』"..."里的對話後按 。！？!?… 切句，取每句去空白後的字數求中位數。
+# 真人参照：番茄、七猫、纵横 970 本長篇抽樣 5458 章標定，短段中位數约 38%（P10–P90 16%–62%），
+# 敘述句長中位數约 23 字（P10–P90 15–35 字）。
 SHORT_PARAGRAPH_CHARS = 20
 HUMAN_SHORT_PARAGRAPH_RATIO = 0.38
 HUMAN_NARRATIVE_SENTENCE_MEDIAN = 23
 HUMAN_SHORT_PARAGRAPH_RANGE = (0.16, 0.62)
 HUMAN_NARRATIVE_SENTENCE_RANGE = (15, 35)
-# ---- 动作与心理平衡（只提示，不拦）----
-# 七猫 132 本完结长篇抽样 5246 章去引语叙述句标定：
-# 带肢体/手眼动作词的叙述句平均约 12%（P10–P90 3%–23%，P95 29%），带盘算/因果词的叙述句平均约 15%（P10–P90 4%–28%）。
+# ---- 動作與心理平衡（只提示，不拦）----
+# 七猫 132 本完結長篇抽樣 5246 章去引語敘述句標定：
+# 帶肢體/手眼動作詞的敘述句平均约 12%（P10–P90 3%–23%，P95 29%），帶盘算/因果詞的敘述句平均约 15%（P10–P90 4%–28%）。
 HUMAN_BODY_ACTION_SENTENCE_RATIO = 0.12
 HUMAN_BODY_ACTION_SENTENCE_RANGE = (0.03, 0.23)
 HUMAN_THOUGHT_CAUSAL_SENTENCE_RATIO = 0.15
@@ -62,13 +62,13 @@ HUMAN_THOUGHT_CAUSAL_SENTENCE_RANGE = (0.04, 0.28)
 _QUOTED = re.compile(r'“[^”]*”|「[^」]*」|『[^』]*』|"[^"]*"')
 _HTML_COMMENT = re.compile(r"<!--.*?-->", re.S)
 _BODY_ACTION_SENTENCE_RE = re.compile(
-    r"指尖|指腹|手指|指节|手背|掌心|拳头|手腕|袖口|衣角|喉结|眼眶|眼底|眸光|目光|视线|眼神|眉头|嘴角|唇角|肩膀|呼吸|"
-    r"伸手|抬手|探手|拿起|拿过|取出|取过|掏出|摸出|抓起|攥住|攥紧|握住|握紧|捏住|按住|压住|扣住|拢住|摩挲|"
-    r"推开|拉开|打开|关上|放下|递给|挑开|掀开|扯开|转身|回头|抬头|低头|弯腰|俯身|走到|走向|坐下|站起|盯着|扫过|看向|望向"
+    r"指尖|指腹|手指|指節|手背|掌心|拳頭|手腕|袖口|衣角|喉結|眼眶|眼底|眸光|目光|視線|眼神|眉頭|嘴角|唇角|肩膀|呼吸|"
+    r"伸手|抬手|探手|拿起|拿過|取出|取過|掏出|摸出|抓起|攥住|攥紧|握住|握紧|捏住|按住|压住|扣住|拢住|摩挲|"
+    r"推開|拉開|打開|關上|放下|遞給|挑開|掀開|扯開|轉身|回頭|抬頭|低頭|彎腰|俯身|走到|走向|坐下|站起|盯着|掃過|看向|望向"
 )
 _THOUGHT_CAUSAL_SENTENCE_RE = re.compile(
-    r"因为|所以|既然|省得|免得|要不然|否则|怪不得|难怪|偏偏|明明|反正|横竖|索性|干脆|好在|幸亏|毕竟|本来|原本|其实|说白了|说到底|"
-    r"知道|明白|清楚|觉得|以为|盘算|寻思|估摸|琢磨|怀疑|担心|害怕|后悔|心想|暗想|暗道|暗骂|腹诽|犯不着|舍不得|懒得|巴不得"
+    r"因為|所以|既然|省得|免得|要不然|否則|怪不得|難怪|偏偏|明明|反正|横竖|索性|乾脆|好在|幸亏|毕竟|本來|原本|其實|說白了|說到底|"
+    r"知道|明白|清楚|覺得|以為|盘算|寻思|估摸|琢磨|怀疑|擔心|害怕|後悔|心想|暗想|暗道|暗罵|腹诽|犯不着|舍不得|懒得|巴不得"
 )
 
 
@@ -199,7 +199,7 @@ def _project_files(
 
 
 def _json_findings(output: str) -> list[dict[str, Any]] | None:
-    """检测器 --json 输出里的 findings；输出不是预期 JSON 时返回 None（按工具故障处理，不当作无问题）。"""
+    """檢測器 --json 輸出里的 findings；輸出不是預期 JSON 時返回 None（按工具故障處理，不當作無問題）。"""
     try:
         value = json.loads(output)
     except json.JSONDecodeError:
@@ -211,24 +211,24 @@ def _json_findings(output: str) -> list[dict[str, Any]] | None:
 
 
 NODE_REQUIRED = (
-    "质量检查（AI 句式、退化、标点、细纲照搬）要用 Node.js 运行，本机找不到 node。"
-    "安装 Node.js 18 或更高版本并确认 `node --version` 可用后重跑本命令；装好之前本章不能提交。"
+    "質量檢查（AI 句式、退化、標點、細綱照搬）要用 Node.js 運行，本機找不到 node。"
+    "安裝 Node.js 18 或更高版本並確認 `node --version` 可用後重跑本命令；裝好之前本章不能提交。"
 )
 
 
 def _semantic_advisories(advisories: list[dict[str, Any]]) -> int:
-    # check-ai-patterns 给每条 finding 标 review=semantic|mechanical，退化检测器的在入口统一标 mechanical；
-    # 其余来源没标的按语义类算，宁多勿漏。
+    # check-ai-patterns 給每條 finding 標 review=semantic|mechanical，退化檢測器的在入口統一標 mechanical；
+    # 其余來源沒標的按語義類算，宁多勿漏。
     return sum(1 for row in advisories if row.get("review") != "mechanical")
 
 
-# 与 hooks（JS core DESLOP_SKIP_MARKER / codex py / bash guard）同一语法：注释内只认 ASCII 空格/Tab，
-# 冒号全角半角都认；裸写不在注释里的不算。
-DESLOP_SKIP = re.compile(r"<!--[ \t]*去味[ \t]*(：|:)[ \t]*跳过[ \t]*-->")
+# 與 hooks（JS core DESLOP_SKIP_MARKER / codex py / bash guard）同一語法：注釋內只認 ASCII 空格/Tab，
+# 冒號全角半角都認；裸寫不在注釋里的不算。
+DESLOP_SKIP = re.compile(r"<!--[ \t]*去味[ \t]*(：|:)[ \t]*跳過[ \t]*-->")
 
 
 def deslop_skipped(body: Path) -> bool:
-    """作者显式说本章不去味时，标题行下的 <!-- 去味:跳过 --> 豁免 AI 句式；与 hooks 同一个首 6 行窗口。"""
+    """作者顯式說本章不去味時，標題行下的 <!-- 去味:跳過 --> 豁免 AI 句式；與 hooks 同一個首 6 行窗口。"""
     head = re.split(r"\r?\n", body.read_text(encoding="utf-8-sig"))[:6]
     return bool(DESLOP_SKIP.search("\n".join(head)))
 
@@ -236,8 +236,8 @@ def deslop_skipped(body: Path) -> bool:
 def check_blocking_quality(outline: Path, body: Path) -> dict[str, Any]:
     """Run the deterministic prose checks.
 
-    status: pass（无 blocking）/ fail（有 blocking 正文问题）/ unavailable（检测工具缺失或崩溃，
-    不是正文问题，见 tool_errors）。
+    status: pass（無 blocking）/ fail（有 blocking 正文問題）/ unavailable（檢測工具缺失或崩溃，
+    不是正文問題，見 tool_errors）。
     """
     py_exe = sys.executable
     root = Path(__file__).parent
@@ -265,11 +265,11 @@ def check_blocking_quality(outline: Path, body: Path) -> dict[str, Any]:
         for finding in findings:
             row = {"source": name, **finding}
             if name == "degeneration":
-                # 退化类（复读、截断、拒绝语、工程词）不是 AI 味，不计入触发去 AI 味审查的语义条数。
+                # 退化類（複讀、截斷、拒絕語、工程詞）不是 AI 味，不計入触發去 AI 味审查的語義條數。
                 row.setdefault("review", "mechanical")
             if exempt and name == "ai-pattern" and finding.get("severity") == "blocking":
-                # 豁免只管 AI 句式；退化类（复读、截断、拒绝语、工程词）照常必须修。
-                advisories.append({**row, "severity": "advisory", "exempted": "去味:跳过"})
+                # 豁免只管 AI 句式；退化類（複讀、截斷、拒絕語、工程詞）照常必須修。
+                advisories.append({**row, "severity": "advisory", "exempted": "去味:跳過"})
                 continue
             (blocking if finding.get("severity") == "blocking" else advisories).append(row)
 
@@ -313,7 +313,7 @@ def check_blocking_quality(outline: Path, body: Path) -> dict[str, Any]:
     }
 
 
-# chapter check 顶层 status 与退出码：一眼分清「能提交」「要作者定」「正文要改」「工具坏了」。
+# chapter check 頂層 status 與退出碼：一眼分清「能提交」「要作者定」「正文要改」「工具壞了」。
 CHECK_EXIT_CODES = {"ready": 0, "needs_decision": 0, "blocked": 1, "invalid": 1, "tool_unavailable": 3}
 ERROR_EXIT_CODES = {"TOOL_UNAVAILABLE": 3}
 ACCEPT_FLOOR_RATIO = 0.5
@@ -341,13 +341,13 @@ def _body_digest(path: Path) -> str:
 
 
 def _record_over_baseline(project: Path, chapter: int, body_path: Path, actual: int) -> None:
-    """第一次看到 over 时记下原稿指纹：接受超长前要证明那一次净删压缩真的做过。"""
+    """第一次看到 over 時記下原稿指纹：接受超長前要证明那一次淨刪压縮真的做過。"""
     path = chapter_work_dir(project, chapter) / BASELINE_FILE
     try:
         previous = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError):
         previous = None
-    # 已有基线且这次更短：是压缩后的复检，保留基线；更长则是重写出的新稿，重新记。
+    # 已有基線且這次更短：是压縮後的複檢，保留基線；更長則是重寫出的新稿，重新記。
     if isinstance(previous, dict) and isinstance(previous.get("actual"), int) and actual <= previous["actual"]:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -423,16 +423,16 @@ def fix_punctuation(project: Path, chapter: int, author_range: Any = None) -> bo
 def _require_acceptable_length(
     project: Path, chapter: int, checked: dict[str, Any], *, force: bool, author_range: Any = None,
 ) -> None:
-    """接受当前长度的两道底线：欠长不低于目标一半；超长先做过一次净删压缩（删掉原稿到作者范围上限
-    差额的至少一半）。作者明确拍板用 --force 越过。"""
+    """接受當前長度的两道底線：欠長不低於目標一半；超長先做過一次淨刪压縮（刪掉原稿到作者范围上限
+    差額的至少一半）。作者明確拍板用 --force 越過。"""
     if force:
         return
     length = checked["length"]
     if length["status"] == "under" and length["actual"] < length["target"] * ACCEPT_FLOOR_RATIO:
         raise ChapterRefused(
             "BELOW_ACCEPT_FLOOR",
-            f"本章 {length['actual']} 字，不到字数目标 {length['target']} 的一半，不能直接按当前长度接受；"
-            "先补细纲或改字数目标，作者明确要这个长度时加 --force",
+            f"本章 {length['actual']} 字，不到字數目標 {length['target']} 的一半，不能直接按當前長度接受；"
+            "先補細綱或改字數目標，作者明確要這個長度時加 --force",
         )
     if length["status"] == "over":
         path = chapter_work_dir(project, chapter) / BASELINE_FILE
@@ -442,7 +442,7 @@ def _require_acceptable_length(
             baseline = None
         _, body_path, _, _ = _project_files(project, chapter, author_range)
         valid = isinstance(baseline, dict) and isinstance(baseline.get("actual"), int)
-        # 压缩要真删：至少删掉原稿到作者字数范围上限差额的一半（至少 1 字），删一两个字不算做过。
+        # 压縮要真刪：至少刪掉原稿到作者字數范围上限差額的一半（至少 1 字），刪一两個字不算做過。
         ceiling = None
         if valid:
             gap = baseline["actual"] - length["user_band"]["max"]
@@ -453,12 +453,12 @@ def _require_acceptable_length(
             and length["actual"] <= ceiling
         )
         if not compressed:
-            detail = (f"（原稿 {baseline['actual']} 字，压缩后要不超过 {ceiling} 字，现在 {length['actual']} 字）"
+            detail = (f"（原稿 {baseline['actual']} 字，压縮後要不超過 {ceiling} 字，現在 {length['actual']} 字）"
                       if valid else "")
             raise ChapterRefused(
                 "COMPRESSION_REQUIRED",
-                f"超长章节先按 compress-once 做一次净删压缩并重跑 chapter check{detail}，仍超长再接受当前长度；"
-                "作者明确不压缩时加 --force",
+                f"超長章節先按 compress-once 做一次淨刪压縮並重跑 chapter check{detail}，仍超長再接受當前長度；"
+                "作者明確不压縮時加 --force",
             )
 
 
@@ -508,7 +508,7 @@ def chapter_commit(
     return checked
 
 
-PLAIN_SHOWN = 8  # 建议看的提示最多列几条，其余报个数
+PLAIN_SHOWN = 8  # 建議看的提示最多列几條，其余报個數
 
 
 def _finding_line(row: dict[str, Any]) -> str:
@@ -519,51 +519,51 @@ def _finding_line(row: dict[str, Any]) -> str:
 
 
 def plain_report(result: dict[str, Any]) -> list[str]:
-    """把 chapter check 的结果说成白话：先结论，再字数、必须改的、建议看的、碎度。"""
+    """把 chapter check 的結果說成白話：先結論，再字數、必須改的、建議看的、碎度。"""
     chapter = result["chapter"]
     status = result["status"]
     length = result["length"]
     quality = result["quality"]
     lines: list[str] = []
     verdict = {
-        "ready": f"第 {chapter} 章检查完了，可以提交。",
-        "needs_decision": f"第 {chapter} 章没有必须改的，但字数不在范围里，要请作者定。",
-        "blocked": f"第 {chapter} 章有必须改的地方，改完再查一次。",
-        "invalid": f"第 {chapter} 章正文是空的或读不出字数，先把正文写进去再查。",
-        "tool_unavailable": f"第 {chapter} 章这次没查完：检查工具没跑起来，不能提交。",
+        "ready": f"第 {chapter} 章檢查完了，可以提交。",
+        "needs_decision": f"第 {chapter} 章沒有必須改的，但字數不在范围里，要請作者定。",
+        "blocked": f"第 {chapter} 章有必須改的地方，改完再查一次。",
+        "invalid": f"第 {chapter} 章正文是空的或讀不出字數，先把正文寫進去再查。",
+        "tool_unavailable": f"第 {chapter} 章這次沒查完：檢查工具沒跑起來，不能提交。",
     }[status]
     if result.get("punctuation_fixed"):
-        verdict += "标点已顺手整理过。"
+        verdict += "標點已順手整理過。"
     lines.append(verdict)
     actual = length.get("actual")
     band = length.get("user_band") or {}
     if actual is not None and band:
         span = f"{band.get('min')} 到 {band.get('max')} 字"
         if length.get("status") == "under":
-            lines.append(f"字数：约 {actual} 字，比范围（{span}）少了约 {band['min'] - actual} 字。欠的不补写，请作者选：收下现在的长度、改细纲或目标后重写、或不要这章。")
+            lines.append(f"字數：约 {actual} 字，比范围（{span}）少了约 {band['min'] - actual} 字。欠的不補寫，請作者選：收下現在的長度、改細綱或目標後重寫、或不要這章。")
         elif length.get("status") == "over":
-            lines.append(f"字数：约 {actual} 字，比范围（{span}）多了约 {actual - band['max']} 字。")
+            lines.append(f"字數：约 {actual} 字，比范围（{span}）多了约 {actual - band['max']} 字。")
             compression = result.get("compression")
             if compression:
                 remove = compression["remove_to_internal_band"]
-                lines.append(f"先做一次只删不加的压缩：删掉 {max(remove['min'], 0)} 到 {remove['max']} 字（删重复解释、装饰排比、没用的小动作，情节点和钩子都留着），删完再查；还超就请作者选。")
+                lines.append(f"先做一次只刪不加的压縮：刪掉 {max(remove['min'], 0)} 到 {remove['max']} 字（刪重複解釋、裝飾排比、沒用的小動作，情節點和钩子都留着），刪完再查；還超就請作者選。")
         else:
-            lines.append(f"字数：约 {actual} 字，在范围里（{span}）。")
+            lines.append(f"字數：约 {actual} 字，在范围里（{span}）。")
     for error in quality.get("tool_errors") or []:
-        lines.append(f"- 没跑起来：{error.get('message') or error.get('tool')}")
+        lines.append(f"- 沒跑起來：{error.get('message') or error.get('tool')}")
     blocking = quality.get("blocking_findings") or []
     if blocking:
-        lines.append(f"必须改的 {len(blocking)} 处：")
+        lines.append(f"必須改的 {len(blocking)} 處：")
         lines.extend(_finding_line(row) for row in blocking)
     advisories = quality.get("advisories") or []
     if advisories:
         semantic = quality.get("semantic_advisories", 0)
-        lines.append(f"建议看看的 {len(advisories)} 处（其中像 AI 腔、要读原文判断的 {semantic} 处；确属问题才改）：")
+        lines.append(f"建議看看的 {len(advisories)} 處（其中像 AI 腔、要讀原文判斷的 {semantic} 處；確屬問題才改）：")
         lines.extend(_finding_line(row) for row in advisories[:PLAIN_SHOWN])
         if len(advisories) > PLAIN_SHOWN:
-            lines.append(f"- 另有 {len(advisories) - PLAIN_SHOWN} 处，见 chapter check 的完整结果")
+            lines.append(f"- 另有 {len(advisories) - PLAIN_SHOWN} 處，見 chapter check 的完整結果")
     if not blocking and not advisories and status in {"ready", "needs_decision"}:
-        lines.append("没发现 AI 腔或写坏的地方。")
+        lines.append("沒發現 AI 腔或寫壞的地方。")
     frag = result.get("fragmentation") or {}
     ratio, median = frag.get("short_paragraph_ratio"), frag.get("narrative_sentence_median")
     if ratio is not None or median is not None:
@@ -571,13 +571,13 @@ def plain_report(result: dict[str, Any]) -> list[str]:
         low, high = HUMAN_SHORT_PARAGRAPH_RANGE
         if ratio is not None:
             parts.append(f"不到 {SHORT_PARAGRAPH_CHARS} 字的短段占 {round(ratio * 100)}%"
-                         f"（真人平均约 {round(HUMAN_SHORT_PARAGRAPH_RATIO * 100)}%，多数章在 {round(low * 100)}%–{round(high * 100)}%）")
+                         f"（真人平均约 {round(HUMAN_SHORT_PARAGRAPH_RATIO * 100)}%，多數章在 {round(low * 100)}%–{round(high * 100)}%）")
         shortest, longest = HUMAN_NARRATIVE_SENTENCE_RANGE
         if median is not None:
-            parts.append(f"叙述句长中位数 {median:g} 字（真人平均约 {HUMAN_NARRATIVE_SENTENCE_MEDIAN} 字，多数章在 {shortest}–{longest} 字）")
+            parts.append(f"敘述句長中位數 {median:g} 字（真人平均约 {HUMAN_NARRATIVE_SENTENCE_MEDIAN} 字，多數章在 {shortest}–{longest} 字）")
         choppy = (ratio is not None and ratio > high) or (median is not None and median < shortest)
-        tail = "。偏碎：同一个动作或同一层意思的几句可以接成一句、并成一段。" if choppy else "。"
-        lines.append("这章碎不碎（只作参考，不拦）：" + "，".join(parts) + tail)
+        tail = "。偏碎：同一個動作或同一層意思的几句可以接成一句、並成一段。" if choppy else "。"
+        lines.append("這章碎不碎（只作参考，不拦）：" + "，".join(parts) + tail)
     balance = result.get("prose_balance") or {}
     act_ratio = balance.get("body_action_sentence_ratio")
     thought_ratio = balance.get("thought_causal_sentence_ratio")
@@ -586,28 +586,28 @@ def plain_report(result: dict[str, Any]) -> list[str]:
         act_low, act_high = HUMAN_BODY_ACTION_SENTENCE_RANGE
         th_low, th_high = HUMAN_THOUGHT_CAUSAL_SENTENCE_RANGE
         b_parts = [
-            f"带肢体或手眼动作的叙述句占 {round(act_ratio * 100)}%"
-            f"（真人平均约 {round(HUMAN_BODY_ACTION_SENTENCE_RATIO * 100)}%，多数章在 {round(act_low * 100)}%–{round(act_high * 100)}%）",
-            f"带盘算或因果的叙述句占 {round(thought_ratio * 100)}%"
-            f"（真人平均约 {round(HUMAN_THOUGHT_CAUSAL_SENTENCE_RATIO * 100)}%，多数章在 {round(th_low * 100)}%–{round(th_high * 100)}%）",
+            f"帶肢體或手眼動作的敘述句占 {round(act_ratio * 100)}%"
+            f"（真人平均约 {round(HUMAN_BODY_ACTION_SENTENCE_RATIO * 100)}%，多數章在 {round(act_low * 100)}%–{round(act_high * 100)}%）",
+            f"帶盘算或因果的敘述句占 {round(thought_ratio * 100)}%"
+            f"（真人平均约 {round(HUMAN_THOUGHT_CAUSAL_SENTENCE_RATIO * 100)}%，多數章在 {round(th_low * 100)}%–{round(th_high * 100)}%）",
         ]
         action_heavy = total_sentences >= 8 and (
             act_ratio > 0.29 or (act_ratio > act_high and thought_ratio < 0.08)
         )
         b_tail = (
-            "。动作偏密、心里账偏少：删掉不改局面的手眼或道具小动作，把角色为什么这么选、图什么直接写出来。"
+            "。動作偏密、心裡帳偏少：刪掉不改局面的手眼或道具小動作，把角色為什麼這麼選、圖什麼直接寫出來。"
             if action_heavy else "。"
         )
-        lines.append("动作和心里话（只作参考，不拦）：" + "，".join(b_parts) + b_tail)
+        lines.append("動作和心裡話（只作参考，不拦）：" + "，".join(b_parts) + b_tail)
     return lines
 
 
 _PLAIN_ERRORS = (
-    (re.compile(r"chapter (\d+) must have exactly one outline file"), "第 {0} 章没有细纲，或者细纲不止一份"),
-    (re.compile(r"chapter (\d+) must have exactly one body file"), "第 {0} 章没有正文，或者正文不止一份"),
-    (re.compile(r"chapter directory is missing: .*/(\S+)$"), "书里没有「{0}」这个目录"),
-    (re.compile(r"字数目标"), "细纲的字数目标没写或写法不对（写成「字数目标：2500 字」）"),
-    (re.compile(r"字数范围"), "细纲的字数范围写法不对（写成「字数范围：2000-2600」）"),
+    (re.compile(r"chapter (\d+) must have exactly one outline file"), "第 {0} 章沒有細綱，或者細綱不止一份"),
+    (re.compile(r"chapter (\d+) must have exactly one body file"), "第 {0} 章沒有正文，或者正文不止一份"),
+    (re.compile(r"chapter directory is missing: .*/(\S+)$"), "書里沒有「{0}」這個目錄"),
+    (re.compile(r"字數目標"), "細綱的字數目標沒寫或寫法不對（寫成「字數目標：2500 字」）"),
+    (re.compile(r"字數范围"), "細綱的字數范围寫法不對（寫成「字數范围：2000-2600」）"),
 )
 
 
@@ -615,8 +615,8 @@ def _plain_error(message: str) -> list[str]:
     for pattern, text in _PLAIN_ERRORS:
         match = pattern.search(message)
         if match:
-            return [f"这次没查成：{text.format(*match.groups())}。"]
-    return [f"这次没查成：{message}"]
+            return [f"這次沒查成：{text.format(*match.groups())}。"]
+    return [f"這次沒查成：{message}"]
 
 
 def _build_parser() -> StructuredArgumentParser:
@@ -634,7 +634,7 @@ def _build_parser() -> StructuredArgumentParser:
             _add_range_arguments(subparser)
         if command == "checkpoint":
             subparser.add_argument("--project", type=Path,
-                                   help="书目录：与 --chapter 一起从细纲读字数目标（未给 --target 时）和「字数范围」")
+                                   help="書目錄：與 --chapter 一起從細綱讀字數目標（未給 --target 時）和「字數范围」")
     chapter = commands.add_parser("chapter")
     chapter_commands = chapter.add_subparsers(dest="chapter_command", required=True)
     for command in ("check", "commit", "accept-current-length"):
@@ -646,18 +646,18 @@ def _build_parser() -> StructuredArgumentParser:
             subparser.add_argument("--input", type=Path, required=True)
         else:
             subparser.add_argument("--fix-punctuation", action="store_true",
-                                   help="先就地整理正文标点，再做检查")
+                                   help="先就地整理正文標點，再做檢查")
             subparser.add_argument("--plain", action="store_true",
-                                   help="用白话输出结论（给作者和主会话看），不输出 JSON；退出码不变")
+                                   help="用白話輸出結論（給作者和主會話看），不輸出 JSON；退出碼不變")
         if command == "accept-current-length":
             subparser.add_argument("--force", action="store_true",
-                                   help="作者明确拍板：越过欠长一半下限与超长先压缩一次的要求")
+                                   help="作者明確拍板：越過欠長一半下限與超長先压縮一次的要求")
     return parser
 
 
 def _add_range_arguments(subparser: argparse.ArgumentParser) -> None:
-    subparser.add_argument("--min-chars", type=int, help="作者本轮给定的字数下限（须与 --max-chars 同给），优先于细纲字数范围与默认 ±15%%")
-    subparser.add_argument("--max-chars", type=int, help="作者本轮给定的字数上限")
+    subparser.add_argument("--min-chars", type=int, help="作者本輪給定的字數下限（須與 --max-chars 同給），優先於細綱字數范围與默認 ±15%%")
+    subparser.add_argument("--max-chars", type=int, help="作者本輪給定的字數上限")
 
 
 def _cli_author_range(args: argparse.Namespace) -> dict[str, int] | None:
@@ -689,7 +689,7 @@ def _wordcount_command(args: argparse.Namespace, author_range: dict[str, int] | 
     elif args.wordcount_command == "checkpoint":
         target = args.target
         if args.project is not None:
-            # 与 chapter check 同一优先级：命令行上下限 > 细纲「字数范围」 > 默认带。
+            # 與 chapter check 同一優先級：命令行上下限 > 細綱「字數范围」 > 默認帶。
             try:
                 chapter = int(args.chapter or "")
                 _, outline = read_chapter_outline(core.resolve_book_dir(args.project), chapter)

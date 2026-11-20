@@ -11,7 +11,7 @@ Follow the main text to find what most needs to be experienced: when a character
 | Problem | What to Look At | How to Handle It |
 |---|---|---|
 | Secondary processes occupy space | Opening doors, pouring water, hurrying on a journey, taking inventory item by item are continuously expanded, yet do not change the character's circumstance or the reader's feeling | Compress into necessary transitions, keeping details that establish space, voice/register, relationship, or atmosphere |
-| Key processes are swallowed by summary | "They worked out an agreement" (“商量妥了”), "explained clearly in a few words" (“三言两语解释清楚”), or "she finally thought it through" (“她终于想通了”) replace choices or confrontations | Expand existing conditions, probing/testing, judgment, and feedback; when supporting basis is missing, switch to story diagnosis rather than fabricating reasons that persuade |
+| Key processes are swallowed by summary | "They worked out an agreement" (“商量妥了”), "explained clearly in a few words" (“三言两語解釋清楚”), or "she finally thought it through" (“她終於想通了”) replace choices or confrontations | Expand existing conditions, probing/testing, judgment, and feedback; when supporting basis is missing, switch to story diagnosis rather than fabricating reasons that persuade |
 | Equal effort on similar objects | Three people or four objects are each given the same amount of space, so the reader cannot find the center of gravity | Allocate around this scene's function; expand the important object(s), summarize or skip the others, without prescribing a fixed decreasing count |
 | State spinning in place | Repeatedly writing fear, anger, or silence while the character's understanding and actions remain the same throughout | Merge repetitions; retain processes that change the next step or accumulate experience |
 | Result shown without transition | Refusing in the previous sentence and agreeing in the next; emotions arriving abruptly | Recover existing transitions; if the enabling conditions were never designed, propose a story fix |
@@ -32,7 +32,7 @@ After rearranging, read through the entire scene: can the reader still clearly s
 
 - **Action**: Keep actions that bring obstacles, failure, choices, relationships, or character habits. There is no need to record reaching out, picking up, putting down, and turning around one by one; if fighting, chasing, or operational steps carry real spatial and causal information, they can be written in detail.
 - **Psychology / Interiority**: Keep new judgments, misjudgments, memories, weighing of options, and self-deception. Accurate direct writing can carry transitions; compress repeated translations of what just happened or summaries of the same emotion. Do not convert all inner activity into physical reactions across the board.
-- **Dialogue**: Look at what each side is trying to win, what they are unwilling to say, and which response changes the situation. Expand the key moments and let narration carry the rest; do not turn every "he said / she said" (“他说/她说”) in the original text into a separate line of dialogue. Dialogue, narration, and interiority jointly carry this scene—do not replace a scene with neat Q&A exchanges. Do not require every line to talk past the other person, and do not raise intensity by adding profanity.
+- **Dialogue**: Look at what each side is trying to win, what they are unwilling to say, and which response changes the situation. Expand the key moments and let narration carry the rest; do not turn every "he said / she said" (“他說/她說”) in the original text into a separate line of dialogue. Dialogue, narration, and interiority jointly carry this scene—do not replace a scene with neat Q&A exchanges. Do not require every line to talk past the other person, and do not raise intensity by adding profanity.
 - **Environment and objects**: Observation should stick to the character's attention at this moment. It can establish the texture of life, sense of time, aesthetics, and relationships; do not require every object to become a clue. Item-by-item display at uniform precision, generic weather, and non-functional decoration should be compressed.
 - **Group reactions**: When characters change their actions because of different stances, they are worth separating; having everyone take turns trembling, stepping back, and acting startled is merely repetitive reinforcement. Judgment and weight can be delivered by the person who holds a stance—do not force lines onto everyone.
 
@@ -49,7 +49,7 @@ At the ending, check what the final beat brings: an unfinished action, a shift i
 The following is a synthetic example. Established facts: Yu Zhou has to deliver a letter across a stream; he tests the stepping stones first, retreats after the second stone loosens, switches to crossing via a fallen tree upstream, hangs the letter pouch around his neck, and finally reaches the opposite bank.
 
 **Imbalanced brushwork**: By the stream stood three trees, two with gray-white bark and one covered in moss. Scattered beneath the trees were pebbles, rounder near the bank and flatter farther out. Yu Zhou thought of several methods, spent quite some effort, and finally carried the letter across the stream.
-*(Original: 溪边有三棵树，两棵树皮灰白，一棵长了苔。树下散着石子，近处圆一些，远处扁一些。余舟想了几个办法，费了一番工夫，终于把信带过溪。)*
+*(Original: 溪邊有三棵樹，两棵樹皮灰白，一棵長了苔。樹下散着石子，近處圓一些，遠處扁一些。余舟想了几個辦法，費了一番工夫，終於把信帶過溪。)*
 
 **Restored center of gravity**:
 
@@ -57,10 +57,10 @@ The following is a synthetic example. Established facts: Yu Zhou has to deliver 
 >
 > Upstream, a fallen tree lay across the water. He walked along the stream toward it, hung the letter pouch around his neck, freed his hands to steady himself along the trunk, and edged bit by bit to the opposite bank.
 >
-> *(Original: 余舟踏上第二块石墩，石头往下一沉，他赶紧退回岸边。 / 上游横着一棵倒树。他沿溪走过去，把信袋挂到颈前，空出手扶着树干，一点点挪到了对岸。)*
+> *(Original: 余舟踏上第二塊石墩，石頭往下一沉，他趕紧退回岸邊。 / 上游横着一棵倒樹。他沿溪走過去，把信袋掛到頸前，空出手扶着樹干，一點點挪到了對岸。)*
 
-Here, only the already-established testing and switching of methods are written out, without adding new rescuers, tools, or accidents. If the source material only says "spent quite some effort" (“费了一番工夫”) and does not even have the attempt or the method, you cannot invent stepping stones and a fallen tree following this example.
+Here, only the already-established testing and switching of methods are written out, without adding new rescuers, tools, or accidents. If the source material only says "spent quite some effort" (“費了一番工夫”) and does not even have the attempt or the method, you cannot invent stepping stones and a fallen tree following this example.
 
-**Directions that would break it**: Writing only "he crossed the stream via the fallen tree" (“他从倒树过了溪”) compresses away both the testing and the switch of method; listing lifting a foot, setting a foot down, and switching hands one by one—indiscriminate actions—will instead steal attention away.
+**Directions that would break it**: Writing only "he crossed the stream via the fallen tree" (“他從倒樹過了溪”) compresses away both the testing and the switch of method; listing lifting a foot, setting a foot down, and switching hands one by one—indiscriminate actions—will instead steal attention away.
 
-**Slowness worth keeping**: An old man puts away his late wife's tea set, first setting the pieces down in the positions she used to keep them, then picking them up again to wrap in paper. Lingering for this extra moment lets the reader experience habit and loss. Mechanical phrasing can be fixed, but this cannot be deleted merely on the grounds of "little plot advancement" (“事件推进少”).
+**Slowness worth keeping**: An old man puts away his late wife's tea set, first setting the pieces down in the positions she used to keep them, then picking them up again to wrap in paper. Lingering for this extra moment lets the reader experience habit and loss. Mechanical phrasing can be fixed, but this cannot be deleted merely on the grounds of "little plot advancement" (“事件推進少”).
