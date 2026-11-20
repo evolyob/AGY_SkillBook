@@ -126,20 +126,13 @@ OVERCOMPRESSED_PROSE_SHORT_MAX_CHARS = 15
 OVERCOMPRESSED_PROSE_SHORT_RATIO = 0.58
 OVERCOMPRESSED_PROSE_PARTICLE_PER_KILO = 85
 
-LOW_CONNECTIVE_FUNCTION_TERMS = [
-    '的', '了', '就', '在', '是', '也', '都', '还', '又', '把', '被', '给',
-    '这个', '那个', '里面', '以后', '时候', '现在', '因为', '所以', '但是',
-    '不过', '然后', '已经', '还是', '起来', '出来', '下去',
-]
-LOW_CONNECTIVE_PLAIN_TERMS = [
-    '的', '了', '就', '也', '还', '又', '这个', '那个', '东西', '事情',
-    '时候', '里面', '以后', '一下', '一点', '有点', '还是',
-]
-LOW_CONNECTIVE_MIN_CHARS = 800
-LOW_CONNECTIVE_FUNCTION_PER_KILO = 100
-LOW_CONNECTIVE_PLAIN_PER_KILO = 65
-LOW_CONNECTIVE_LONG_SENTENCE_CHARS = 30
-LOW_CONNECTIVE_LONG_SENTENCE_RATIO = 0.08
+LOW_CONNECTIVE_FUNCTION_TERMS = list(_AI_CFG["low_connective_function_terms"])
+LOW_CONNECTIVE_PLAIN_TERMS = list(_AI_CFG["low_connective_plain_terms"])
+LOW_CONNECTIVE_MIN_CHARS = int(_AI_CFG["low_connective_min_chars"])
+LOW_CONNECTIVE_FUNCTION_PER_KILO = float(_AI_CFG["low_connective_function_per_kilo"])
+LOW_CONNECTIVE_PLAIN_PER_KILO = float(_AI_CFG["low_connective_plain_per_kilo"])
+LOW_CONNECTIVE_LONG_SENTENCE_CHARS = int(_AI_CFG["low_connective_long_sentence_chars"])
+LOW_CONNECTIVE_LONG_SENTENCE_RATIO = float(_AI_CFG["low_connective_long_sentence_ratio"])
 
 COMPACT_EITHER_OR_PREV = frozenset({'不', '就', '也'})
 TAG_PARTICLES = frozenset({'吗', '吧', '嘛'})
@@ -158,73 +151,37 @@ QUOTE_PATTERNS = [
     for open_q, close_q in QUOTE_PAIRS
 ]
 
-VOICE_CONTRAST_PATTERN = re.compile(r'声音(?:并)?不[大高响亮][^。！？!?\n]{0,16}[却但偏]')
+VOICE_CONTRAST_PATTERN = re.compile(_AI_CFG["voice_contrast_regex"])
+NEGATION_PARADE_PATTERNS = [re.compile(p) for p in _AI_CFG["negation_parade_patterns"]]
+CROSS_NEGATION_START = re.compile(_AI_CFG["cross_negation_start_regex"])
+CROSS_NEGATION_MIDDLE = re.compile(_AI_CFG["cross_negation_middle_regex"])
+CROSS_NEGATION_END = re.compile(_AI_CFG["cross_negation_end_regex"])
 
-NEGATION_PARADE_PATTERNS = [
-    re.compile(r'(?:没有[^。！？!?\n，,]{1,12}[，,]){2}'),
-    re.compile(r'(?<![沉淹埋出隐湮吞覆漫泯])没(?!有?过?多久)(?:有)?[^。！？!?\n，,]{1,12}[，,]\s*没(?!有?过?多久)(?:有)?[^。！？!?\n，,]{1,16}[，,。.][^。！？!?\n，,]{0,6}只(?:是|会|有)'),
-]
-CROSS_NEGATION_START = re.compile(r'^不是[^。！？!?\n]{1,24}[。！？!?]?$')
-CROSS_NEGATION_MIDDLE = re.compile(r'^(?:也|还)不是[^。！？!?\n]{1,24}[。！？!?]?$')
-CROSS_NEGATION_END = re.compile(r'^只是[^。！？!?\n]{1,32}[。！？!?]?$')
+DECISION_FRAME_PATTERN = re.compile(_AI_CFG["decision_frame_regex"])
+REPEATED_NEGATIVE_VERB_PATTERN = re.compile(_AI_CFG["repeated_negative_verb_regex"])
 
-DECISION_FRAME_PATTERN = re.compile(r'至于([\u3400-\u9fff]{1,3})不\1[，,]\s*怎么\1')
-REPEATED_NEGATIVE_VERB_PATTERN = re.compile(r'不([\u3400-\u9fff]{1,2})([\u3400-\u9fff]{2,8})[，,]\s*不\1([\u3400-\u9fff]{2,8})')
+REVERSE_NOT_IS_PATTERN = re.compile(_AI_CFG["reverse_not_is_regex"])
+REVERSE_NOT_IS_PREV_EXCLUDE = frozenset(_AI_CFG["reverse_not_is_prev_exclude"])
 
-REVERSE_NOT_IS_PATTERN = re.compile(r'是([^。！？!?\n，,]{1,12})[，,]\s*(?:而)?不是([^。！？!?\n]{1,20})')
-REVERSE_NOT_IS_PREV_EXCLUDE = frozenset({
-    *COMPACT_EITHER_OR_PREV,
-    '还', '只', '可', '但', '于', '倒', '像', '若', '要', '正', '便', '总',
-    '老', '更', '最', '算', '怕', '凡', '或', '即', '自', '竟', '原', '本',
-    '仍', '许', '净', '光', '单', '尽',
-})
+TRAILER_ENDING_PATTERN = re.compile(_AI_CFG["trailer_ending_regex"])
+TRAILER_ENDING_WINDOW_CHARS = int(_AI_CFG["trailer_ending_window_chars"])
+TRAILER_SUMMARY_PATTERN = re.compile(_AI_CFG["trailer_summary_regex"])
 
-TRAILER_ENDING_PATTERN = re.compile(r'没人知道|谁也不知道|谁也没想到|[他她它]们?不知道的是|殊不知|(?:这)?才刚刚开(?:始|头)|正(?:朝着|向着)[^。！？!?\n]{0,24}(?:压|涌|袭|逼)(?:了?过去|了?过来|来)|(?<!正式)拉开(?:序幕|帷幕)|即将(?:开始|来临|降临)')
-TRAILER_ENDING_WINDOW_CHARS = 600
+QUOTE_EMPHASIS_MIN_HITS = int(_AI_CFG["quote_emphasis_min_hits"])
+QUOTE_EMPHASIS_MAX_VISIBLE = int(_AI_CFG["quote_emphasis_max_visible"])
+QUOTE_EMPHASIS_SPEECH_VERB_PATTERN = re.compile(_AI_CFG["quote_emphasis_speech_verb_regex"])
 
-TRAILER_SUMMARY_PATTERN = re.compile(r'这一(?:夜|天|刻|战|年|局|役)[，,]?[^。！？!?，,\n]{0,6}(?<!命中)(?<!是)注定[^。！？!?\n]{0,8}[。！]|就这样[，,][^。！？!?，,\n]{0,8}(?:一切|全部)[^。！？!?，,\n]{0,4}(?:结束了|落幕|收场)[。！]|这一切[，,]?[^。！？!?，,\n]{0,6}(?:都)?(?:说明|意味着|结束了)(?!的)(?:(?!什么)[^。！？!?\n]){0,6}[。！]|(?:新的篇章|新的旅程|崭新的篇章|新的人生)[^。！？!?\n]{0,6}(?:开始|拉开|展开)|命运[^。！？!?\n]{0,6}齿轮')
+ELLIPSIS_DENSITY_PATTERN = re.compile(_AI_CFG["ellipsis_density_regex"])
+ELLIPSIS_DENSITY_MIN_HITS = int(_AI_CFG["ellipsis_density_min_hits"])
+ELLIPSIS_DENSITY_PER_KILO = float(_AI_CFG["ellipsis_density_per_kilo"])
 
-QUOTE_EMPHASIS_MIN_HITS = 3
-QUOTE_EMPHASIS_MAX_VISIBLE = 4
-QUOTE_EMPHASIS_SPEECH_VERB_PATTERN = re.compile(r'[说道问喊答念叫回吼骂写读唱笑叹应哼嗤啐呸嘀咕]|开口|摇头|点头|出声|冷笑|苦笑|轻声|低声|沉声')
+DENSITY_SCALE_UNIT_CHARS = int(_AI_CFG["density_scale_unit_chars"])
+NOT_IS_BLOCKING_MIN_HITS = int(_AI_CFG["not_is_blocking_min_hits"])
+VOICE_CONTRAST_BLOCKING_MIN_HITS = int(_AI_CFG["voice_contrast_blocking_min_hits"])
+NEGATION_PARADE_BLOCKING_MIN_HITS = int(_AI_CFG["negation_parade_blocking_min_hits"])
+TRAILER_ENDING_BLOCKING_MIN_HITS = int(_AI_CFG["trailer_ending_blocking_min_hits"])
 
-ELLIPSIS_DENSITY_PATTERN = re.compile(r'…+|\.{3,}|。{3,}')
-ELLIPSIS_DENSITY_MIN_HITS = 6
-ELLIPSIS_DENSITY_PER_KILO = 3.5
-
-DENSITY_SCALE_UNIT_CHARS = 4500
-NOT_IS_BLOCKING_MIN_HITS = 3
-VOICE_CONTRAST_BLOCKING_MIN_HITS = 2
-NEGATION_PARADE_BLOCKING_MIN_HITS = 2
-TRAILER_ENDING_BLOCKING_MIN_HITS = 2
-
-REVIEW_CLASSES: dict[str, str] = {
-    'not-is-comparison': 'mechanical',
-    'voice-contrast': 'mechanical',
-    'negation-parade': 'mechanical',
-    'reverse-not-is': 'mechanical',
-    'trailer-ending': 'mechanical',
-    'trailer-summary': 'mechanical',
-    'em-dash': 'mechanical',
-    'long-paragraph': 'mechanical',
-    'period-stutter': 'mechanical',
-    'micro-action-tic': 'mechanical',
-    'negation-pair-tic': 'semantic',
-    'cliche-density-tic': 'mechanical',
-    'stock-reaction-tic': 'semantic',
-    'action-list-tic': 'semantic',
-    'abstract-summary-tic': 'semantic',
-    'metaphor-density-tic': 'semantic',
-    'reasoning-chain-tic': 'semantic',
-    'system-notice-formality-tic': 'semantic',
-    'overcompressed-prose-tic': 'semantic',
-    'low-connective-density-tic': 'semantic',
-    'quote-emphasis-tic': 'semantic',
-    'formulaic-parallelism': 'semantic',
-    'ellipsis-density-tic': 'semantic',
-    'zhtw-pattern': 'mechanical',
-    'zhtw-buzz': 'semantic',
-}
+REVIEW_CLASSES: dict[str, str] = dict(_AI_CFG["review_classes"])
 
 DASH_PATTERN = re.compile(r'——|—|--+')
 UNCLOSED_QUOTE_OPEN_PATTERN = re.compile(r'[“「『"]')

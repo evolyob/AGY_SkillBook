@@ -59,30 +59,14 @@ FORESHADOW_STATUSES = tuple(_TRACKING_LIMITS["foreshadow_statuses"])
 FORESHADOW_IMPORTANCE = tuple(_TRACKING_LIMITS["foreshadow_importance"])
 REVEAL_STATUSES = tuple(_TRACKING_LIMITS["reveal_statuses"])
 # 伏笔与时间线条目里模型常用的同义写法：含义明确的直接改成正式名，不让一次提交为措辞失败。
-ACTION_ALIASES = {
-    "add": "upsert", "new": "upsert", "create": "upsert", "update": "upsert", "plant": "upsert",
-    "advance": "upsert", "resolve": "upsert", "insert": "upsert",
-    "新增": "upsert", "埋设": "upsert", "更新": "upsert", "推进": "upsert", "回收": "upsert",
-    "remove": "delete", "删除": "delete",
-}
-# 带状态含义的伏笔动作词：它们也映射成 upsert，但动作词本身说了伏笔走到哪一步。
-# status 缺省时按动作词补上（意图只有这一个来源，不会猜错）；status 与动作词矛盾时退回，
-# 因为无法判断是动作词用错还是状态写错——静默改任何一边都可能把没回收的伏笔记成已回收。
-FORESHADOW_ACTION_STATUS = {
-    "resolve": "已回收", "回收": "已回收",
-    "advance": "已埋", "推进": "已埋",
-}
-FORESHADOW_KEY_ALIASES = {
-    "planned_chapter": "planned_resolution_chapter", "planned_payoff_chapter": "planned_resolution_chapter",
-    "payoff_chapter": "planned_resolution_chapter", "resolution_chapter": "planned_resolution_chapter",
-    "resolve_chapter": "planned_resolution_chapter", "plant_chapter": "planted_chapter",
-    "planted": "planted_chapter", "description": "summary", "content": "summary",
-}
-TIMELINE_KEY_ALIASES = {"time": "story_time", "fact": "objective_fact", "reveal": "reveal_status"}
+ACTION_ALIASES = _TRACKING_LIMITS["action_aliases"]
+FORESHADOW_ACTION_STATUS = _TRACKING_LIMITS["foreshadow_action_status"]
+FORESHADOW_KEY_ALIASES = _TRACKING_LIMITS["foreshadow_key_aliases"]
+TIMELINE_KEY_ALIASES = _TRACKING_LIMITS["timeline_key_aliases"]
 INVALID_FILE_CHARS = re.compile(r"[<>:\"/\\|?*\x00-\x1f]")
 FORESHADOW_ID = re.compile(r"^F\d{3,}$")
-SNAPSHOT_TEXT_FIELDS = ("identity", "location", "goal", "state")
-SNAPSHOT_LIST_FIELDS = ("abilities_resources", "relationships", "knowledge", "open_threads")
+SNAPSHOT_TEXT_FIELDS = tuple(_TRACKING_LIMITS["snapshot_text_fields"])
+SNAPSHOT_LIST_FIELDS = tuple(_TRACKING_LIMITS["snapshot_list_fields"])
 EVENT_ID = re.compile(r"^E\d{3,}$")
 WINDOWS_RESERVED_NAMES = {
     "CON",
@@ -92,14 +76,7 @@ WINDOWS_RESERVED_NAMES = {
     *(f"COM{index}" for index in range(1, 10)),
     *(f"LPT{index}" for index in range(1, 10)),
 }
-RETIRED_TRACKING_PATHS = (
-    "_tracking-meta.json",
-    "阶段摘要.md",
-    "角色状态.md",
-    "时间线.md",
-    "摘要",
-    "时间线/事件库.json",
-)
+RETIRED_TRACKING_PATHS = tuple(_TRACKING_LIMITS["retired_tracking_paths"])
 RETIRED_ARCHIVE_DIR = "_旧追踪存档"
 
 

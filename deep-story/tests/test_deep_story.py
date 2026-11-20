@@ -97,6 +97,38 @@ class DeepStoryTests(unittest.TestCase):
             )
             self.assertEqual(r_wc.returncode, 0, r_wc.stdout)
 
+    def test_storyctl_chapter_check_e2e(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            proj = Path(tmp) / "book"
+            (proj / "大纲").mkdir(parents=True)
+            (proj / "正文").mkdir(parents=True)
+            init_json = Path(tmp) / "init.json"
+            init_json.write_text(
+                json.dumps({
+                    "schema_version": 1,
+                    "book_title": "E2E Check",
+                    "last_chapter": 0,
+                    "context": {
+                        "position": {"scene": "Init", "volume": "Vol 1", "story_time": "Day 1", "volume_start_chapter": 1}
+                    },
+                }),
+                encoding="utf-8",
+            )
+            subprocess.run(
+                [sys.executable, str(SCRIPTS_DIR / "tracking_commit.py"), "init", "--project", str(proj), "--input", str(init_json)],
+                check=True,
+            )
+            (proj / "大纲" / "细纲_第001章.md").write_text("# 细纲 第1章\n- 核心事件: 测试\n- 字数目标: 2000字\n", encoding="utf-8")
+            (proj / "正文" / "第001章_测试.md").write_text("# 第一章 测试\n\n他推开值班室的门，桌上放着一张发黄的登记表。\n", encoding="utf-8")
+            r_chk = subprocess.run(
+                [sys.executable, str(SCRIPTS_DIR / "storyctl.py"), "chapter", "check", "--project", str(proj), "--chapter", "1"],
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(r_chk.returncode, 0, r_chk.stderr)
+            payload = json.loads(r_chk.stdout)
+            self.assertEqual(payload["quality"]["status"], "pass", payload)
+            self.assertEqual(payload["quality"]["tool_errors"], [], payload)
+
 
 if __name__ == "__main__":
     unittest.main()

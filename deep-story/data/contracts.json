@@ -36,6 +36,65 @@
       "未揭示",
       "部分揭示",
       "已揭示"
+    ],
+    "action_aliases": {
+      "add": "upsert",
+      "new": "upsert",
+      "create": "upsert",
+      "update": "upsert",
+      "plant": "upsert",
+      "advance": "upsert",
+      "resolve": "upsert",
+      "insert": "upsert",
+      "新增": "upsert",
+      "埋设": "upsert",
+      "更新": "upsert",
+      "推进": "upsert",
+      "回收": "upsert",
+      "remove": "delete",
+      "删除": "delete"
+    },
+    "foreshadow_action_status": {
+      "resolve": "已回收",
+      "回收": "已回收",
+      "advance": "已埋",
+      "推进": "已埋"
+    },
+    "foreshadow_key_aliases": {
+      "planned_chapter": "planned_resolution_chapter",
+      "planned_payoff_chapter": "planned_resolution_chapter",
+      "payoff_chapter": "planned_resolution_chapter",
+      "resolution_chapter": "planned_resolution_chapter",
+      "resolve_chapter": "planned_resolution_chapter",
+      "plant_chapter": "planted_chapter",
+      "planted": "planted_chapter",
+      "description": "summary",
+      "content": "summary"
+    },
+    "timeline_key_aliases": {
+      "time": "story_time",
+      "fact": "objective_fact",
+      "reveal": "reveal_status"
+    },
+    "snapshot_text_fields": [
+      "identity",
+      "location",
+      "goal",
+      "state"
+    ],
+    "snapshot_list_fields": [
+      "abilities_resources",
+      "relationships",
+      "knowledge",
+      "open_threads"
+    ],
+    "retired_tracking_paths": [
+      "_tracking-meta.json",
+      "阶段摘要.md",
+      "角色状态.md",
+      "时间线.md",
+      "摘要",
+      "时间线/事件库.json"
     ]
   },
   "outline_contract": {
