@@ -3,7 +3,7 @@
 > **Output**: `<project>/小節大綱.md` (must be complete before drafting `<project>/正文.md`).
 > **Gate**: `python3 scripts/check_outline_copy.py --outline <project>/小節大綱.md <project>/正文.md`
 
-- **Genre Profile**: <primary_id> [+ <optional secondary_id>] (from data/genre_cards.json)
+- **Genre Profile**: <primary_id> [+ <optional secondary_id>] (from data/story_blocks.json)
 - **Core Conflict**: <One-sentence central clash>
 - **Word Count Target**: 3000
 - **Target Emotion**: <Initial tension> -> <Reversal / Release>

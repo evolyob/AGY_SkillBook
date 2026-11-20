@@ -20,8 +20,15 @@ class DeepStoryTests(unittest.TestCase):
     def test_json_configs_valid(self) -> None:
         contracts = json.loads((DATA_DIR / "contracts.json").read_text(encoding="utf-8"))
         deslop = json.loads((DATA_DIR / "deslop_rules.json").read_text(encoding="utf-8"))
+        blocks = json.loads((DATA_DIR / "story_blocks.json").read_text(encoding="utf-8"))
         self.assertEqual(contracts["tracking_limits"]["active_character_max"], 20)
         self.assertIn("zhtw_narrative_supplement", deslop)
+        valid_ids = set()
+        for key in ("role_archetypes", "motivation_engines", "flaw_patterns", "relationship_arcs"):
+            valid_ids.update(blocks[key].keys())
+        for g in blocks["genres"].values():
+            for cid in g.get("recommended_character_mix", []):
+                self.assertIn(cid, valid_ids)
 
     def test_tracking_init_and_tamper_detection(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
