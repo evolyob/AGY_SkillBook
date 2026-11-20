@@ -38,7 +38,7 @@ for _name in dir(core):
 CHAPTER_CHECK_SCHEMA = "story-chapter-check/v1"
 CHAPTER_ERROR_SCHEMA = "story-chapter-error/v1"
 # 书内工作目录：分组 segment、writer prompt 留档、逐章事务 JSON 的唯一落点。
-# 与 build_writer_prompt.py 同一口径；提交成功后整目录删除，失败时原样保留供重跑。
+# 提交成功后整目录删除，失败时原样保留供重跑。
 WORK_ROOT = (".story", "work")
 
 

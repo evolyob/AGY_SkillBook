@@ -4,7 +4,7 @@
 
 ## Phase 1–3: Planning (Stop After Delivery)
 
-1. **Phase 1 (Premise & Preferences)**: Lock core selling point, genre rules, and persistent `author_memory_commit.py` preferences.
+1. **Phase 1 (Premise & Preferences)**: Lock core selling point, genre rules, and book-level style preferences inside `tracking_commit.py` (`long_term_constraints`).
 2. **Phase 2 (Settings)**: Create character cards, world rules, and domain anchors (statutes, deadlines, forensic hashes).
 3. **Phase 3 (Outlines)**:
    - Book-wide & Volume outlines per `references/07_web_novel_outline_template.md` (backward-planned from climax).

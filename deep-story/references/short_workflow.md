@@ -4,7 +4,7 @@
 
 ## Phase 1: Emotional Target & Premise
 - Define the target reader emotion, core twist/payoff, and genre constraints in `setting.md`.
-- Record persistent preferences via `author_memory_commit.py` if requested.
+- Record any style preferences directly in `setting.md`.
 
 ## Phase 2: Design Gate
 - Populate `setting.md` (characters, stakes, domain anchors) and `outline.md` (emotional arc, scene beats, payoff/reversal timing).

@@ -7,7 +7,7 @@ dependencies: []
 # Deep Story: Narrative State & Writing Engine
 
 ## Objective
-Manage long-form and short-form fiction projects using the battle-tested Python 3 core (`tracking_commit.py`, `storyctl.py`, `outline_view.py`, `author_memory_commit.py`) driven by `data/contracts.json` and `data/deslop_rules.json`.
+Manage long-form and short-form fiction projects using the battle-tested Python 3 core (`tracking_commit.py`, `storyctl.py`, `outline_view.py`) driven by `data/contracts.json` and `data/deslop_rules.json`.
 
 ## Hard Invariants (Always Enforce)
 1. **No Outline, No Prose**: Never draft a chapter before its detailed outline passes `check_outline_contract.py`.
@@ -36,4 +36,3 @@ Manage long-form and short-form fiction projects using the battle-tested Python 
 | **3. Outline Check** | `python3 scripts/check_outline_contract.py <outline_file>` | Verify required outline fields and Plot Beats table |
 | **4. Chapter Check** | `python3 scripts/storyctl.py chapter check --project <dir> --chapter <N> [--fix-punctuation]` | Measure word count + run AI-pattern, degeneration, punctuation, and outline-copy checks |
 | **5. Chapter Commit** | `python3 scripts/storyctl.py chapter commit --project <dir> --chapter <N> --input <delta.json>` | Commit state delta and regenerate all derived views |
-| **6. Author Memory** | `python3 scripts/author_memory_commit.py --help` | Manage persistent `AP` (workspace) and `BP` (book) style preferences |
