@@ -1,30 +1,34 @@
-# 全書總綱（`大綱/大綱.md`）
+# Book Spine (`<project>/大綱/大綱.md`)
 
-- **核心賣點**：<讀者追更這本書的唯一核心體驗>
-- **主角起點**：<目前缺乏什麼、受制於誰、最怕失去什麼>
-- **全書終極目標**：<必須達成且成敗明確的一件事>
-- **終局二選一抉擇**：<高潮時必須做出的代價交換，展現與開頭的對比>
-- **終局落點**：<外部局勢／核心關係／主角心態各自如何收束>
-- **跨卷主線推進**：<哪條主線或秘密在哪一卷推進、哪一卷揭曉>
+> **Output**: Split into `<project>/大綱/大綱.md` (spine) and `<project>/大綱/卷綱_<Vol>.md` (volume/unit cards).
+> **Gate**: `python3 scripts/outline_view.py --check <project>/大綱/卷綱_<Vol>.md`
+
+- **Genre Profile**: <genre_id from data/genre_cards.json, e.g. general_fallback>
+- **Core Selling Point**: <Unique reader hook>
+- **Protagonist Starting Point**: <Current lack, constraint, and fear>
+- **Book-Wide Goal**: <One concrete objective with clear pass/fail>
+- **Endgame Binary Choice**: <Climax trade-off contrasting the opening>
+- **Ending State**: <External situation, key relationships, and mindset>
+- **Cross-Volume Arcs**: <Which secret or relationship advances and resolves in which volume>
 
 ---
 
-# 第一卷卷綱（`大綱/卷綱_第一卷.md`）
+# Volume Outline (`<project>/大綱/卷綱_第一卷.md`)
 
 ## 本卷故事線 <!-- 全卷 -->
-- **本卷目標**：<本卷結束時局勢必須推進到哪一步>
-- **主要阻礙**：<擋在主角面前的核心對手或困境>
-- **破局新手段**：<主角在本卷被迫採取的新做法>
-- **卷末高潮對決**：<本卷最後的正面交鋒>
-- **階段回報与遺留壓力**：<解決了什麼、又引發下一卷什麼危機>
+- **Volume Goal**: <Situation shift required by volume end>
+- **Major Obstacle**: <Primary antagonist or structural resistance>
+- **New Strategy**: <Tactic forced upon the protagonist>
+- **Climax Showdown**: <Direct confrontation at volume end>
+- **Partial Payoff & Remaining Pressure**: <Resolved stake and next-volume trigger>
 
-### 第一段劇情：<劇情段名稱> <!-- L1-01 -->
+### 第一段劇情：<Unit Name> <!-- L1-01 -->
 - **章節範圍**：第 1-3 章
-- **這段讓讀者圖什麼**：<本段核心期待與情緒拉力>
-- **這段怎麼排**：
-  - 第 1 章：<開局事件與鉤子>
-  - 第 2 章：<阻力升級與反擊>
-  - 第 3 章：<階段小高潮與收尾懸念>
+- **單元情緒引擎**：<Expected emotional arc for this unit>
+- **單元節拍/章功能分配**：
+  - Chapter 1: <Opening event and hook>
+  - Chapter 2: <Escalation and counter-move>
+  - Chapter 3: <Unit climax and cliffhanger>
 
 #### 寫綱前查缺
 - 無缺口

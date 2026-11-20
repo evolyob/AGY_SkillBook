@@ -1,19 +1,22 @@
-# 角色卡：<角色姓名>
+# Character Card: <Name>
 
-## 基本身分與邊界（設定定稿區）
-- **身分／職稱**：
-- **核心動機（想得到什麼）**：
-- **底線（絕不妥協的事）**：
-- **能力與權限上限（做不到什麼）**：
+> **Output**: `<project>/設定/角色/<Name>.md` (create only for recurring characters).
+> **Sync**: Mirror dynamic fields into `init.json` or chapter `delta.json` (`tracking_commit.py` owns `追蹤/角色狀態/`).
 
-## 動態狀態（對應 `追蹤/角色狀態/`，隨章節推進）
-- **截至章節**：第 000 章
-- **當前位置與行動**：
-- **當前目標**：
-- **可用資源與籌碼**：
-- **關鍵關係（承諾／債務／利害邊界）**：
-- **已知（Known）**：
-- **誤信（Misbelieved）**：
-- **隱瞞（Concealed）**：
-- **未決事項**：
-- **異動出處**：
+## Core Identity & Bounds (Static)
+- **Role / Title**:
+- **Core Motivation**:
+- **Hard Bottom Line**:
+- **Capability & Authority Ceiling (What They Cannot Do)**:
+
+## Dynamic State (Mirrors `追蹤/角色狀態/`)
+- **As of Chapter**: 0
+- **Current Location & Activity**:
+- **Current Goal**:
+- **Abilities & Available Resources**:
+- **Key Relationships (Promises / Debts / Boundaries)**:
+- **Known**:
+- **Misbelieved**:
+- **Concealed**:
+- **Unresolved Matters**:
+- **Source of This Change**:

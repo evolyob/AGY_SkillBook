@@ -1,29 +1,32 @@
 # 第1章 細綱
 
-- 核心事件: <本章唯一核心事件（一句話）>
-- 字數目標: 2500
-- 屬於哪段劇情: L1-01
-- 目標情緒: <起始情緒> -> <收尾情緒>
-- 主角目標/關鍵選擇: <想達成什麼> / <面對哪個兩難選擇>
-- 章首鉤子: <承接上一章壓力或開頭異常事件>
-- 爽點: <本章給予讀者的核心回報或反轉>
-- 本章禁止提前釋放: 無
+> **Output**: `<project>/大綱/細綱_第<NNN>章.md`
+> **Gate**: `python3 scripts/check_outline_contract.py --project <project> --chapter <N>`
 
-### 這章怎麼走
-- 起因: <觸發本章行動的具體事件>
-- 發展: <阻力加劇或時間壓力>
-- 轉折: <新線索、新限制或對方出招>
-- 高潮: <正面交鋒或關鍵抉擇>
-- 結尾: <章末懸念或下一章行動鉤子>
+- Core Event: <One-sentence core event>
+- Word Count Target: 2500
+- Unit Position: L1-01
+- Target Emotion: <Start state> -> <End state>
+- Protagonist Goal / Key Choice: <What they want> / <On-the-spot dilemma>
+- Opening Hook: <Pressure carried from prior chapter or inciting anomaly>
+- Payoff: <Core reader reward or reversal>
+- Forbidden Reveals: 無
 
-### 情節安排
-<簡述本章推進主線與伏筆的具體安排。>
+### Chapter Flow
+- Cause: <Concrete trigger>
+- Escalation: <Rising resistance or deadline pressure>
+- Turn: <New clue, constraint, or opponent move>
+- Climax: <Direct confrontation or decisive choice>
+- Ending: <Closing suspense or next-chapter hook>
 
-### 人物關係和出場順序
-<依出場順序列出角色與當場立場衝突。>
+### Plot Arrangement
+<Brief summary of main plot and foreshadowing progression.>
 
-### 情節細化
-| # | 情節點 | 作用 | 分寸 |
+### Character Relationships & Presence Order
+<List characters in order of appearance and their immediate conflict.>
+
+### Plot Beats
+| # | Plot Beat | Function | Bounds |
 | :--- | :--- | :--- | :--- |
-| 1 | <具體場景動作> | 鋪墊 | 禁：<不可提前揭露的事實> |
-| 2 | <衝突推進動作> | 推進 | 放：<可描寫的感官細節或道具> |
+| 1 | <Concrete scene action> | Setup | 禁：<Facts that must not leak early> |
+| 2 | <Escalating conflict move> | Advance | 放：<Sensory details or props allowed> |

@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "book_title": "<書名>",
+  "book_title": "<Book Title>",
   "last_chapter": 0,
   "context": {
     "position": {
-      "scene": "<初始場景>",
-      "volume": "第一卷",
-      "story_time": "<故事起始時間>",
+      "scene": "<Opening Scene>",
+      "volume": "Vol 1",
+      "story_time": "<Starting Story Time>",
       "volume_start_chapter": 1
     },
     "long_term_constraints": [
-      "<核心賣點／類型鐵律>",
-      "<世界觀或外部素材硬性約束（如：能力代價、時限、不可違背設定）>"
+      "<Core selling point / genre rule>",
+      "<Hard world rule (cost, deadline, or non-negotiable invariant)>"
     ]
   }
 }

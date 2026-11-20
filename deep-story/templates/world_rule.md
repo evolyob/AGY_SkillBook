@@ -1,8 +1,11 @@
-# 世界觀與規則錨點：<規則或制度名稱>
+# World Rule / Domain Anchor: <Rule Name>
 
-- **來源或設定依據**：`<設定章節或參考文件>`
-- **適用條件（何時生效）**：
-- **例外清單（哪些情況不適用）**：
-- **使用代價／違反後果**：
-- **硬性數值／時限邊界**：
-- **劇情可用衝突點**：
+> **Output**: `<project>/設定/世界觀/<RuleSlug>.md`.
+> **Sync**: Copy hard deadlines, costs, and invariants into `init.json` -> `context.long_term_constraints`.
+
+- **Source Reference**: `<Source section or external note>`
+- **Trigger Conditions (When Active)**:
+- **Exceptions (When Excluded)**:
+- **Cost / Violation Consequences**:
+- **Hard Limits / Deadlines**:
+- **Dramatic Conflict Hooks**:

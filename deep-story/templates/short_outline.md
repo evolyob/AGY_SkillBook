@@ -1,16 +1,19 @@
-# 短篇小節大綱（`小節大綱.md`）
+# Short Story Outline (`<project>/小節大綱.md`)
 
-- **核心衝突**：<一句話定義主角與對手的正面矛盾>
-- **字數目標**：3000
-- **目標情緒**：<壓抑／誤解> -> <反轉／釋放>
-- **終局反轉點**：<最後揭曉的關鍵真相或籌碼>
+> **Output**: `<project>/小節大綱.md` (must be complete before drafting `<project>/正文.md`).
+> **Gate**: `python3 scripts/check_outline_copy.py --outline <project>/小節大綱.md <project>/正文.md`
 
-### 情節細化
-| # | 情節點 | 作用 | 分寸 |
+- **Core Conflict**: <One-sentence central clash>
+- **Word Count Target**: 3000
+- **Target Emotion**: <Initial tension> -> <Reversal / Release>
+- **Final Twist**: <Key truth or leverage revealed at climax>
+
+### Plot Beats
+| # | Plot Beat | Function | Bounds |
 | :--- | :--- | :--- | :--- |
-| 1 | <開篇衝突落地> | 立鉤子 | 禁：<不可提前說破的反轉底牌> |
-| 2 | <對手施壓與主角受挫> | 蓄力 | 放：<關鍵道具或細節伏筆> |
-| 3 | <底牌揭曉與反殺> | 爆發 | 放：<必須對上的台詞或證據> |
+| 1 | <Opening clash> | Hook | 禁：<Twist card held back> |
+| 2 | <Opponent pressure and setback> | Escalate | 放：<Key prop or planted clue> |
+| 3 | <Reveal and counter-strike> | Payoff | 放：<Required callback line or evidence> |
 
 原樣出現的原話：
 - 無
