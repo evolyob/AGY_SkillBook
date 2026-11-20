@@ -26,9 +26,9 @@ Line length signals leverage: the party holding power delivers short facts or ou
 
 | Mode | Structural Pattern | Chinese Anchor Example |
 | :--- | :--- | :--- |
-| **Suppression (壓制)** | Opponent blusters with seniority/rules -> Protagonist closes with an already-executed fact | `少东家合上账本：“库房卯时就换了锁，周账房刚把你那本私账交出来。”` |
-| **Reversal (反轉)** | Opponent flaunts borrowed leverage -> Protagonist reveals they control the source | `“你妈给你那张副卡挂在我主卡名下，十分钟前停了。”` |
-| **Shut-Down (心死)** | Truth already exposed; protagonist shrinks replies until cutting off (`嗯` -> `隨意`) | `她把签好的离婚协议放上鞋柜：“随意。”` |
+| **Suppression** | Opponent blusters with seniority/rules -> Protagonist closes with an already-executed fact | `少东家合上账本：“库房卯时就换了锁，周账房刚把你那本私账交出来。”` |
+| **Reversal** | Opponent flaunts borrowed leverage -> Protagonist reveals they control the source | `“你妈给你那张副卡挂在我主卡名下，十分钟前停了。”` |
+| **Shut-Down** | Truth already exposed; protagonist shrinks replies until cutting off (`嗯` -> `隨意`) | `她把签好的离婚协议放上鞋柜：“随意。”` |
 
 ---
 

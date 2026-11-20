@@ -6,31 +6,31 @@ A long-form novel's story bible must separate stable facts from states that chan
 
 | Module | What It Stores | When to Update |
 |---|---|---|
-| Character Card (角色卡) | Identity, background, ability boundaries, long-term goals | When a setting detail is formally changed |
-| Current State (当前状态) | Location, resources, relationships, known info, unresolved matters | Whenever a valid change occurs |
-| Relationship Table (关系表) | Mutual promises, debts, public and private stances | When an action affecting the relationship lands |
-| Author Timeline (作者时间线) | Objective order and dates of events | When new facts are confirmed |
-| Reader Knowledge (读者已知) | Content already revealed in the main text | When a chapter is finished |
-| World Rules (世界规则) | Applicable conditions, exceptions, costs | When rules are established or revised |
+| Character Card | Identity, background, ability boundaries, long-term goals | When a setting detail is formally changed |
+| Current State | Location, resources, relationships, known info, unresolved matters | Whenever a valid change occurs |
+| Relationship Table | Mutual promises, debts, public and private stances | When an action affecting the relationship lands |
+| Author Timeline | Objective order and dates of events | When new facts are confirmed |
+| Reader Knowledge | Content already revealed in the main text | When a chapter is finished |
+| World Rules | Applicable conditions, exceptions, costs | When rules are established or revised |
 
 Each fact is canonized in only one place; other files either reference it or only record the latest outcome.
 
 ## Copyable Character State Template
 
 ```md
-As of Chapter (截至章节):
-Current Location & Activity (当前位置与正在做的事):
-Current Goal (当前目标):
-Abilities & Available Resources (能力与可用资源):
-Key Relationships (关键关系): (Write promises, debts, and boundaries for each important person)
-Known / Misbelieved / Concealed by Character (本人已知 / 误信 / 隐瞒):
-Unresolved Matters (未结事项):
-Source of This Change (本次变化来源): (Which chapter and paragraph in the main text)
+As of Chapter:
+Current Location & Activity:
+Current Goal:
+Abilities & Available Resources:
+Key Relationships: (Write promises, debts, and boundaries for each important person)
+Known / Misbelieved / Concealed by Character:
+Unresolved Matters:
+Source of This Change: (Which chapter and paragraph in the main text)
 ```
 
 Only create state pages for characters who will appear again later; leave one-off passersby in chapter records so the story bible doesn't bloat over time. When revising old chapters, recalculate affected states forward starting from the modified chapter.
 
-## Original Filled Example: Old Water Station Manager (旧水站管理员)
+## Original Filled Example: Old Water Station Manager
 
 ```md
 As of Chapter: Chapter 12
