@@ -1,0 +1,6 @@
+# Book-local deslop & punctuation whitelist (.deslop-whitelist)
+# Place one literal phrase per line in <project>/.deslop-whitelist.
+# Lines starting with # are ignored.
+# Example:
+# 特定專有名詞
+# 角色招牌口頭禪
