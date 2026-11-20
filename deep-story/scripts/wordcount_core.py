@@ -26,12 +26,12 @@ _FRONTMATTER_KEY_RE = re.compile(r"^[A-Za-z_\u3400-\u9FFF][^:\n]{0,80}:[ \t]*(?:
 _LEADING_BLANK_RE = re.compile(r"^[\u0009\u0020\u3000]*$")
 _ATX_HEADING_RE = re.compile(r"^[\u0009\u0020]{0,3}#{1,6}[\u0009\u0020]+\S")
 _POSITIVE_INTEGER_RE = re.compile(r"^[1-9]\d*$")
-# 細綱「字數目標」「字數范围」「字數口徑」的唯一寫法語法；check-outline-contract.js 逐字鏡像同一組正則，
-# scripts/test-storyctl.py 用同一批寫法同時跑两邊，保证細綱驗收過了、章節檢查不會再拒。
-# 值里一個數字都沒有的目標/范围行（「字數目標：按卷規划」）是說明文字，不参與取值。
+# 細綱「字數目標」「字數范圍」「字數口徑」的唯一寫法語法；check-outline-contract.js 逐字鏡像同一組正則，
+# scripts/test-storyctl.py 用同一批寫法同時跑兩邊，保證細綱驗收過了、章節檢查不會再拒。
+# 值里一個數字都沒有的目標/范圍行（「字數目標：按卷規劃」）是說明文字，不參與取值。
 _NUMBER = r"([1-9][0-9]{0,2}(?:[,，][0-9]{3})+|[1-9][0-9]*)"
 _NOTE = r"(?:[（(][^（）()]*[）)])?"
-_TARGET_VALUE_RE = re.compile(rf"^(?:约|大约)?[ \t]*{_NUMBER}[ \t]*字?(?:左右)?[ \t]*{_NOTE}$")
+_TARGET_VALUE_RE = re.compile(rf"^(?:約|大約)?[ \t]*{_NUMBER}[ \t]*字?(?:左右)?[ \t]*{_NOTE}$")
 _RANGE_VALUE_RE = re.compile(
     rf"^{_NUMBER}[ \t]*字?[ \t]*(?:-|~|～|—|–|－|至|到)[ \t]*{_NUMBER}[ \t]*字?[ \t]*{_NOTE}$"
 )
@@ -69,8 +69,8 @@ def parse_target_field(text: str) -> dict[str, Any]:
 
 
 def parse_range_field(text: str) -> dict[str, Any]:
-    """Optional author range line 「字數范围：2000-2600」; same status vocabulary as parse_target_field."""
-    raws = _numeric_field_values(normalize_newlines(text).lstrip("\ufeff"), "字數范围")
+    """Optional author range line 「字數范圍：2000-2600」; same status vocabulary as parse_target_field."""
+    raws = _numeric_field_values(normalize_newlines(text).lstrip("\ufeff"), "字數范圍")
     if not raws:
         return {"status": "missing", "value": None, "raw": raws}
     matches = [_RANGE_VALUE_RE.fullmatch(raw) for raw in raws]
@@ -181,7 +181,7 @@ def compute_wordcount_bands(value: Any, author_range: Any = None) -> dict[str, d
     target = parse_target(value)
     author = normalize_author_range(author_range)
     if author is not None:
-        # 作者給定區間原樣優先：內部帶與用户帶都取它，不再有 borderline。
+        # 作者給定區間原樣優先：內部帶與用戶帶都取它，不再有 borderline。
         return {"internal": dict(author), "user": dict(author)}
     return {
         "internal": {"min": (target * 88 + 99) // 100, "max": target * 112 // 100},
@@ -270,7 +270,7 @@ def checkpoint_wordcount(
 
 _FIELD_ERRORS = {
     "missing": "is missing",
-    "invalid": "is not a recognizable number (write e.g. 2300 字 / 约 2300 / 2,300)",
+    "invalid": "is not a recognizable number (write e.g. 2300 字 / 約 2300 / 2,300)",
     "conflict": "has conflicting values",
 }
 
@@ -286,11 +286,11 @@ def target_from_outline(value: str) -> int:
 
 
 def range_from_outline(value: str) -> dict[str, int] | None:
-    """細綱可選行「字數范围：2000-2600」；沒寫返回 None，寫了但寫不對就报錯而不是靜默回落默認帶。"""
+    """細綱可選行「字數范圍：2000-2600」；沒寫返回 None，寫了但寫不對就報錯而不是靜默回落默認帶。"""
     parsed = parse_range_field(value)
     if parsed["status"] == "missing":
         return None
-    require(parsed["status"] == "ok", f"字數范围 must be one min-max pair with min <= max: {parsed['raw']}")
+    require(parsed["status"] == "ok", f"字數范圍 must be one min-max pair with min <= max: {parsed['raw']}")
     return parsed["value"]
 
 
@@ -324,14 +324,14 @@ def read_chapter_outline(project: Path, chapter: int) -> tuple[Path, str]:
 
 
 def effective_author_range(outline: str, author_range: Any = None) -> dict[str, int] | None:
-    """命令行給了上下限就以它為準（細綱「字數范围」寫錯也不阻斷）；否則讀細綱。"""
+    """命令行給了上下限就以它為準（細綱「字數范圍」寫錯也不阻斷）；否則讀細綱。"""
     return normalize_author_range(author_range) if author_range is not None else range_from_outline(outline)
 
 
 def read_project_chapter(
     project: Path, chapter: int, author_range: Any = None,
 ) -> tuple[Path, Path, int, dict[str, int] | None]:
-    """定位本章細綱與正文，讀出字數目標和生效的作者字數范围。"""
+    """定位本章細綱與正文，讀出字數目標和生效的作者字數范圍。"""
     outline_path, outline = read_chapter_outline(project, chapter)
     body_path = find_chapter_file(project.resolve() / "正文", chapter, outline=False)
     return outline_path, body_path, target_from_outline(outline), effective_author_range(outline, author_range)
@@ -340,7 +340,7 @@ def read_project_chapter(
 def build_project_wordcount_record(
     project: Path, chapter: int, *, resolution: str, author_range: Any = None,
 ) -> dict[str, Any]:
-    """author_range=None 時讀細綱「字數范围」；顯式傳入（命令行 --min-chars/--max-chars）時以它為準。"""
+    """author_range=None 時讀細綱「字數范圍」；顯式傳入（命令行 --min-chars/--max-chars）時以它為準。"""
     require(resolution in RESOLUTIONS, f"unsupported wordcount resolution: {resolution}")
     _, body_path, target, author = read_project_chapter(project, chapter, author_range)
     try:
@@ -397,7 +397,7 @@ def normalize_wordcount_record(value: object) -> dict[str, Any]:
 def wordcount_record_drift(project: Path, chapter: int, value: object) -> list[str]:
     """已提交的字數記錄對當前文件過期了哪几項：只核對記錄釘住的正文字節與字數目標。
 
-    作者事後在細綱補/改「字數范围」只影响下次計數的判定帶，不讓已提交的記錄過期。
+    作者事後在細綱補/改「字數范圍」只影響下次計數的判定帶，不讓已提交的記錄過期。
     """
     record = normalize_wordcount_record(value)
     root = project.resolve()

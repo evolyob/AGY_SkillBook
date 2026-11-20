@@ -34,8 +34,15 @@ SUBSECTIONS: list[str] = [names[0] for names in SUBSECTION_NAMES]
 FIVE_ACT: list[list[str]] = [
     item if isinstance(item, list) else [item] for item in _OUTLINE_CFG["five_act"]
 ]
-PLOT_HEADER_FIRST = re.compile(r"^(?:#|序號|序號|Beat)$", re.IGNORECASE)
-INTENT_FIELDS: list[str] = ["目標情绪", "主角目標/關鍵選择"]
+def _alt_regex(items: list[str]) -> str:
+    return "|".join(re.escape(x) for x in items)
+
+
+PLOT_HEADER_FIRST = re.compile(
+    rf"^(?:{_alt_regex(_OUTLINE_CFG['plot_header_first_tokens'])})$",
+    re.IGNORECASE,
+)
+INTENT_FIELDS: list[str] = list(_OUTLINE_CFG["intent_fields"])
 CALIBER = _OUTLINE_CFG["caliber"]
 
 CONTRACT_RISK_LEVELS: list[str] = _OUTLINE_CFG["contract_risk_levels"]
@@ -44,7 +51,7 @@ LEGACY_RISK_LEVELS: dict[str, str] = _OUTLINE_CFG["legacy_risk_levels"]
 NUMBER = r"([1-9][0-9]{0,2}(?:[,，][0-9]{3})+|[1-9][0-9]*)"
 NOTE = r"(?:[（(][^（）()]*[）)])?"
 TARGET_VALUE = re.compile(
-    rf"^(?:约|大约)?[ \t]*{NUMBER}[ \t]*字?(?:左右)?[ \t]*{NOTE}$"
+    rf"^(?:約|大約)?[ \t]*{NUMBER}[ \t]*字?(?:左右)?[ \t]*{NOTE}$"
 )
 RANGE_VALUE = re.compile(
     rf"^{NUMBER}[ \t]*字?[ \t]*(?:-|~|～|—|–|－|至|到)[ \t]*{NUMBER}[ \t]*字?[ \t]*{NOTE}$"
@@ -52,8 +59,12 @@ RANGE_VALUE = re.compile(
 METRIC_VALUE = re.compile(rf"^([A-Za-z0-9_-]+)[ \t]*{NOTE}$")
 HAS_DIGIT = re.compile(r"[0-9０-９]")
 
-REF_DIR_PREFIX = re.compile(r"^(?:設定|大綱|追蹤|正文|讀者筆記|對標)/")
-SUPPLY_HEADING = re.compile(r"^(?:寫綱前查缺|供給自查)(?:\s|[（(<]|$)")
+REF_DIR_PREFIX = re.compile(rf"^(?:{_alt_regex(_OUTLINE_CFG['ref_dir_prefixes'])})/")
+SUPPLY_HEADING = re.compile(rf"^(?:{_alt_regex(_OUTLINE_CFG['supply_headings'])})(?:\s|[（(<]|$)")
+_EMPTY_RELEASE_RE = re.compile(rf"^(?:{_alt_regex(_OUTLINE_CFG['empty_release_values'])})$")
+_RESOLUTION_KW: tuple[str, ...] = tuple(_OUTLINE_CFG["resolution_column_keywords"])
+_BOUND_COL_RE = re.compile(_alt_regex(_OUTLINE_CFG["bound_column_keywords"]), re.IGNORECASE)
+_FUNCTION_COL_RE = re.compile(_alt_regex(_OUTLINE_CFG["function_column_keywords"]), re.IGNORECASE)
 
 _SCRIPT_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_REFERENCES: list[str] = [
@@ -110,7 +121,7 @@ def parse_wordcount_target(text: str) -> dict[str, Any]:
 def parse_wordcount_range(text: str) -> dict[str, Any]:
     """Parse and validate the optional wordcount range field(s) in an outline."""
     raw: list[str] = []
-    for label in ("字數范围", "字數範圍", "Word Count Range"):
+    for label in ("字數范圍", "字數範圍", "Word Count Range"):
         raw.extend(numeric_field_values(text, label))
     if not raw:
         return {"status": "missing", "value": None, "raw": raw}
@@ -149,7 +160,7 @@ def parse_wordcount_caliber(text: str) -> bool:
 def parse_contract_risk(text: str) -> dict[str, Any] | None:
     """Parse the optional contract risk field using current or legacy labels."""
     raw: list[str] = []
-    for label in ("有沒有硬傷", "契约風險", "風險等級"):
+    for label in ("有沒有硬傷", "契約風險", "風險等級"):
         raw = field_values(text, label)
         if raw:
             break
@@ -298,9 +309,9 @@ def check_setting_refs(
 
 def _column_kind(cell: str) -> str | None:
     """Classify an optional plotpoint column header."""
-    if "分辨率" in cell or "解析度" in cell or "Resolution" in cell:
+    if any(kw in cell for kw in _RESOLUTION_KW):
         return "res"
-    if re.search(r"执行邊界|執行邊界|分寸|Bounds", cell, re.IGNORECASE):
+    if _BOUND_COL_RE.search(cell):
         return "bound"
     return None
 
@@ -331,9 +342,7 @@ def _is_released_cell(cell: str) -> bool:
     if not match:
         return False
     value = re.sub(r"[\s。；;，,、\[\]【】]", "", match.group(1))
-    return len(value) > 0 and not bool(
-        re.match(r"^(?:無|暂無|待補充|待定|無缺口)$", value)
-    )
+    return len(value) > 0 and not bool(_EMPTY_RELEASE_RE.match(value))
 
 
 def _check_plotpoint_release(
@@ -341,8 +350,8 @@ def _check_plotpoint_release(
     header: list[str],
     name: str,
 ) -> list[dict[str, Any]]:
-    """Run legacy `执行邊界` release-clause checks when applicable."""
-    if "执行邊界" not in header[-1]:
+    """Run legacy `執行邊界` release-clause checks when applicable."""
+    if "執行邊界" not in header[-1]:
         return []
     if len(header) != 5 and "放" not in header[-1]:
         return []
@@ -362,8 +371,8 @@ def _check_plotpoint_release(
             len(released) > 0,
             name,
             f"{len(rows)} 個情節點里 {len(released)} 個寫了「放」",
-            "执行邊界寫成「禁＋放」两半，每章至少一個點寫了「放」——放行是解除限制，不是義务",
-            "給最該出彩的一两個點補「放」半邊（誰可以出聲、誰可以失態、允不允許當场標价），不改情節點本身。",
+            "執行邊界寫成「禁＋放」兩半，每章至少一個點寫了「放」——放行是解除限制，不是義務",
+            "給最該出彩的一兩個點補「放」半邊（誰可以出聲、誰可以失態、允不允許當場標价），不改情節點本身。",
         )
     ]
     if len(released) > 0 and len(rows) >= 3 and len(released) * 3 < len(rows):
@@ -415,8 +424,8 @@ def _check_release_brevity(text: str, name: str) -> dict[str, Any] | None:
                 False,
                 name,
                 f"這章不能說破列了 {len(items)} 條",
-                f"只在這章確有一件具體的事要压住時寫一行（至多 {RELEASE_MAX_ITEMS} 條）；全卷都压着的寫在卷綱「這卷先不能揭開、不能用上的」，不逐章複讀",
-                "把和卷綱重複的條目刪掉，只留這章確要压住的那件事；沒有就整行刪掉。本項不阻斷。",
+                f"只在這章確有一件具體的事要壓住時寫一行（至多 {RELEASE_MAX_ITEMS} 條）；全卷都壓著的寫在卷綱「這卷先不能揭開、不能用上的」，不逐章複讀",
+                "把和卷綱重複的條目刪掉，只留這章確要壓住的那件事；沒有就整行刪掉。本項不阻斷。",
                 "advisory",
             )
         return None
@@ -440,17 +449,17 @@ def _build_wordcount_check(
 
     target_labels = {
         "ok": target,
-        "missing": "未识別",
+        "missing": "未識別",
         "invalid": f"寫法認不出（{'、'.join(target_parse['raw'])}）",
         "conflict": f"多個不同的值（{'、'.join(target_parse['raw'])}）",
     }
     target_label = target_labels[target_parse["status"]]
     range_label = ""
     if range_parse["status"] == "invalid":
-        range_label = f"；字數范围寫法不對（{'、'.join(range_parse['raw'])}）"
+        range_label = f"；字數范圍寫法不對（{'、'.join(range_parse['raw'])}）"
     elif range_parse["value"]:
         rval = range_parse["value"]
-        range_label = f"；字數范围：{rval['min']}-{rval['max']}"
+        range_label = f"；字數范圍：{rval['min']}-{rval['max']}"
 
     ok = (
         target_parse["status"] == "ok"
@@ -464,8 +473,8 @@ def _build_wordcount_check(
         ok,
         name,
         f"字數目標：{target_label}；字數口徑（可不寫，寫了須是 {CALIBER}）：{caliber_str}{range_label}",
-        f"字數目標為 {min_target}-{max_target} 的正整數（可寫「2300 字」「约 2300」「2,300」，可帶括號備注）；字數口徑不用寫，寫了只能是 {CALIBER}；作者給了上下限時另寫一行「字數范围：2000-2600」",
-        "只補字數目標、字數范围，或刪掉寫錯的字數口徑行，不調整情節安排。",
+        f"字數目標為 {min_target}-{max_target} 的正整數（可寫「2300 字」「約 2300」「2,300」，可帶括號備注）；字數口徑不用寫，寫了只能是 {CALIBER}；作者給了上下限時另寫一行「字數范圍：2000-2600」",
+        "只補字數目標、字數范圍，或刪掉寫錯的字數口徑行，不調整情節安排。",
     )
     summary = {
         "target": target,
@@ -506,8 +515,8 @@ def verify(file_path: str | Path, project_root: str | None = None) -> dict[str, 
             len(missing_fields) == 0,
             name,
             f"缺字段：{'、'.join(missing_fields)}" if missing_fields else f"{len(FIELDS)} 個字段齊全",
-            f"按權威模板列出全部字段：{'、'.join(FIELDS)}；值未知時寫 [待補充]，不杜撰剧情",
-            "只補报告里缺的字段行；確實還定不下來的寫 [待補充]，不為補字段新增副線或人物關系。",
+            f"按權威模板列出全部字段：{'、'.join(FIELDS)}；值未知時寫 [待補充]，不杜撰劇情",
+            "只補報告里缺的字段行；確實還定不下來的寫 [待補充]，不為補字段新增副線或人物關係。",
         )
     )
 
@@ -517,9 +526,9 @@ def verify(file_path: str | Path, project_root: str | None = None) -> dict[str, 
             "outline.intent-fields-substantive",
             len(hollow) == 0,
             name,
-            f"只有占位符，沒有實際內容：{'、'.join(hollow)}" if hollow else "目標情绪與主角目標/關鍵選择都寫了實際內容",
-            "目標情绪寫清前狀態→後狀態；主角目標/關鍵選择寫清本章要什麼、必須做出的判斷。這两項不接受 [待補充]",
-            "只把這两個字段替換成本章的實際情绪變化與實際取舍；其余字段不動。",
+            f"只有占位符，沒有實際內容：{'、'.join(hollow)}" if hollow else "目標情緒與主角目標/關鍵選擇都寫了實際內容",
+            "目標情緒寫清前狀態→後狀態；主角目標/關鍵選擇寫清本章要什麼、必須做出的判斷。這兩項不接受 [待補充]",
+            "只把這兩個字段替換成本章的實際情緒變化與實際取捨；其余字段不動。",
         )
     )
 
@@ -534,7 +543,7 @@ def verify(file_path: str | Path, project_root: str | None = None) -> dict[str, 
             len(missing_subs) == 0,
             name,
             f"缺小節：{'、'.join(missing_subs)}" if missing_subs else "四個小節齊全",
-            "包含 這章怎麼走 / 情節安排 / 人物關系和出场順序 / 情節細化 四個小節（舊名「內容概括」照認）",
+            "包含 這章怎麼走 / 情節安排 / 人物關係和出場順序 / 情節細化 四個小節（舊名「內容概括」照認）",
             "只補缺失的小節標題及其條目，不重寫已成立的內容。",
         )
     )
@@ -550,7 +559,7 @@ def verify(file_path: str | Path, project_root: str | None = None) -> dict[str, 
             name,
             f"「這章怎麼走」缺：{'、'.join(missing_acts)}" if missing_acts else "「這章怎麼走」五行齊全",
             "「這章怎麼走」寫全 起因 / 發展 / 轉折 / 高潮 / 結尾",
-            "只補缺的那一段，不改其余四段。",
+            "只補缺的那一段，不改其餘四段。",
         )
     )
 
@@ -558,7 +567,7 @@ def verify(file_path: str | Path, project_root: str | None = None) -> dict[str, 
     header = _find_plotpoint_header(lines)
     header_ok = (
         bool(header)
-        and bool(re.search(r"功能標签|功能標籤|作用|Function", header[2], re.IGNORECASE))
+        and bool(_FUNCTION_COL_RE.search(header[2]))
         and _extra_columns_ok(header[3:])
     )
     checks.append(
@@ -739,7 +748,7 @@ def _is_unit_card(
         scope = re.sub(r"^單元級\s+", "", re.split(r"[｜|]", heading["comment"])[0].strip())
         if re.match(r"^[A-Za-z]\d*[\w-]*$", scope):
             return scope == unit_id
-    id_match = re.search(r"剧情單元\s+([A-Za-z][\w-]*)", heading["title"])
+    id_match = re.search(r"劇情單元\s+([A-Za-z][\w-]*)", heading["title"])
     if id_match:
         return id_match.group(1) == unit_id
     end = next((h["index"] for h in headings if h["index"] > heading["index"]), len(lines))
@@ -792,7 +801,7 @@ def verify_supply(volume_file: str | Path, unit_id: str) -> dict[str, Any]:
             "file": resolved_vol,
             "unit": unit_id,
             "ok": False,
-            "evidence": f"卷綱中未找到剧情段 {unit_id}",
+            "evidence": f"卷綱中未找到劇情段 {unit_id}",
         }
 
     end = next(
@@ -810,9 +819,9 @@ def verify_supply(volume_file: str | Path, unit_id: str) -> dict[str, Any]:
         "unit": unit_id,
         "ok": ok,
         "evidence": (
-            "剧情段內含「寫綱前查缺」小節"
+            "劇情段內含「寫綱前查缺」小節"
             if ok
-            else f"沒有 .story/排綱筆記/{unit_id}.md，剧情段 {unit_id} 里也沒有「寫綱前查缺」小節——每批出細綱前都要查一遍缺什麼（沒缺也寫「無缺口」），見 workflow-outline.md「寫綱前查缺」"
+            else f"沒有 .story/排綱筆記/{unit_id}.md，劇情段 {unit_id} 里也沒有「寫綱前查缺」小節——每批出細綱前都要查一遍缺什麼（沒缺也寫「無缺口」），見 workflow-outline.md「寫綱前查缺」"
         ),
     }
 

@@ -38,7 +38,7 @@ Distinguish information gaps from suspense: wet footprints left outside the door
 
 Dialogue wording and necessary micro-links can serve established content; you cannot use a line of dialogue or an incidental action to add a threat, a promise, newly acquired evidence, or a change in character strategy. When switching POV, narrate only the perceptions and cognition supported by that POV—do not add new experiences such as "discovered upon entering the door" (“進門時發現”) or "heard later" (“後來聽說”) just to preserve information.
 
-When the author has explicitly requested a rewrite or permitted plot adjustments, directly execute the authorized part while preserving all other established facts; do not ask for the same authorization again. When key grounds for a choice are still missing, propose minimal reviewable options. A proposed fix must specify which action, which condition, or which outcome it applies to, and explain which subsequent passages it will affect—do not just say "strengthen the conflict" (“加強冲突”). Put suggestions and speculation in the report; do not quietly turn them into main-text facts.
+When the author has explicitly requested a rewrite or permitted plot adjustments, directly execute the authorized part while preserving all other established facts; do not ask for the same authorization again. When key grounds for a choice are still missing, propose minimal reviewable options. A proposed fix must specify which action, which condition, or which outcome it applies to, and explain which subsequent passages it will affect—do not just say "strengthen the conflict" (“加強衝突”). Put suggestions and speculation in the report; do not quietly turn them into main-text facts.
 
 ## Grouped Example: Outcomes Need a Process That Holds Up
 
@@ -57,7 +57,7 @@ The following is a synthetic example.
 >
 > Holding those sheets of paper, the shopkeeper admitted that this entry had not been altered by the apprentice.
 >
-> *(Original: 學徒把自己的底稿放在柜上，請另两人拆開封存的那两頁。三份末行都是同一個數，和掌柜手中的新帳對不上。 / 掌柜拿着那几頁纸，承認這一筆不是學徒改的。)*
+> *(Original: 學徒把自己的底稿放在柜上，請另兩人拆開封存的那兩頁。三份末行都是同一個數，和掌柜手中的新帳對不上。 / 掌柜拿著那几頁紙，承認這一筆不是學徒改的。)*
 
 The weight of the evidence comes from the separately sealed master copies and face-to-face verification, without temporarily adding a secret witness. When the prior setup is already sufficient, write the verification directly—there is no need to manufacture another failure just to "add twists and turns" (“增加波折”).
 

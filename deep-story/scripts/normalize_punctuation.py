@@ -40,7 +40,7 @@ YAML_FIELD_RE = re.compile(r'^[A-Za-z0-9_-]+:\s*')
 COLON_AFTER_RE = re.compile(
     r'^(因為|原來|這是|那是|也就是|換句話|說白了|所謂|答案|原因|結果|真相|問題在於)'
 )
-COLON_BEFORE_RE = re.compile(r'(原因|答案|真相|結果|結論|問題|選择|意思)$')
+COLON_BEFORE_RE = re.compile(r'(原因|答案|真相|結果|結論|問題|選擇|意思)$')
 SENTENCE_PUNCT_RE = re.compile(r'[，,。.!！?？;；:：…]$')
 PUNCT_RE = re.compile(r'[，,。.!！?？;；:：、…"“”\'‘’」』）)]')
 CLOSING_QUOTE_RE = re.compile(r'["”」』]')
@@ -458,7 +458,7 @@ def normalize_quotes(
                     'line': line_no,
                     'column': i + 1,
                     'type': 'quote-style',
-                    'message': '按顯式 quote-mode 轉為盐言引號。',
+                    'message': '按顯式 quote-mode 轉為鹽言引號。',
                 }
             )
             continue

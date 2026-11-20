@@ -1,32 +1,32 @@
 #!/usr/bin/env python3
 """卷綱取段器 —— 讓「不整讀卷綱」成立。
 
-按聲明作用域選取卷級、單元級和批次材料；未聲明的舊段保守纳入並告警。
+按聲明作用域選取卷級、單元級和批次材料；未聲明的舊段保守納入並告警。
 
-两種寫法都認（新卷綱只寫第一種）：
+兩種寫法都認（新卷綱只寫第一種）：
 
 1. 標題尾部注釋（0.10 起）：
        ## 本卷故事線 <!-- 全卷 -->
-       ### 第一段剧情：退婚風波 <!-- L1-01 -->
+       ### 第一段劇情：退婚風波 <!-- L1-01 -->
        #### 老底稿 <!-- 批次底稿 L1-01｜已退役 -->
-   新寫法里沒寫注釋的子標題跟隨上級剧情段（上級是全卷段的不跟隨，仍算未聲明）。
+   新寫法里沒寫注釋的子標題跟隨上級劇情段（上級是全卷段的不跟隨，仍算未聲明）。
 2. 舊寫法：標題**下一行非空行**寫
        > 作用域：卷級常任
        > 作用域：單元級 D1-03
        > 作用域：批次底稿 D1-03｜狀態：在用
 
-退役行（行內覆盖）：以 `⊘` 起頭的列表行 / 表格行，默認過滤。
+退役行（行內覆蓋）：以 `⊘` 起頭的列表行 / 表格行，默認過濾。
 
 卷綱、細綱按名讀取的字段在這里集中給出新舊名（UNIT_FIELD_NAMES、CHAPTER_UNIT_FIELDS），
-其他脚本從這里取，不各自寫死一種叫法。
+其他腳本從這里取，不各自寫死一種叫法。
 
-細綱屬於哪段剧情：新細綱只寫段名（「第一段剧情：退婚風波」），按本章章號落在卷綱哪張剧情段卡的
-「章節范围」里定位（unit_for_chapter / --chapter）；舊細綱行末的編號注釋、舊「單元ID/位置」字段照樣認。
+細綱屬於哪段劇情：新細綱只寫段名（「第一段劇情：退婚風波」），按本章章號落在卷綱哪張劇情段卡的
+「章節范圍」里定位（unit_for_chapter / --chapter）；舊細綱行末的編號注釋、舊「單元ID/位置」字段照樣認。
 
 用法：
     outline_view.py --toc   卷綱.md
     outline_view.py --unit D1-03 卷綱.md
-    outline_view.py --chapter 12 卷綱.md      # 第 12 章落在哪段剧情，就取哪段（同 --unit）
+    outline_view.py --chapter 12 卷綱.md      # 第 12 章落在哪段劇情，就取哪段（同 --unit）
     outline_view.py --contract 卷綱.md
     outline_view.py --check 卷綱.md
     任意子命令加 --history 連退役行一起輸出
@@ -36,29 +36,30 @@ import io
 import re
 import sys
 
+_OUTLINE_CFG = json.loads(
+    (Path(__file__).resolve().parent.parent / "data" / "contracts.json").read_text(encoding="utf-8")
+)["outline_contract"]
+
 HEADING = re.compile(r"^(#{2,4})\s+(.*\S)\s*$")
 SCOPE = re.compile(r"^>\s*作用域[：:]\s*(.+?)\s*$")
 # 標題尾部注釋：## 本卷故事線 <!-- 全卷 -->
 TRAILING = re.compile(r"^(.*?)\s*<!--\s*(.*?)\s*-->\s*$")
 RETIRED_LINE = re.compile(r"^\s*(?:[-*]\s*)?⊘|^\s*\|\s*⊘")
-# 單元塊內不該出現的全卷字樣——出現即說明這條常任規則放錯了地方
-LEAK = re.compile(r"全卷常任|全程生效|全卷生效|本單元起常任|自 ?[LD]\d+-\d+ ?起生效")
+# 單元塊內不該出現的全卷字樣：出現即說明這條常任規則放錯了地方
+LEAK = re.compile(_OUTLINE_CFG["view_leak_regex"])
 # 指向卷級的指針行不算泄漏：單元塊可以引用常任規則，不可以複述它
-POINTER = re.compile(r"全卷常任裁定|全卷規矩|已提為卷級|不複讀|規則本身見|見「全卷")
+POINTER = re.compile(_OUTLINE_CFG["view_pointer_regex"])
 UNIT_IN_TITLE = re.compile(r"(?<![\w-])([LD]\d+-\d+|U\d+)(?![\w-])")
-# 批次底稿里出現跨章祈使＝這條约束在寫作期還有效，而寫作檔不給底稿 → 必須下沉
-IMPERATIVE = re.compile(r"全程不許|一律不許|往後任何章|此後不再|往後每|從此不|終局前不")
-CH_RANGE = re.compile(r"章節范围[：:]\s*第\s*(\d+)\s*[-–—~至]\s*(\d+)\s*章")
-# 情绪弧線逐章行：首列寫「12」或模板里的「第12章」都認
+# 批次底稿裡出現跨章祈使＝這條約束在寫作期還有效，而寫作檔不給底稿 -> 必須下沉
+IMPERATIVE = re.compile(_OUTLINE_CFG["view_imperative_regex"])
+CH_RANGE = re.compile(r"章節範圍[：:]\s*第\s*(\d+)\s*[-–—~至]\s*(\d+)\s*章")
+# 情緒弧線逐章行：首列寫「12」或範本裡的「第12章」都認
 ARC_ROW = re.compile(r"^\|\s*第?\s*(\d+)\s*章?\s*\|")
 UNIT_ID = re.compile(r"(?<![\w-])([A-Za-z]\d+-\d+|U\d+)(?![\w-])")
 
-# 按名讀取的字段：新名在前，舊名照認。改名時只改這里，讀的脚本跟着走。
-UNIT_FIELD_NAMES = {
-    "單元情绪引擎": ("這段讓讀者圖什麼", "單元情绪引擎"),
-    "單元節拍/章功能分配": ("這段怎麼排", "這段怎麼走", "單元節拍/章功能分配", "單元節拍／章功能分配"),
-}
-CHAPTER_UNIT_FIELDS = ("屬於哪段剧情", "單元ID/位置")
+# 按名讀取的欄位由 contracts.json 統一管理
+UNIT_FIELD_NAMES = {k: tuple(v) for k, v in _OUTLINE_CFG["unit_field_names"].items()}
+CHAPTER_UNIT_FIELDS = tuple(_OUTLINE_CFG["chapter_unit_fields"])
 
 
 def classify(section):
@@ -82,10 +83,10 @@ def classify(section):
 
 
 def is_unit_card(section):
-    """剧情段的卡頭：舊寫法標題含「剧情單元」，新寫法標題是「第N段剧情」，或這一段自己寫着章節范围。"""
+    """劇情段的卡頭：舊寫法標題含「劇情單元」，新寫法標題是「第N段劇情」，或這一段自己寫著章節范圍。"""
     if section.kind != "單元級" or section.inherited:
         return False
-    return ("剧情單元" in section.title or "段剧情" in section.title
+    return ("劇情單元" in section.title or "段劇情" in section.title
             or any(CH_RANGE.search(line) for line in section.lines))
 
 
@@ -100,7 +101,7 @@ def field_value(text, names):
 
 
 def unit_id_of(value):
-    """從「屬於哪段剧情：第一段剧情，第二步 <!-- L1-01 -->」或舊「單元ID/位置：L1-01；第2拍」取單元編號。"""
+    """從「屬於哪段劇情：第一段劇情，第二步 <!-- L1-01 -->」或舊「單元ID/位置：L1-01；第2拍」取單元編號。"""
     if not value:
         return None
     found = UNIT_ID.search(value)
@@ -108,13 +109,13 @@ def unit_id_of(value):
 
 
 def chapter_unit(outline_text):
-    """細綱里寫明的剧情段編號（舊寫法：行末注釋或「單元ID/位置」）；新細綱不寫編號，返回 None，
+    """細綱里寫明的劇情段編號（舊寫法：行末注釋或「單元ID/位置」）；新細綱不寫編號，返回 None，
     由調用方按章號走 unit_for_chapter。"""
     return unit_id_of(field_value(outline_text, CHAPTER_UNIT_FIELDS))
 
 
 def unit_for_chapter(sections, chapter):
-    """本章章號落在哪張剧情段卡的「章節范围」里（跳過已退役的卡）；沒有返回 None。"""
+    """本章章號落在哪張劇情段卡的「章節范圍」里（跳過已退役的卡）；沒有返回 None。"""
     for section in sections:
         if section.status == "已退役" or not section.unit or not is_unit_card(section):
             continue
@@ -128,10 +129,10 @@ def unit_for_chapter(sections, chapter):
 
 
 def chapter_unit_in_volume(volume_text, chapter):
-    """卷綱全文 + 章號 → 剧情段編號；卷綱讀不出或沒有覆盖本章的段返回 None。"""
+    """卷綱全文 + 章號 → 劇情段編號；卷綱讀不出或沒有覆蓋本章的段返回 None。"""
     try:
         _, sections = parse(volume_text or "")
-    except Exception:  # noqa: BLE001 —— 卷綱寫壞時按「找不到」處理，由調用方报告
+    except Exception:  # noqa: BLE001 —— 卷綱寫壞時按「找不到」處理，由調用方報告
         return None
     return unit_for_chapter(sections, chapter)
 
@@ -156,7 +157,7 @@ class Section:
         self.status = "在用"
         self.lines = []
         self.inline = False         # 作用域寫在標題尾部注釋里（新寫法）
-        self.inherited = False      # 新寫法里沒寫注釋、跟隨上級剧情段
+        self.inherited = False      # 新寫法里沒寫注釋、跟隨上級劇情段
 
 
 def parse(text):
@@ -199,7 +200,7 @@ def parse(text):
         if section.scope:
             classify(section)
         if section.unit is None:
-            found = re.search(r"剧情單元\s+([A-Za-z][\w-]*)", section.title) or UNIT_IN_TITLE.search(section.title)
+            found = re.search(r"劇情單元\s+([A-Za-z][\w-]*)", section.title) or UNIT_IN_TITLE.search(section.title)
             if found:
                 section.unit = found.group(1)
         if section.unit is None and section.scope is None:
@@ -208,7 +209,7 @@ def parse(text):
                 if field:
                     section.unit = field.group(1)
                     break
-    # 新寫法：沒寫注釋的子標題跟隨最近的上級剧情段（單元級或批次底稿），上級是全卷段的不跟隨。
+    # 新寫法：沒寫注釋的子標題跟隨最近的上級劇情段（單元級或批次底稿），上級是全卷段的不跟隨。
     stack = []
     for section in sections:
         while stack and stack[-1].level >= section.level:
@@ -223,7 +224,7 @@ def parse(text):
             section.inline = True
             section.inherited = True
         stack.append(section)
-    # 新寫法里全卷小節可以不寫注釋：文件里只要有剧情段用了標題尾注釋，其余沒標的段一律算全卷。
+    # 新寫法里全卷小節可以不寫注釋：文件里只要有劇情段用了標題尾注釋，其余沒標的段一律算全卷。
     if any(section.inline for section in sections):
         for section in sections:
             if section.scope is None and section.unit is None:
@@ -250,7 +251,7 @@ def unit_chapter_range(sections, unit):
 
 
 def slice_arc(section, span):
-    """情绪弧線這類逐章表：只留本單元章區間的行，表頭與說明照留。"""
+    """情緒弧線這類逐章表：只留本單元章區間的行，表頭與說明照留。"""
     if span is None:
         return section.lines
     low, high = span
@@ -269,7 +270,7 @@ def emit(sections, chosen, span, keep_history, note, preamble):
         if section not in chosen:
             continue
         body = section.lines
-        if "情绪弧線" in section.title or "排班" in section.title:
+        if "情緒弧線" in section.title or "排班" in section.title:
             body = slice_arc(section, span)
         body = strip_retired(body, keep_history)
         out.append("\n".join(body).rstrip())
@@ -306,18 +307,18 @@ def cmd_check(sections, strict=False):
         if section.scope is None:
             (problems if strict else warnings).append(
                 ("E1" if strict else "W2", where,
-                 "標題沒標是全卷還是哪段剧情：標題末尾加 <!-- 全卷 --> 或 <!-- 單元編號 -->；舊段保守纳入"))
+                 "標題沒標是全卷還是哪段劇情：標題末尾加 <!-- 全卷 --> 或 <!-- 單元編號 -->；舊段保守納入"))
             continue
         if section.kind is None:
-            problems.append(("E2", where, "標題注釋不認识：%s（只認 全卷 / 單元編號 / 批次底稿 單元編號）" % section.scope))
+            problems.append(("E2", where, "標題注釋不認識：%s（只認 全卷 / 單元編號 / 批次底稿 單元編號）" % section.scope))
         if section.kind in ("單元級", "批次底稿") and section.unit is None:
-            problems.append(("E3", where, "剧情段/批次底稿段沒寫單元編號"))
+            problems.append(("E3", where, "劇情段/批次底稿段沒寫單元編號"))
         if section.kind in ("單元級", "批次底稿"):
             for offset, line in enumerate(section.lines):
                 if LEAK.search(line) and not POINTER.search(line):
                     problems.append(
                         ("E4", "第%d行" % (section.start + offset + 1),
-                         "剧情段里寫了全卷都要守的規矩，挪到「全卷規矩」：%s"
+                         "劇情段里寫了全卷都要守的規矩，挪到「全卷規矩」：%s"
                          % line.strip()[:56]))
     for code, where, message in problems + warnings:
         print("%s %s %s" % (code, where, message))
@@ -332,7 +333,7 @@ def main():
     parser.add_argument("path")
     parser.add_argument("--toc", action="store_true")
     parser.add_argument("--unit")
-    parser.add_argument("--chapter", type=int, help="按章號找本章落在哪段剧情的章節范围里，取那一段（同 --unit）")
+    parser.add_argument("--chapter", type=int, help="按章號找本章落在哪段劇情的章節范圍里，取那一段（同 --unit）")
     parser.add_argument("--contract", action="store_true")
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--history", action="store_true")
@@ -371,7 +372,7 @@ def main():
     active = [s for s in sections if args.history or s.status != "已退役"]
     permanent = [s for s in active if s.kind == "卷級常任"]
     undeclared = [s for s in active if s.scope is None]
-    note = ("%d 段沒標全卷或單元編號，已保守纳入；用 --check 查看" % len(undeclared)) if undeclared else None
+    note = ("%d 段沒標全卷或單元編號，已保守納入；用 --check 查看" % len(undeclared)) if undeclared else None
     preamble = lines[:sections[0].start]
     if args.contract:
         emit(sections, set(permanent + undeclared), None, args.history, note, preamble)
@@ -381,10 +382,10 @@ def main():
         args.unit = unit_for_chapter(active, args.chapter)
         if not args.unit:
             sys.stderr.write(
-                "卷綱里沒有哪段剧情的章節范围覆盖第 %d 章 —— 不靜默降級。核對剧情段的「章節范围」，或先補卷綱。\n"
+                "卷綱里沒有哪段劇情的章節范圍覆蓋第 %d 章 —— 不靜默降級。核對劇情段的「章節范圍」，或先補卷綱。\n"
                 % args.chapter)
             return 1
-        sys.stderr.write("第 %d 章屬於剧情段 %s\n" % (args.chapter, args.unit))
+        sys.stderr.write("第 %d 章屬於劇情段 %s\n" % (args.chapter, args.unit))
 
     if args.unit:
         unit = args.unit
@@ -394,7 +395,7 @@ def main():
                 "找不到單元 %s —— 不靜默降級。核對單元編號，或先補卷綱。\n" % unit)
             return 1
         if args.stage == "write":
-            # 寫作檔不給批次底稿：它是排綱期的工作底稿，其中有寫作期约束力的條目
+            # 寫作檔不給批次底稿：它是排綱期的工作底稿，其中有寫作期約束力的條目
             # 必須已經下沉到單元級段或細綱（見 artifact-protocols.md「排綱筆記不進卷綱」）
             live = [s for s in owned if s.kind == "單元級"]
         else:

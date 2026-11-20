@@ -32,28 +32,28 @@ Detect high-risk AI-flavor prose patterns that need human rewrite:
   - sentence break + positive flip
   - repeated negative setup followed by positive flip
   - em-dash (按功能改寫), 碎句號 (連續短敘述句), 長段落 (按鏡頭斷段)
-  - 微動作複讀 (「了下/了一下」式輕量補語高密度，電报體指纹)
+  - 微動作複讀 (「了下/了一下」式輕量補語高密度，電報體指紋)
   - 套式反應細節 (指尖/指節/目光等無功能微動作與「平靜得像在念」式語氣比喻成片)
-  - 抽象總結複讀 (命運/棋局/這一刻終於明白/才刚刚開始，AI 結尾腔)
-  - 套詞密度過高 (仿佛/一丝/深吸一口氣/平靜無波等禁用詞聚集)
+  - 抽象總結複讀 (命運/棋局/這一刻終於明白/才剛剛開始，AI 結尾腔)
+  - 套詞密度過高 (仿佛/一絲/深吸一口氣/平靜無波等禁用詞聚集)
   - 比喻密度過高 (像/好像/仿佛/如同等比喻標記成片複現)
-  - 解釋链密度過高 (知道/明白/這意味着/必須/需要等判斷链聚集)
+  - 解釋鏈密度過高 (知道/明白/這意味著/必須/需要等判斷鏈聚集)
   - 系統公告公文腔過密 (方括號系統/規則行里硬規則詞聚集)
-  - 過度精炼短段 (長文本里短敘述段過密且自然連接偏少)
-  - 低連接密度 (引號外敘述功能詞/白話連接偏少且中長句不足，像提綱/電报體)
-  - 监控摄像頭式動作清單 (同段連續擺放動作動詞，缺少視角溫度/情绪缓冲)
+  - 過度精煉短段 (長文本里短敘述段過密且自然連接偏少)
+  - 低連接密度 (引號外敘述功能詞/白話連接偏少且中長句不足，像提綱/電報體)
+  - 監控攝像頭式動作清單 (同段連續擺放動作動詞，缺少視角溫度/情緒緩衝)
   - 音量反差腔 (聲音不高/不大…卻…, 實戰漏網句式)
   - 否定排比 (沒有X，沒有Y…連排 / 沒X…只是Y 先否定後肯定, 實戰漏網句式)
   - 工整並列 (至於X不X，怎麼X / 同動詞「不V A，不V B」，含台詞，advisory)
   - 反序對比 (是A，不是B — not-is 的反序變種, 實戰漏網句式)
-  - 預告式總結收尾 (文末窗口 沒人知道/才刚刚開始/正朝着…压了過去, 實戰漏網句式)
-  - 章尾狀態總結體 (文末窗口 這一夜注定/這一切都結束了/新的人生才刚刚開始/命運的齒輪)
-  - 引號強調滥用 (敘述里 1-4 字短詞加引號強調，密度型)
+  - 預告式總結收尾 (文末窗口 沒人知道/才剛剛開始/正朝著…壓了過去, 實戰漏網句式)
+  - 章尾狀態總結體 (文末窗口 這一夜注定/這一切都結束了/新的人生才剛剛開始/命運的齒輪)
+  - 引號強調濫用 (敘述里 1-4 字短詞加引號強調，密度型)
   - 敘述省略號過密 (引號與面板外 …… 高密度刷屏，advisory)
 
 Book-local .deslop-whitelist literal spans are excluded from style scanning (no regex or ancestor inheritance).
 Each finding carries severity: blocking by default for generation/deslop cleanup (not-is-comparison / em-dash / voice-contrast / negation-parade / reverse-not-is / trailer-ending / trailer-summary), where single/low-count hits of rhetorical patterns downgrade to semantic advisory and high-density clusters block. This is a local style/readability gate, not an AIGC detector score; functional human text can be marked for review instead of hard-edited for a detector.
-或 advisory (period-stutter / long-paragraph / micro-action-tic / negation-pair-tic / stock-reaction-tic / action-list-tic / abstract-summary-tic / cliche-density-tic / metaphor-density-tic / reasoning-chain-tic / system-notice-formality-tic / overcompressed-prose-tic / low-connective-density-tic / quote-emphasis-tic / formulaic-parallelism / ellipsis-density-tic，是提示，justified 的長推理/氛围段可保留)。
+或 advisory (period-stutter / long-paragraph / micro-action-tic / negation-pair-tic / stock-reaction-tic / action-list-tic / abstract-summary-tic / cliche-density-tic / metaphor-density-tic / reasoning-chain-tic / system-notice-formality-tic / overcompressed-prose-tic / low-connective-density-tic / quote-emphasis-tic / formulaic-parallelism / ellipsis-density-tic，是提示，justified 的長推理/氛圍段可保留)。
 --fail-on=blocking 只在出現 blocking finding 時退出 1；默認 --fail-on=all 有任何 finding 即退出 1。
 Each finding also carries review: mechanical（表面形態確定、就地改寫即可）或 semantic（可能承擔敘事功能，需讀上下文判斷是否保留）；blocking 一律 mechanical。--list-review-classes 輸出完整分類表（JSON）。
 HTML comments (<!-- ... -->, e.g. the 去味:跳過 exemption marker) are metadata, not prose, and are never scanned.
@@ -119,7 +119,7 @@ NOTICE_FORMAL_MIN_HITS = 12
 NOTICE_FORMAL_CORE_MIN_HITS = 5
 NOTICE_FORMAL_PER_KILO = 60
 
-OVERCOMPRESSED_PROSE_PARTICLE_PATTERN = re.compile(r'[的了就着過呢吧啊呀嘛]')
+OVERCOMPRESSED_PROSE_PARTICLE_PATTERN = re.compile(_AI_CFG["overcompressed_prose_particle_regex"])
 OVERCOMPRESSED_PROSE_MIN_CHARS = 1200
 OVERCOMPRESSED_PROSE_MIN_PARAS = 45
 OVERCOMPRESSED_PROSE_SHORT_MAX_CHARS = 15
@@ -135,7 +135,7 @@ LOW_CONNECTIVE_LONG_SENTENCE_CHARS = int(_AI_CFG["low_connective_long_sentence_c
 LOW_CONNECTIVE_LONG_SENTENCE_RATIO = float(_AI_CFG["low_connective_long_sentence_ratio"])
 
 COMPACT_EITHER_OR_PREV = frozenset({'不', '就', '也'})
-TAG_PARTICLES = frozenset({'吗', '吧', '嘛'})
+TAG_PARTICLES = frozenset({'嗎', '吧', '嘛'})
 AFFIRMATION_TAG_PARTICLES = frozenset({'的', '啊', '呀', '呢'})
 AFFIRMATION_TAG_BOUNDARY = frozenset({'', '，', ',', '。', '.', '！', '!', '？', '?', '、', '；', ';', '：', ':', '\n', '\r', '\t', ' '})
 
@@ -186,20 +186,20 @@ REVIEW_CLASSES: dict[str, str] = dict(_AI_CFG["review_classes"])
 DASH_PATTERN = re.compile(r'——|—|--+')
 UNCLOSED_QUOTE_OPEN_PATTERN = re.compile(r'[“「『"]')
 QUOTE_EMPHASIS_PUNCT_PATTERN = re.compile(r'[。！？!?…，,；;：:—]|\.{2,}')
-ONOMA_AFTER_PATTERN = re.compile(r'^(?:的|地)?一?[聲下响]')
+ONOMA_AFTER_PATTERN = re.compile(_AI_CFG["onoma_after_regex"])
 ELLIPSIS_UNCLOSED_TAIL_PATTERN = re.compile(r'[“「『"][^”」』"]*$')
 NOTICE_LINE_PATTERN = re.compile(r'^【[^】]+】$')
 DIVIDER_HYPHEN_PATTERN = re.compile(r'^-{3,}$')
 DIVIDER_OTHER_PATTERN = re.compile(r'^[*_]{3,}$')
 STRUCTURAL_MD_PATTERN = re.compile(r'^(?:#{1,6}(?:\s|\d)|>\s?|[-*+]\s|\d+[.)]\s|\|)')
-STRUCTURAL_CHAPTER_PATTERN = re.compile(r'^第[零〇一二三四五六七八九十百千万两\d]+[章節回](?:$|[\s_：:——\-]+[^\n。；;]{0,28}$)')
+STRUCTURAL_CHAPTER_PATTERN = re.compile(r'^第[零〇一二三四五六七八九十百千萬兩\d]+[章節回](?:$|[\s_：:——\-]+[^\n。；;]{0,28}$)')
 SENTENCE_SPLIT_PATTERN = re.compile(r'[。！？!?]')
 VISIBLE_CHAR_PATTERN = re.compile(r'[\u4e00-\u9fff\uff21-\uff5aA-Za-z0-9]')
 FENCE_PATTERN = re.compile(r'^(?:`{3,}|~{3,})')
 YAML_FIELD_PATTERN = re.compile(r'^[A-Za-z0-9_-]+:\s*')
 TRAILING_NOISE_PATTERN = re.compile(r'[\s|）)】\]]+$')
 SEPARATORS_COUNT_PATTERN = re.compile(r'[，、；;]')
-METAPHOR_PREFIX_PATTERN = re.compile(r'好像|像是|像|仿佛|宛如|如同|犹如')
+METAPHOR_PREFIX_PATTERN = re.compile(_AI_CFG["metaphor_prefix_regex"])
 
 
 def review_class(finding_type: str) -> str:
@@ -506,7 +506,7 @@ def find_not_is_comparisons(text: str, line_starts: list[tuple[int, int]]) -> li
                 'column': col_no,
                 'type': 'not-is-comparison',
                 'severity': 'blocking',
-                'message': '高頻 AI 對比句式；刪掉否定铺垫，直接寫後項（直白情绪、判斷、對話或具體細節皆可）。',
+                'message': '高頻 AI 對比句式；刪掉否定鋪墊，直接寫後項（直白情緒、判斷、對話或具體細節皆可）。',
                 'excerpt': compact(raw),
             })
 
@@ -540,7 +540,7 @@ def find_voice_contrast(prose_lines: list[tuple[str, int]]) -> list[dict[str, An
                 'column': match.start() + 1,
                 'type': 'voice-contrast',
                 'severity': 'blocking',
-                'message': '音量反差腔：「聲音不大/不高…卻/但…」是 AI 高頻反差模板；刪掉音量铺垫，直接寫台詞分量、利害後果或在场者的立场反應。',
+                'message': '音量反差腔：「聲音不大/不高…卻/但…」是 AI 高頻反差模板；刪掉音量鋪墊，直接寫台詞分量、利害後果或在場者的立場反應。',
                 'excerpt': compact(text[match.start():match.end()]),
             })
     return findings
@@ -572,7 +572,7 @@ def find_negation_parade(prose_lines: list[tuple[str, int]]) -> list[dict[str, A
                 'column': start + 1,
                 'type': 'negation-parade',
                 'severity': 'blocking',
-                'message': '否定排比：「沒有X，沒有Y…」/「沒X，沒有Y，只是Z」是 AI 高頻排比模板；刪掉否定清單，直接寫現场實際有什麼，最多留一個最有信息量的否定。',
+                'message': '否定排比：「沒有X，沒有Y…」/「沒X，沒有Y，只是Z」是 AI 高頻排比模板；刪掉否定清單，直接寫現場實際有什麼，最多留一個最有信息量的否定。',
                 'excerpt': compact(text[start:end]),
             })
     return findings
@@ -583,7 +583,7 @@ def find_formulaic_parallelism(prose_lines: list[tuple[str, int]]) -> list[dict[
     findings: list[dict[str, Any]] = []
 
     frame_specs = [
-        (DECISION_FRAME_PATTERN, '「至於X不X，怎麼X」把同一决定拆成工整欄目；若只是複述細綱，压成角色當下的一次判斷或直接動作。'),
+        (DECISION_FRAME_PATTERN, '「至於X不X，怎麼X」把同一決定拆成工整欄目；若只是複述細綱，壓成角色當下的一次判斷或直接動作。'),
         (REPEATED_NEGATIVE_VERB_PATTERN, '同動詞「不V A，不V B」容易寫成否定清單；含台詞也要按語境複核，保留真正有功能的一項即可。'),
     ]
 
@@ -628,7 +628,7 @@ def find_formulaic_parallelism(prose_lines: list[tuple[str, int]]) -> list[dict[
             'column': 1,
             'type': 'formulaic-parallelism',
             'severity': 'advisory',
-            'message': '跨段「不是… / 也不是… / 只是…」可能是工整否定铺排，也可能承擔辯解或悬念排除；通讀語境，只在重複細綱或拖慢畫面時改寫。',
+            'message': '跨段「不是… / 也不是… / 只是…」可能是工整否定鋪排，也可能承擔辯解或懸念排除；通讀語境，只在重複細綱或拖慢畫面時改寫。',
             'excerpt': compact(' / '.join(entry[1] for entry in window)),
         })
 
@@ -651,7 +651,7 @@ def find_reverse_not_is(prose_lines: list[tuple[str, int]]) -> list[dict[str, An
                 continue
             if is_affirmation_tag_at(masked, start):
                 continue
-            if match.group(2) and match.group(2)[0] in ('吗', '麼', '吧'):
+            if match.group(2) and match.group(2)[0] in ('嗎', '麼', '吧'):
                 continue
             findings.append({
                 'line': line_no,
@@ -690,7 +690,7 @@ def find_trailer_ending(prose_lines: list[tuple[str, int]]) -> list[dict[str, An
                 'column': match.start() + 1,
                 'type': 'trailer-ending',
                 'severity': 'blocking',
-                'message': '預告式總結收尾：「沒人知道/才刚刚開始/正朝着…压了過去」是 AI 章尾預告腔；結尾停在具體决定、動作、畫面或一句台詞上，悬念讓事件自己掛住，別替讀者預告下一章。',
+                'message': '預告式總結收尾：「沒人知道/才剛剛開始/正朝著…壓了過去」是 AI 章尾預告腔；結尾停在具體決定、動作、畫面或一句台詞上，懸念讓事件自己掛住，別替讀者預告下一章。',
                 'excerpt': compact(text[match.start():match.end()]),
             })
         for match in TRAILER_SUMMARY_PATTERN.finditer(masked):
@@ -699,7 +699,7 @@ def find_trailer_ending(prose_lines: list[tuple[str, int]]) -> list[dict[str, An
                 'column': match.start() + 1,
                 'type': 'trailer-summary',
                 'severity': 'blocking',
-                'message': '章尾狀態總結體：「這一夜注定…/這一切都結束了/新的人生才刚刚開始/命運的齒輪」是把細綱的結尾設定原樣寫成了總結句；結尾設定要落成最後一個具體决定、動作、畫面或台詞，別替讀者盖章。',
+                'message': '章尾狀態總結體：「這一夜注定…/這一切都結束了/新的人生才剛剛開始/命運的齒輪」是把細綱的結尾設定原樣寫成了總結句；結尾設定要落成最後一個具體決定、動作、畫面或台詞，別替讀者蓋章。',
                 'excerpt': compact(text[match.start():match.end()]),
             })
 
@@ -751,7 +751,7 @@ def find_quote_emphasis_tic(prose_lines: list[tuple[str, int]]) -> list[dict[str
         'column': 1,
         'type': 'quote-emphasis-tic',
         'severity': 'advisory',
-        'message': f'引號強調滥用：敘述里 1-4 字短詞加引號強調 {hits} 處；只留真正反讽/轉述必要的一两處，其余去掉引號直寫原意，或把話里的反讽直接點明。',
+        'message': f'引號強調濫用：敘述里 1-4 字短詞加引號強調 {hits} 處；只留真正反諷/轉述必要的一兩處，其余去掉引號直寫原意，或把話里的反諷直接點明。',
         'excerpt': compact(' '.join(samples)),
     }]
 
@@ -782,7 +782,7 @@ def find_negation_pair_tic(prose_lines: list[tuple[str, int]]) -> list[dict[str,
         'column': 1,
         'type': 'negation-pair-tic',
         'severity': 'advisory',
-        'message': f'否定對偶偏多：「沒A，也沒B」式敘述 {hits} 處；寫人物沒做什麼是英文式節奏，改成他做了什麼（留一两處真正要強調的）。',
+        'message': f'否定對偶偏多：「沒A，也沒B」式敘述 {hits} 處；寫人物沒做什麼是英文式節奏，改成他做了什麼（留一兩處真正要強調的）。',
         'excerpt': compact(' | '.join(samples)),
     }]
 
@@ -819,7 +819,7 @@ def find_ellipsis_density_tic(prose_lines: list[tuple[str, int]]) -> list[dict[s
         'column': 1,
         'type': 'ellipsis-density-tic',
         'severity': 'advisory',
-        'message': f'敘述省略號過密：引號與面板外省略號 {hits} 處（{per_kilo:.1f}/千字）；保留關鍵思绪留白，其余改成逗號承接、直白判斷或具體動作，別几句一刷。',
+        'message': f'敘述省略號過密：引號與面板外省略號 {hits} 處（{per_kilo:.1f}/千字）；保留關鍵思緒留白，其余改成逗號承接、直白判斷或具體動作，別几句一刷。',
         'excerpt': compact(' | '.join(samples)),
     }]
 
@@ -856,7 +856,7 @@ def find_micro_action_tic(prose_lines: list[tuple[str, int]]) -> list[dict[str, 
         'column': 1,
         'type': 'micro-action-tic',
         'severity': 'advisory',
-        'message': f'微動作複讀：「了下/了一下」式輕量補語 {hits} 處（{per_kilo:.1f}/千字）；同一反應模板高密度複現是機械指纹，合並動作 beat、換具體細節，別每個動作都補一個輕反應尾巴。',
+        'message': f'微動作複讀：「了下/了一下」式輕量補語 {hits} 處（{per_kilo:.1f}/千字）；同一反應模板高密度複現是機械指紋，合並動作 beat、換具體細節，別每個動作都補一個輕反應尾巴。',
         'excerpt': compact(' '.join(samples)),
     }]
 
@@ -895,7 +895,7 @@ def find_stock_reaction_tic(prose_lines: list[tuple[str, int]]) -> list[dict[str
         'column': 1,
         'type': 'stock-reaction-tic',
         'severity': 'advisory',
-        'message': f'套式反應細節：指尖/指腹/喉結/眼圈/拢住按住/視線停頓等套式微動作或“平靜得像在念”式語氣比喻 {hits} 處（{per_kilo:.1f}/千字）；逐處做刪除測試，只標注情绪、不改變選择、關系或物理結果的直接刪掉，或改成直白情绪與利害判斷，不要換部位或換道具继續演。',
+        'message': f'套式反應細節：指尖/指腹/喉結/眼圈/攏住按住/視線停頓等套式微動作或“平靜得像在念”式語氣比喻 {hits} 處（{per_kilo:.1f}/千字）；逐處做刪除測試，只標注情緒、不改變選擇、關係或物理結果的直接刪掉，或改成直白情緒與利害判斷，不要換部位或換道具繼續演。',
         'excerpt': compact(' | '.join(samples)),
     }]
 
@@ -924,7 +924,7 @@ def find_action_list_tic(prose_lines: list[tuple[str, int]]) -> list[dict[str, A
             'column': 1,
             'type': 'action-list-tic',
             'severity': 'advisory',
-            'message': f'监控摄像頭式動作清單：同段連續動作動詞 {len(verbs)} 個、分隔符 {separators} 個；合並琐碎步驟，只保留有情绪/情節功能的動作，必要時用角色犹豫、誤判或环境反馈做缓冲。',
+            'message': f'監控攝像頭式動作清單：同段連續動作動詞 {len(verbs)} 個、分隔符 {separators} 個；合並瑣碎步驟，只保留有情緒/情節功能的動作，必要時用角色猶豫、誤判或環境反饋做緩衝。',
             'excerpt': compact(' '.join(verbs[:8])),
         })
 
@@ -965,7 +965,7 @@ def find_cliche_density_tic(prose_lines: list[tuple[str, int]]) -> list[dict[str
         'column': 1,
         'type': 'cliche-density-tic',
         'severity': 'advisory',
-        'message': f'套詞密度過高：高危 AI 套詞 {hits} 處（{per_kilo:.1f}/千字）；不要同義詞輪換，直接刪或改成直白情绪、角色利害判斷、對話或具體後果，別硬塞手眼小動作。',
+        'message': f'套詞密度過高：高危 AI 套詞 {hits} 處（{per_kilo:.1f}/千字）；不要同義詞輪換，直接刪或改成直白情緒、角色利害判斷、對話或具體後果，別硬塞手眼小動作。',
         'excerpt': compact(' '.join(samples)),
     }]
 
@@ -1014,13 +1014,13 @@ def find_metaphor_density_tic(prose_lines: list[tuple[str, int]]) -> list[dict[s
         'column': 1,
         'type': 'metaphor-density-tic',
         'severity': 'advisory',
-        'message': f'比喻密度過高：像/好像/仿佛/如同等比喻標記 {hits} 處（{per_kilo:.1f}/千字）；保留最有敘事功能的少數比喻，其余回到直白情绪、角色判斷、對話或具體後果，不要換成新比喻或小動作。',
+        'message': f'比喻密度過高：像/好像/仿佛/如同等比喻標記 {hits} 處（{per_kilo:.1f}/千字）；保留最有敘事功能的少數比喻，其余回到直白情緒、角色判斷、對話或具體後果，不要換成新比喻或小動作。',
         'excerpt': compact(' | '.join(samples)),
     }]
 
 
 def find_reasoning_chain_tic(prose_lines: list[tuple[str, int]]) -> list[dict[str, Any]]:
-    """Detect dense essay-style reasoning chains ('這意味着/必須/知道') in narrative prose."""
+    """Detect dense essay-style reasoning chains ('這意味著/必須/知道') in narrative prose."""
     hits = 0
     core_hits = 0
     link_hits = 0
@@ -1073,7 +1073,7 @@ def find_reasoning_chain_tic(prose_lines: list[tuple[str, int]]) -> list[dict[st
         'column': 1,
         'type': 'reasoning-chain-tic',
         'severity': 'advisory',
-        'message': f'解釋链密度過高：知道/明白/這意味着/必須/需要等論文式推導 {hits} 處（{per_kilo:.1f}/千字）；刪掉“這意味着/按照這個逻輯”式公文腔，保留角色自己的利害算帳與因果判斷，或落到對話與選择後果，別全改成手眼小動作。',
+        'message': f'解釋鏈密度過高：知道/明白/這意味著/必須/需要等論文式推導 {hits} 處（{per_kilo:.1f}/千字）；刪掉“這意味著/按照這個邏輯”式公文腔，保留角色自己的利害算帳與因果判斷，或落到對話與選擇後果，別全改成手眼小動作。',
         'excerpt': compact(' | '.join(samples)),
     }]
 
@@ -1121,7 +1121,7 @@ def find_notice_formality_tic(prose_lines: list[tuple[str, int]]) -> list[dict[s
         'column': 1,
         'type': 'system-notice-formality-tic',
         'severity': 'advisory',
-        'message': f'系統公告公文腔過密：方括號規則行中硬規則詞 {hits} 處（{per_kilo:.1f}/千字）；保留為角色看見的屏幕/公告/規則載體，只在載體內部白話化部分硬詞，或補角色當场看懂的具體後果，不改成敘述者解釋。',
+        'message': f'系統公告公文腔過密：方括號規則行中硬規則詞 {hits} 處（{per_kilo:.1f}/千字）；保留為角色看見的屏幕/公告/規則載體，只在載體內部白話化部分硬詞，或補角色當場看懂的具體後果，不改成敘述者解釋。',
         'excerpt': compact(' | '.join(samples)),
     }]
 
@@ -1174,7 +1174,7 @@ def find_overcompressed_prose_tic(prose_lines: list[tuple[str, int]]) -> list[di
         'column': 1,
         'type': 'overcompressed-prose-tic',
         'severity': 'advisory',
-        'message': f'過度精炼短段：敘述段 {narrative_paras} 個，其中 {short_paras} 個≤{OVERCOMPRESSED_PROSE_SHORT_MAX_CHARS}字（{short_ratio * 100:.0f}%），自然連接 {particle_per_kilo:.1f}/千字偏少；先通讀判斷，確有提綱感再補斷裂處和必要結構虛詞，有意短鏡頭可留，別機械注水。',
+        'message': f'過度精煉短段：敘述段 {narrative_paras} 個，其中 {short_paras} 個≤{OVERCOMPRESSED_PROSE_SHORT_MAX_CHARS}字（{short_ratio * 100:.0f}%），自然連接 {particle_per_kilo:.1f}/千字偏少；先通讀判斷，確有提綱感再補斷裂處和必要結構虛詞，有意短鏡頭可留，別機械注水。',
         'excerpt': compact(' | '.join(samples)),
     }]
 
@@ -1229,7 +1229,7 @@ def find_low_connective_density_tic(prose_lines: list[tuple[str, int]]) -> list[
         'column': 1,
         'type': 'low-connective-density-tic',
         'severity': 'advisory',
-        'message': f'低連接密度：引號外敘述功能詞 {function_per_kilo:.1f}/千字、白話連接 {plain_per_kilo:.1f}/千字，且≥{LOW_CONNECTIVE_LONG_SENTENCE_CHARS}字承接句僅 {long_sentence_ratio * 100:.0f}%；容易像提綱/電报體。通讀後補必要連接和中長句群，別機械注水。',
+        'message': f'低連接密度：引號外敘述功能詞 {function_per_kilo:.1f}/千字、白話連接 {plain_per_kilo:.1f}/千字，且≥{LOW_CONNECTIVE_LONG_SENTENCE_CHARS}字承接句僅 {long_sentence_ratio * 100:.0f}%；容易像提綱/電報體。通讀後補必要連接和中長句群，別機械注水。',
         'excerpt': compact(' | '.join(samples)),
     }]
 
@@ -1268,7 +1268,7 @@ def find_abstract_summary_tic(prose_lines: list[tuple[str, int]]) -> list[dict[s
         'column': 1,
         'type': 'abstract-summary-tic',
         'severity': 'advisory',
-        'message': f'抽象總結複讀：命運/棋局/這一刻終於明白/才刚刚開始等作者總結 {hits} 處（{per_kilo:.1f}/千字）；刪掉作者盖章，回到角色當下的具體處境、利害盘算、對話或實際後果，別拿微動作頂替。',
+        'message': f'抽象總結複讀：命運/棋局/這一刻終於明白/才剛剛開始等作者總結 {hits} 處（{per_kilo:.1f}/千字）；刪掉作者蓋章，回到角色當下的具體處境、利害盤算、對話或實際後果，別拿微動作頂替。',
         'excerpt': compact(' | '.join(samples)),
     }]
 
@@ -1370,7 +1370,7 @@ def scan_prose_patterns(prose_lines: list[tuple[str, int]]) -> list[dict[str, An
                 'column': dash.start() + 1,
                 'type': 'em-dash',
                 'severity': 'blocking',
-                'message': '敘述旁白不用破折號，按功能改寫：打斷→動作或抢白，停頓→逗號或省略，插入說明→逗號/冒號；勿一律改句號。',
+                'message': '敘述旁白不用破折號，按功能改寫：打斷→動作或搶白，停頓→逗號或省略，插入說明→逗號/冒號；勿一律改句號。',
                 'excerpt': compact(text[max(0, dash.start() - 8):dash.end() + 8]),
             })
 

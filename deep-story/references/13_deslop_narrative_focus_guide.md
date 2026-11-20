@@ -11,7 +11,7 @@ Follow the main text to find what most needs to be experienced: when a character
 | Problem | What to Look At | How to Handle It |
 |---|---|---|
 | Secondary processes occupy space | Opening doors, pouring water, hurrying on a journey, taking inventory item by item are continuously expanded, yet do not change the character's circumstance or the reader's feeling | Compress into necessary transitions, keeping details that establish space, voice/register, relationship, or atmosphere |
-| Key processes are swallowed by summary | "They worked out an agreement" (“商量妥了”), "explained clearly in a few words" (“三言两語解釋清楚”), or "she finally thought it through" (“她終於想通了”) replace choices or confrontations | Expand existing conditions, probing/testing, judgment, and feedback; when supporting basis is missing, switch to story diagnosis rather than fabricating reasons that persuade |
+| Key processes are swallowed by summary | "They worked out an agreement" (“商量妥了”), "explained clearly in a few words" (“三言兩語解釋清楚”), or "she finally thought it through" (“她終於想通了”) replace choices or confrontations | Expand existing conditions, probing/testing, judgment, and feedback; when supporting basis is missing, switch to story diagnosis rather than fabricating reasons that persuade |
 | Equal effort on similar objects | Three people or four objects are each given the same amount of space, so the reader cannot find the center of gravity | Allocate around this scene's function; expand the important object(s), summarize or skip the others, without prescribing a fixed decreasing count |
 | State spinning in place | Repeatedly writing fear, anger, or silence while the character's understanding and actions remain the same throughout | Merge repetitions; retain processes that change the next step or accumulate experience |
 | Result shown without transition | Refusing in the previous sentence and agreeing in the next; emotions arriving abruptly | Recover existing transitions; if the enabling conditions were never designed, propose a story fix |
@@ -49,7 +49,7 @@ At the ending, check what the final beat brings: an unfinished action, a shift i
 The following is a synthetic example. Established facts: Yu Zhou has to deliver a letter across a stream; he tests the stepping stones first, retreats after the second stone loosens, switches to crossing via a fallen tree upstream, hangs the letter pouch around his neck, and finally reaches the opposite bank.
 
 **Imbalanced brushwork**: By the stream stood three trees, two with gray-white bark and one covered in moss. Scattered beneath the trees were pebbles, rounder near the bank and flatter farther out. Yu Zhou thought of several methods, spent quite some effort, and finally carried the letter across the stream.
-*(Original: 溪邊有三棵樹，两棵樹皮灰白，一棵長了苔。樹下散着石子，近處圓一些，遠處扁一些。余舟想了几個辦法，費了一番工夫，終於把信帶過溪。)*
+*(Original: 溪邊有三棵樹，兩棵樹皮灰白，一棵長了苔。樹下散著石子，近處圓一些，遠處扁一些。余舟想了几個辦法，費了一番工夫，終於把信帶過溪。)*
 
 **Restored center of gravity**:
 
@@ -57,7 +57,7 @@ The following is a synthetic example. Established facts: Yu Zhou has to deliver 
 >
 > Upstream, a fallen tree lay across the water. He walked along the stream toward it, hung the letter pouch around his neck, freed his hands to steady himself along the trunk, and edged bit by bit to the opposite bank.
 >
-> *(Original: 余舟踏上第二塊石墩，石頭往下一沉，他趕紧退回岸邊。 / 上游横着一棵倒樹。他沿溪走過去，把信袋掛到頸前，空出手扶着樹干，一點點挪到了對岸。)*
+> *(Original: 余舟踏上第二塊石墩，石頭往下一沉，他趕緊退回岸邊。 / 上游橫著一棵倒樹。他沿溪走過去，把信袋掛到頸前，空出手扶著樹干，一點點挪到了對岸。)*
 
 Here, only the already-established testing and switching of methods are written out, without adding new rescuers, tools, or accidents. If the source material only says "spent quite some effort" (“費了一番工夫”) and does not even have the attempt or the method, you cannot invent stepping stones and a fallen tree following this example.
 

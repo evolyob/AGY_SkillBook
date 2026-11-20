@@ -9,11 +9,16 @@ exempting registered verbatim anchor sentences.
 from __future__ import annotations
 
 import errno
+import json
 import os
 import re
 import stat
 import sys
+from pathlib import Path
 from typing import Any
+
+_CONTRACTS_PATH = Path(__file__).resolve().parent.parent / 'data' / 'contracts.json'
+_OUTLINE_CFG = json.loads(_CONTRACTS_PATH.read_text(encoding='utf-8'))['outline_contract']
 
 MIN_RUN = 16
 REPORT_TOP = 8
@@ -21,11 +26,13 @@ REPORT_TOP = 8
 NON_HAN_RE = re.compile(r'[^\u4e00-\u9fff]')
 HEADING_RE = re.compile(r'^ {0,3}(#{1,6})[\t ]+(.*)$')
 FIELD_ITEM_RE = re.compile(r'^[-*+][\t ]+')
+_COMPLETION_PREFIX = re.escape(_OUTLINE_CFG['completion_field_prefix'])
 COMPLETION_FIELD_RE = re.compile(
-    r'^[-*+][\t ]+(?:\*\*|__)?實際完成情況[^：:]*[：:]'
+    rf'^[-*+][\t ]+(?:\*\*|__)?{_COMPLETION_PREFIX}[^：:]*[：:]'
 )
+_ANCHOR_LABELS = '|'.join(re.escape(lbl) for lbl in _OUTLINE_CFG['anchor_block_labels'])
 ANCHOR_BLOCK_RE = re.compile(
-    r'(?:原樣出現的原話|複沓锚句)[^：:\n]*[：:]([\s\S]*?)(?=\n[-*+]\s|\n#{1,6}\s|$)'
+    rf'(?:{_ANCHOR_LABELS})[^：:\n]*[：:]([\s\S]*?)(?=\n[-*+]\s|\n#{1,6}\s|$)'
 )
 ANCHOR_PREFIX_RE = re.compile(
     r'^\s*[-*+]?\s*(?:\d+[.、)]\s*)?(?:點\s*\d+\s*[：:])?'
@@ -247,15 +254,15 @@ def _format_report(
     if is_short:
         guidance = (
             '逐條對照原文判斷：確屬把小節大綱敘述搬進正文就重寫——大綱只鎖功能與結果，'
-            '句子在正文現场寫；誓詞、關鍵原話、固定專名等功能性重合可保留。每條都要有結論，'
+            '句子在正文現場寫；誓詞、關鍵原話、固定專名等功能性重合可保留。每條都要有結論，'
             '不為歸零機械改寫。保留項由主會話登記進小節大綱.md 表格下方「原樣出現的原話：」行下'
-            '（每行一條原話，縮進寫；舊書叫「複沓锚句」，照認）再複檢——子代理只重寫正文或標 '
+            '（每行一條原話，縮進寫；舊書叫「複沓錨句」，照認）再複檢——子代理只重寫正文或標 '
             '`[需複核]` 交回，不改小節大綱。'
         )
     else:
         guidance = (
             '逐條對照原文判斷：確屬把細綱敘述搬進正文就重寫——細綱只鎖功能與結果，'
-            '句子在正文現场寫；系統面板、誓詞、案卷原話、固定專名等功能性重合可保留。'
+            '句子在正文現場寫；系統面板、誓詞、案卷原話、固定專名等功能性重合可保留。'
             '每條都要有結論，不為歸零機械改寫。保留項由主會話補進細綱「原樣出現的原話」——'
             '子代理只重寫正文或標 `[需複核]` 交回，不改大綱細綱。'
         )
@@ -276,7 +283,7 @@ def _format_report(
         out.append(f'  · …另有 {len(hits) - REPORT_TOP} 處')
     if anchored_count:
         out.append(
-            f'（另有 {anchored_count} 處 {anchored} 字為登記原話的逐字落地，不計入誊抄）'
+            f'（另有 {anchored_count} 處 {anchored} 字為登記原話的逐字落地，不計入謄抄）'
         )
     return '\n'.join(out) + '\n'
 
@@ -316,7 +323,7 @@ def check_one(prose_file: str, explicit_outline: str | None) -> int:
         if anchored_count:
             base = os.path.basename(prose_file)
             sys.stdout.write(
-                f'細綱照搬檢測（{base}）：無未授權誊抄；'
+                f'細綱照搬檢測（{base}）：無未授權謄抄；'
                 f'另有 {anchored_count} 處 {anchored} 字為登記原話的逐字落地。\n'
             )
         return 0

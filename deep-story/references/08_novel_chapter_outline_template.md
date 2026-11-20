@@ -105,11 +105,11 @@ A condensed detailed outline for Chapter 12 of an original urban-fiction novel. 
 > Satisfaction beat: Fixed on the spot in front of everyone, overturning the "beyond saving" verdict.
 > Ending: Before leaving, the appraiser raises his phone and photographs the engraving inside the watch lid.
 > Chapter-ending hook: Mysterious object; neither what the engraving says nor what he recognized is explained; medium intensity; Chapter 13 opens with him walking into his own watch store.
-> Beat 1 (Setup, sparse / `铺垫，疏`): The customer quotes the other shop's 3,000 price to replace the movement. Forbidden: Do not reveal the watch's origin early.
-> Beat 2 (Setup, medium / `铺垫，中`): The rival store's appraiser declares the movement rusted solid and offers 800 to buy the watch. Allowed: He can use Kuang Xiaohe's young age against her in front of the customer.
+> Beat 1 (Setup, sparse / `鋪墊，疏`): The customer quotes the other shop's 3,000 price to replace the movement. Forbidden: Do not reveal the watch's origin early.
+> Beat 2 (Setup, medium / `鋪墊，中`): The rival store's appraiser declares the movement rusted solid and offers 800 to buy the watch. Allowed: He can use Kuang Xiaohe's young age against her in front of the customer.
 > Beat 3 (Characterization, dense / `人物塑造，密`): Kuang Xiaohe decides to open the watch. Allowed: She can declare in public, "If I break it, I pay," putting the stakes right on the counter.
 > Beat 4 (Satisfaction beat, dense / `爽點，密`): Mainspring resets; the second hand starts moving. Allowed: The customer can say on the spot that he won't replace the 3,000 movement and won't sell for 800 either.
-> Beat 5 (Setup, sparse / `铺垫，疏`): The customer agrees to bring several other watches from home next week; the appraiser takes his leave. Forbidden: Do not reveal the contents of the engraving.
+> Beat 5 (Setup, sparse / `鋪墊，疏`): The customer agrees to bring several other watches from home next week; the appraiser takes his leave. Forbidden: Do not reveal the contents of the engraving.
 
 Once the second hand moves, the reader sees the "beyond saving" verdict overturned. That still does not prove how much the pocket watch is worth, nor has the apprentice received 3,000 or 800. The customer promising to return next week is only a new opportunity; actual repair fees, orders, and rent will land in later chapters. The watch's origin is handed off to that photograph at the chapter's end. For how a detailed outline becomes prose, see From Chapter Outline to Prose.
 

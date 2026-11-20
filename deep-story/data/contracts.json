@@ -14,18 +14,18 @@
     "active_character_max": 20,
     "context_headings": [
       "## 當前位置",
-      "## 長期约束",
+      "## 長期約束",
       "## 核心角色狀態",
       "## 活躍伏筆",
       "## 近三章速記",
-      "## 下一章承诺",
+      "## 下一章承諾",
       "## 連貫性風險"
     ],
     "foreshadow_statuses": [
       "已埋",
       "已回收",
       "已過期",
-      "放弃"
+      "放棄"
     ],
     "foreshadow_importance": [
       "高",
@@ -105,40 +105,31 @@
       ],
       [
         "字數目標",
-        "字數目標",
         "Word Count Target"
       ],
       [
-        "屬於哪段剧情",
-        "單元ID/位置",
         "屬於哪段劇情",
         "單元ID/位置",
         "Unit Position"
       ],
       [
-        "目標情绪",
         "目標情緒",
         "Target Emotion"
       ],
       [
-        "主角目標/關鍵選择",
         "主角目標/關鍵選擇",
         "Protagonist Goal / Key Choice"
       ],
       [
-        "章首钩子",
         "章首鉤子",
         "Opening Hook"
       ],
       [
         "爽點",
-        "爽點",
         "Payoff"
       ]
     ],
     "release_fields": [
-      "這章不能說破",
-      "本章禁止提前釋放",
       "這章不能說破",
       "本章禁止提前釋放",
       "Forbidden Reveals"
@@ -148,23 +139,18 @@
       [
         "這章怎麼走",
         "內容概括",
-        "這章怎麼走",
-        "內容概括",
         "Chapter Flow",
         "Content Summary"
       ],
       [
         "情節安排",
-        "情節安排",
         "Plot Arrangement"
       ],
       [
-        "人物關系和出场順序",
         "人物關係和出場順序",
         "Character Relationships & Presence Order"
       ],
       [
-        "情節細化",
         "情節細化",
         "Plot Beats"
       ]
@@ -176,11 +162,9 @@
       ],
       [
         "發展",
-        "發展",
         "Escalation"
       ],
       [
-        "轉折",
         "轉折",
         "Turn"
       ],
@@ -189,7 +173,6 @@
         "Climax"
       ],
       [
-        "結尾",
         "結尾",
         "Ending"
       ]
@@ -201,9 +184,75 @@
       "有硬傷"
     ],
     "legacy_risk_levels": {
-      "契约安全": "沒問題",
+      "契約安全": "沒問題",
       "需補強": "要補",
-      "契约破壞": "有硬傷"
-    }
+      "契約破壞": "有硬傷"
+    },
+    "ref_dir_prefixes": [
+      "設定",
+      "大綱",
+      "追蹤",
+      "正文",
+      "讀者筆記",
+      "對標"
+    ],
+    "supply_headings": [
+      "寫綱前查缺",
+      "供給自查"
+    ],
+    "plot_header_first_tokens": [
+      "#",
+      "序號",
+      "Beat"
+    ],
+    "resolution_column_keywords": [
+      "解析度",
+      "Resolution"
+    ],
+    "bound_column_keywords": [
+      "執行邊界",
+      "分寸",
+      "Bounds"
+    ],
+    "function_column_keywords": [
+      "功能標籤",
+      "作用",
+      "Function"
+    ],
+    "empty_release_values": [
+      "無",
+      "暫無",
+      "待補充",
+      "待定",
+      "無缺口"
+    ],
+    "intent_fields": [
+      "目標情緒",
+      "主角目標/關鍵選擇"
+    ],
+    "completion_field_prefix": "實際完成情況",
+    "anchor_block_labels": [
+      "原樣出現的原話",
+      "複沓錨句"
+    ],
+    "view_leak_regex": "全卷常任|全程生效|全卷生效|本單元起常任|自 ?[LD]\\d+-\\d+ ?起生效",
+    "view_pointer_regex": "全卷常任裁定|全卷規矩|已提為卷級|不複讀|規則本身見|見「全卷",
+    "view_imperative_regex": "全程不許|一律不許|往後任何章|此後不再|往後每|從此不|終局前不",
+    "unit_field_names": {
+      "單元情緒引擎": [
+        "這段讓讀者圖什麼",
+        "單元情緒引擎"
+      ],
+      "單元節拍/章功能分配": [
+        "這段怎麼排",
+        "這段怎麼走",
+        "單元節拍/章功能分配",
+        "單元節拍／章功能分配"
+      ]
+    },
+    "chapter_unit_fields": [
+      "屬於哪段劇情",
+      "單元ID/位置"
+    ]
   }
 }

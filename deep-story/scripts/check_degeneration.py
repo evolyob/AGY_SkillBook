@@ -18,17 +18,17 @@ USAGE = """Usage: python3 check_degeneration.py [--check] [--json] [--fail-on=bl
 Detect model-degeneration fingerprints that a degrading model cannot self-report:
   - verbatim repetition (複讀/打轉): a long sentence repeated, or back-to-back identical lines
   - mid-sentence truncation (截斷): file ends without terminal/closing punctuation
-  - placeholder / refusal / meta leakage (元信息泄漏): 作為AI / 我無法继續 / 此處省略 / 亂碼
-  - engineering-word leakage (工程詞泄漏): 細綱 / 情節點 / 本章 / 下一章 / 任务描述 漏進正文
+  - placeholder / refusal / meta leakage (元信息泄漏): 作為AI / 我無法繼續 / 此處省略 / 亂碼
+  - engineering-word leakage (工程詞泄漏): 細綱 / 情節點 / 本章 / 下一章 / 任務描述 漏進正文
 
-Each finding carries severity: blocking (複讀/截斷/占位拒絕語/tier1 純工程詞，正文里永不合法，
-命中即重寫) 或 advisory (tier2 章節/歧義詞、對話行里的工程詞，只提示、交人/LLM 判)。
+Each finding carries severity: blocking (複讀/截斷/占位拒絕語/tier1 純工程詞，正文裡永不合法，
+命中即重寫) 或 advisory (tier2 章節/歧義詞、對話行裡的工程詞，只提示、交人/LLM 判)。
 --fail-on=blocking 只在出現 blocking finding 時退出 1；默認 --fail-on=all 有任何 finding 即退出 1。
 
 Report-only. The script never rewrites — the safe response is to regenerate the
 affected unit (chapter / 摘要) with the finding fed back as a constraint, cap retries,
 then surface the evidence to the user. Conservative by design: 通俗網文 deliberately
-uses 排比/複沓/弹幕刷屏/重複台詞 for rhythm, so short and dialogue repetition is exempt."""
+uses 排比/複沓/彈幕刷屏/重複台詞 for rhythm, so short and dialogue repetition is exempt."""
 
 _DESLOP_RULES_PATH = Path(__file__).resolve().parent.parent / "data" / "deslop_rules.json"
 _DEGEN_CFG = json.loads(_DESLOP_RULES_PATH.read_text(encoding="utf-8"))["degeneration_rules"]
@@ -77,27 +77,16 @@ QUOTED_SPAN_PATTERNS: tuple[re.Pattern[str], ...] = (
     ),
 )
 
-META_TIER1_RE = re.compile(
-    r"細綱|(?<!剧)情節點|卷綱|功能標签|目標情绪|字數目標|字數口徑|"
-    r"章首钩子|章尾钩子|這章不能說破|本章禁止提前釋放|排綱筆記|排綱底稿|"
-    r"節尾停在哪|結尾承接"
-)
-META_TIER2_RE = re.compile(
-    r"第[一二三四五六七八九十百千万两0-9]+章|本章|這一章|上一章|下一章|"
-    r"上章|下章|前一章|後一章|前文|後文|伏筆|讀者|任务描述"
-)
+META_TIER1_RE = re.compile(_DEGEN_CFG["meta_tier1_regex"])
+META_TIER2_RE = re.compile(_DEGEN_CFG["meta_tier2_regex"])
 CHAPTER_HEADING_RE = re.compile(
-    r"^第[零〇一二三四五六七八九十百千万两0-9]+[章節回]"
+    r"^第[零〇一二三四五六七八九十百千萬兩0-9]+[章節回]"
     r"(?:$|[\s_：:——\-]+[^\n。；;]{0,28}$)"
 )
-END_SIGNOFF_RE = re.compile(
-    r"^[-—~～＜<【\[（(《\s]*(?:全文完|正文完|全書完|本卷完|完結|完|END|The\s+End)"
-    r"[-—~～＞>】\]）)》.。！!\s]*$",
-    re.IGNORECASE,
-)
+END_SIGNOFF_RE = re.compile(_DEGEN_CFG["end_signoff_regex"], re.IGNORECASE)
 YAML_FIELD_RE = re.compile(r"^[A-Za-z0-9_-]+:\s*")
 FENCE_MARKER_RE = re.compile(r"^(?:`{3,}|~{3,})")
-VISIBLE_CHAR_RE = re.compile(r"[一-鿿Ａ-ｚA-Za-z0-9]")
+VISIBLE_CHAR_RE = re.compile(r"[\u4e00-\u9fff\uff21-\uff5aA-Za-z0-9]")
 TERMINAL_PUNCT_RE = re.compile(r'(?:[。！？!?…~”"』」）)】]|\.{3,})$')
 
 
@@ -187,7 +176,7 @@ def find_repetition(content: list[ContentLine]) -> list[dict[str, Any]]:
                     "column": 1,
                     "type": "verbatim-repeat",
                     "severity": "blocking",
-                    "message": "逐行複讀（紧鄰整行重複）：疑似模型打轉，重寫本段、刪掉重複。",
+                    "message": "逐行複讀（緊鄰整行重複）：疑似模型打轉，重寫本段、刪掉重複。",
                     "excerpt": compact(body[i].trimmed),
                 }
             )
@@ -288,7 +277,7 @@ def _match_meta_leak_line(trimmed: str, line_no: int) -> dict[str, Any] | None:
 
     if match:
         suffix = (
-            "例外：角色為作者/編剧、在故事內真實讨論創作時，台詞里可能合法。"
+            "例外：角色為作者/編劇、在故事內真實討論創作時，台詞里可能合法。"
             if quoted_tier1
             else ""
         )
@@ -299,8 +288,8 @@ def _match_meta_leak_line(trimmed: str, line_no: int) -> dict[str, Any] | None:
             "type": "meta-leak",
             "severity": "advisory" if quoted_tier1 else "blocking",
             "message": (
-                f"工程詞泄漏：「{match.group(0)}」是寫作流水線术語，正文里不該出現；"
-                f"改成角色/场景內表達。{suffix}"
+                f"工程詞泄漏：「{match.group(0)}」是寫作流水線術語，正文里不該出現；"
+                f"改成角色/場景內表達。{suffix}"
             ),
             "excerpt": compact(trimmed[max(0, idx - 6) : idx + 18]),
         }
@@ -316,8 +305,8 @@ def _match_meta_leak_line(trimmed: str, line_no: int) -> dict[str, Any] | None:
         "severity": "advisory",
         "message": (
             f"元信息泄漏：「{match.group(0)}」疑似工程/章節結構詞混入正文；"
-            "改成角色當下可感知的事件锚點或相對時間。"
-            "例外：角色在故事內真實閱讀/讨論「第X章」、真身為作者/讀者、或故事內系統/界面用語。"
+            "改成角色當下可感知的事件錨點或相對時間。"
+            "例外：角色在故事內真實閱讀/討論「第X章」、真身為作者/讀者、或故事內系統/界面用語。"
         ),
         "excerpt": compact(trimmed[max(0, idx - 6) : idx + 18]),
     }

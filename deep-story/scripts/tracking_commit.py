@@ -51,7 +51,7 @@ SNAPSHOT_TARGET_BYTES = int(_TRACKING_LIMITS["snapshot_target_bytes"])
 SNAPSHOT_MAX_BYTES = int(_TRACKING_LIMITS["snapshot_max_bytes"])
 SNAPSHOT_ITEM_MAX_BYTES = int(_TRACKING_LIMITS["snapshot_item_max_bytes"])
 DRAFT_INLINE_SNAPSHOTS_MAX_BYTES = int(_TRACKING_LIMITS["draft_inline_snapshots_max_bytes"])
-# 下一章熱上下文里列出的活躍角色，不是核心角色總數；體积仍由 CONTEXT_MAX_BYTES 兜底。
+# 下一章熱上下文里列出的活躍角色，不是核心角色總數；體積仍由 CONTEXT_MAX_BYTES 兜底。
 ACTIVE_CHARACTER_MAX = int(_TRACKING_LIMITS["active_character_max"])
 
 CONTEXT_HEADINGS = tuple(_TRACKING_LIMITS["context_headings"])
@@ -113,14 +113,14 @@ def as_int(value: object, label: str, *, minimum: int = 0) -> int:
 
 
 def as_chapter(value: object, label: str, *, minimum: int = 1) -> int:
-    """章號：模型常寫成 "22"。純數字字符串按整數收，語義不變；其余照舊报錯。"""
+    """章號：模型常寫成 "22"。純數字字符串按整數收，語義不變；其余照舊報錯。"""
     if isinstance(value, str) and value.strip().isdecimal():
         value = int(value.strip())
     return as_int(value, label, minimum=minimum)
 
 
 def with_aliases(row: dict[str, Any], aliases: dict[str, str]) -> dict[str, Any]:
-    """把含義明確的同義字段名改成正式字段名；正式字段已在時不動，留給未知字段报錯。"""
+    """把含義明確的同義字段名改成正式字段名；正式字段已在時不動，留給未知字段報錯。"""
     row = dict(row)
     for alias, canonical in aliases.items():
         if alias in row and canonical not in row:
@@ -142,7 +142,7 @@ def require_known_keys(mapping: dict[str, Any], allowed: set[str], label: str) -
                          f"（只收 {', '.join(sorted(allowed))}）")
 
 
-# 事务校驗期間收集全部超長字段，一次报完；None 表示逐條立即报錯（初始化、狀態讀取等路徑）。
+# 事務校驗期間收集全部超長字段，一次報完；None 表示逐條立即報錯（初始化、狀態讀取等路徑）。
 _LENGTH_ISSUES: list[str] | None = None
 
 
@@ -150,7 +150,7 @@ def length_hint(label: str, text: str, max_bytes: int) -> str:
     """把字節上限換算成字數：模型寫的是中文，只看得懂「要刪几個字」。"""
     size = len(text.encode("utf-8"))
     allowed = max(1, max_bytes * len(text) // size)
-    return (f"{label} exceeds {max_bytes} bytes（現 {len(text)} 字，上限约 {allowed} 字，"
+    return (f"{label} exceeds {max_bytes} bytes（現 {len(text)} 字，上限約 {allowed} 字，"
             f"至少刪 {len(text) - allowed} 字）")
 
 
@@ -198,7 +198,7 @@ def emit(text: str, *, error: bool = False) -> None:
     """Write UTF-8 bytes directly.
 
     Windows 的文本 stdout 是 cp1252（含中文即 UnicodeEncodeError），stderr 默認
-    backslashreplace（中文被轉義成反斜杠碼位，作者看不懂）。两條路都要繞開。
+    backslashreplace（中文被轉義成反斜杠碼位，作者看不懂）。兩條路都要繞開。
     """
     stream = sys.stderr if error else sys.stdout
     stream.flush()
@@ -342,7 +342,7 @@ def validate_position(value: object, label: str = "context.position") -> dict[st
 
 
 def joined_text(value: object) -> object:
-    """單句字段寫成了字符串列表時按「；」連成一句，內容不丢。"""
+    """單句字段寫成了字符串列表時按「；」連成一句，內容不丟。"""
     if isinstance(value, list) and value and all(isinstance(item, str) for item in value):
         return "；".join(value)
     return value
@@ -410,7 +410,7 @@ def render_snapshot(name: str, snapshot: dict[str, Any], through_chapter: int, r
     lines = [
         f"# {name}｜當前狀態",
         "",
-        f"- 狀態修订：{revision}",
+        f"- 狀態修訂：{revision}",
         f"- 截至章節：第{through_chapter}章",
         f"- 身份：{snapshot['identity']}",
         f"- 位置：{snapshot['location']}",
@@ -419,7 +419,7 @@ def render_snapshot(name: str, snapshot: dict[str, Any], through_chapter: int, r
         "",
     ]
     lines.extend(section("能力與資源", snapshot["abilities_resources"]))
-    lines.extend(section("關鍵關系", snapshot["relationships"]))
+    lines.extend(section("關鍵關係", snapshot["relationships"]))
     lines.extend(section("已知信息", snapshot["knowledge"]))
     lines.extend(section("未結事項", snapshot["open_threads"]))
     payload = "\n".join(lines).rstrip() + "\n"
@@ -430,14 +430,14 @@ def render_snapshot(name: str, snapshot: dict[str, Any], through_chapter: int, r
             f"{title} {len(values)} 項"
             for title, values in (
                 ("能力與資源", snapshot["abilities_resources"]),
-                ("關鍵關系", snapshot["relationships"]),
+                ("關鍵關係", snapshot["relationships"]),
                 ("已知信息", snapshot["knowledge"]),
                 ("未結事項", snapshot["open_threads"]),
             )
         )
         raise TrackingError(
             f"character snapshot {name} ({size} bytes) exceeds hard cap of {SNAPSHOT_MAX_BYTES} bytes"
-            f"（現 {len(payload)} 字，上限约 {allowed} 字，至少精簡 {len(payload) - allowed} 字；"
+            f"（現 {len(payload)} 字，上限約 {allowed} 字，至少精簡 {len(payload) - allowed} 字；"
             f"當前：{counts}。逐章經過已留在 逐章記錄/，快照只保留截至當前章仍有效的狀態與條目）"
         )
     return payload
@@ -530,7 +530,7 @@ def render_foreshadow(rows: dict[str, dict[str, Any]], revision: int) -> str:
     lines = [
         "# 伏筆當前狀態",
         "",
-        f"> 狀態修订：{revision}。每個 ID 只保留一行當前狀態；历史變化見 `逐章記錄/`。",
+        f"> 狀態修訂：{revision}。每個 ID 只保留一行當前狀態；歷史變化見 `逐章記錄/`。",
         "",
         "| ID | 內容 | 埋設章 | 計划回收章 | 狀態 | 重要度 | 最近變更章 |",
         "|---|---|---:|---:|---|---|---:|",
@@ -627,7 +627,7 @@ def render_timeline_views(events: dict[str, dict[str, Any]], revision: int) -> t
     author_lines = [
         "# 作者真相時間線",
         "",
-        f"> 狀態修订：{revision}。客觀事實與讀者認知的權威對照；未來揭示計划仍留在大綱。",
+        f"> 狀態修訂：{revision}。客觀事實與讀者認知的權威對照；未來揭示計划仍留在大綱。",
         "",
         "| ID | 首次登記章 | 故事時間 | 客觀事實 | 讀者當前認知 | 揭示狀態 | 實際揭示章 |",
         "|---|---:|---|---|---|---|---:|",
@@ -635,7 +635,7 @@ def render_timeline_views(events: dict[str, dict[str, Any]], revision: int) -> t
     reader_lines = [
         "# 讀者已知時間線",
         "",
-        f"> 狀態修订：{revision}。只呈現讀者截至當前章節已經知道或相信的內容，不泄露作者側客觀真相。",
+        f"> 狀態修訂：{revision}。只呈現讀者截至當前章節已經知道或相信的內容，不泄露作者側客觀真相。",
         "",
         "| ID | 讀者當前認知 | 認知截至章 |",
         "|---|---|---:|",
@@ -731,20 +731,20 @@ def render_context(state: dict[str, Any]) -> str:
                 f"當前章：{current_chapter}",
                 f"卷：{position['volume']}（始於第{position['volume_start_chapter']}章）",
                 f"故事時間：{position['story_time']}",
-                f"场景：{position['scene']}",
+                f"場景：{position['scene']}",
             ],
         ),
-        ("## 長期约束", context["long_term_constraints"]),
+        ("## 長期約束", context["long_term_constraints"]),
         ("## 核心角色狀態", character_lines),
         ("## 活躍伏筆", active_foreshadow_lines(state["foreshadow"])),
         ("## 近三章速記", [f"第{item['chapter']}章｜{item['summary']}" for item in context["recent_chapters"]]),
-        ("## 下一章承诺", context["next_chapter_commitments"]),
+        ("## 下一章承諾", context["next_chapter_commitments"]),
         ("## 連貫性風險", context["continuity_risks"]),
     ]
     lines = [
         f"# 寫作連續性上下文 — {state['book_title']}",
         "",
-        f"> 狀態修订：{state['state_revision']}。截至當前章的續寫狀態卡，只放下一章真正需要的連續性狀態。",
+        f"> 狀態修訂：{state['state_revision']}。截至當前章的續寫狀態卡，只放下一章真正需要的連續性狀態。",
         "",
     ]
     for heading, values in sections:
@@ -840,10 +840,10 @@ def normalize_delta(
 
 
 def render_commitments(commitments: list[str]) -> list[str]:
-    # 常見情形一行用「；」連寫；有承诺原文自帶「；」時連寫就拆不回來，改成逐條縮進子項。
+    # 常見情形一行用「；」連寫；有承諾原文自帶「；」時連寫就拆不回來，改成逐條縮進子項。
     if any("；" in item for item in commitments):
-        return ["- 下一章承诺："] + [f"  - {item}" for item in commitments]
-    return ["- 下一章承诺：" + ("；".join(commitments) or "無")]
+        return ["- 下一章承諾："] + [f"  - {item}" for item in commitments]
+    return ["- 下一章承諾：" + ("；".join(commitments) or "無")]
 
 
 def render_delta(chapter: int, title: str, delta: dict[str, Any], core_names: set[str]) -> str:
@@ -855,7 +855,7 @@ def render_delta(chapter: int, title: str, delta: dict[str, Any], core_names: se
         "## 角色變化",
     ]
     lines.extend(
-        f"- {item['name']}｜{'核心' if item['name'] in core_names else '临時'}｜{item['change']}"
+        f"- {item['name']}｜{'核心' if item['name'] in core_names else '臨時'}｜{item['change']}"
         for item in delta["character_changes"]
     )
     if not delta["character_changes"]:
@@ -880,7 +880,7 @@ def render_delta(chapter: int, title: str, delta: dict[str, Any], core_names: se
             )
     if not delta["timeline_events"]:
         lines.append("- 無")
-    lines.extend(["", "## 連貫性约束"])
+    lines.extend(["", "## 連貫性約束"])
     lines.extend(f"- {item}" for item in delta["constraints"])
     if not delta["constraints"]:
         lines.append("- 無")
@@ -898,7 +898,7 @@ def render_delta(chapter: int, title: str, delta: dict[str, Any], core_names: se
         allowed = DELTA_MAX_BYTES * len(payload) // size
         raise TrackingError(
             f"chapter delta is {size} bytes; hard cap is {DELTA_MAX_BYTES}（逐章記錄現 {len(payload)} 字，"
-            f"上限约 {allowed} 字，至少压縮 {len(payload) - allowed} 字；最長几項："
+            f"上限約 {allowed} 字，至少壓縮 {len(payload) - allowed} 字；最長几項："
             + "；".join(f"{line[2:18]}…（{len(line) - 2} 字）" for line in longest) + "）")
     return payload
 
@@ -1040,8 +1040,8 @@ def normalize_transaction(project: Path, state: dict[str, Any], document: object
 
 
 # 本文件在 story-long-write / story-review / story-import 三份逐字相同；只有 story-long-write 帶 storyctl.py。
-RECOUNT_HINT = ("修订請用 story-long-write 的 storyctl.py chapter commit（帶外用 chapter accept-current-length）"
-                "提交同一份事务，它會重新計數並清理本章工作目錄")
+RECOUNT_HINT = ("修訂請用 story-long-write 的 storyctl.py chapter commit（帶外用 chapter accept-current-length）"
+                "提交同一份事務，它會重新計數並清理本章工作目錄")
 
 
 def _normalize_transaction(project: Path, state: dict[str, Any], document: object) -> dict[str, Any]:
@@ -1085,8 +1085,8 @@ def _normalize_transaction(project: Path, state: dict[str, Any], document: objec
             wordcount_core.validate_current_wordcount_record, project, chapter, wordcount_input
         )
     elif mode == "revision" and str(chapter) in state["wordcount_records"]:
-        # 已提交字數記錄的章節：去味、审稿改過正文或目標後的修订，按現文件重新計數，記錄不留舊值。
-        # 只核對記錄釘住的正文與目標；細綱事後補的「字數范围」不算過期。
+        # 已提交字數記錄的章節：去味、審稿改過正文或目標後的修訂，按現文件重新計數，記錄不留舊值。
+        # 只核對記錄釘住的正文與目標；細綱事後補的「字數范圍」不算過期。
         previous = state["wordcount_records"][str(chapter)]
         try:
             drift = wordcount_core.wordcount_record_drift(project, chapter, previous)
@@ -1106,8 +1106,8 @@ def _normalize_transaction(project: Path, state: dict[str, Any], document: objec
 
 
 def recount_revised_chapter(project: Path, chapter: int, previous: dict[str, Any], drift: list[str]) -> dict[str, Any]:
-    """改後仍在作者范围內，或作者原先就接受了帶外長度且仍在帶外：直接按現文件記帳。
-    原本在范围內、改後出了范围，才要作者拍板，交給 storyctl 的 accept-current-length。"""
+    """改後仍在作者范圍內，或作者原先就接受了帶外長度且仍在帶外：直接按現文件記帳。
+    原本在范圍內、改後出了范圍，才要作者拍板，交給 storyctl 的 accept-current-length。"""
     resolutions = ["within_user_band"]
     if previous["resolution"] == "accepted_current_length":
         resolutions.append("accepted_current_length")
@@ -1118,7 +1118,7 @@ def recount_revised_chapter(project: Path, chapter: int, previous: dict[str, Any
             )
         except wordcount_core.WordcountError:
             continue
-    raise TrackingError(f"第{chapter}章{'和'.join(drift)}已改，字數出了作者范围；{RECOUNT_HINT}")
+    raise TrackingError(f"第{chapter}章{'和'.join(drift)}已改，字數出了作者范圍；{RECOUNT_HINT}")
 
 
 def checkpoint_record(
@@ -1143,7 +1143,7 @@ def merge_transaction(state: dict[str, Any], transaction: dict[str, Any]) -> dic
 
     next_context = transaction["context"]
     # 退役說的是「從此刻起離開當前狀態」，只有 append 的逐章記錄代表此刻；
-    # 修订記錄屬於被改寫的舊章，落在那里會谎报退役發生的章節。
+    # 修訂記錄屬於被改寫的舊章，落在那里會謊報退役發生的章節。
     is_revision = transaction["mode"] == "revision"
     require(
         not (is_revision and transaction["delta"]["retired_characters"]),
@@ -1161,7 +1161,7 @@ def merge_transaction(state: dict[str, Any], transaction: dict[str, Any]) -> dic
         )
         next_state["characters"].pop(name)
 
-    # 上下文條目是整份提交的；漏寫會靜默丢历史裁定，因此掉落必須顯式聲明。
+    # 上下文條目是整份提交的；漏寫會靜默丟歷史裁定，因此掉落必須顯式聲明。
     previous_items = set(state["context"]["long_term_constraints"]) | set(state["context"]["continuity_risks"])
     dropped = previous_items - (set(next_context["long_term_constraints"]) | set(next_context["continuity_risks"]))
     require(
@@ -1234,7 +1234,7 @@ def render_views(state: dict[str, Any]) -> dict[str, str]:
 
 
 def write_views(tracking: Path, views: dict[str, str]) -> None:
-    # 上下文携帶 next revision，先寫它；任何後續失敗都會讓 hook/check 發現
+    # 上下文攜帶 next revision，先寫它；任何後續失敗都會讓 hook/check 發現
     # 上下文 revision 與最後提交的 _tracking-state.json 不一致。
     write_if_changed(tracking / "上下文.md", views["上下文.md"])
     for relative in sorted(path for path in views if path != "上下文.md"):
@@ -1266,7 +1266,7 @@ def warn_sizes(views: dict[str, str], delta_payload: str | None = None) -> None:
             target_chars = max(1, SNAPSHOT_TARGET_BYTES * len(payload) // size)
             emit(
                 f"WARNING: character snapshot {Path(relative).stem} is {size} bytes; target is <= {SNAPSHOT_TARGET_BYTES}"
-                f"（現 {len(payload)} 字，建議目標约 {target_chars} 字；不影响本次提交，"
+                f"（現 {len(payload)} 字，建議目標約 {target_chars} 字；不影響本次提交，"
                 "後續更新時可將已了結事項或已被新狀態取代的舊階段歸並為當前值）",
                 error=True,
             )
@@ -1279,7 +1279,7 @@ def _initialize_locked(project: Path, document: object) -> dict[str, Any]:
     views = render_views(state)
     state_payload = json_payload(state)
 
-    # 輸入全部校驗通過後才動用户文件，失敗的 init 不會挪走任何東西。
+    # 輸入全部校驗通過後才動用戶文件，失敗的 init 不會挪走任何東西。
     archived = archive_retired_tracking_paths(tracking)
     for directory in (tracking / "逐章記錄", tracking / "角色狀態", tracking / "時間線"):
         directory.mkdir(parents=True, exist_ok=True)
@@ -1289,7 +1289,7 @@ def _initialize_locked(project: Path, document: object) -> dict[str, Any]:
     if archived:
         emit(
             f"NOTE: 舊追蹤結構已原樣移入 追蹤/{RETIRED_ARCHIVE_DIR}/：{', '.join(archived)}；"
-            "當前狀態以本次 init 輸入為準，舊文件不参與解析。",
+            "當前狀態以本次 init 輸入為準，舊文件不參與解析。",
             error=True,
         )
     return state
@@ -1309,7 +1309,7 @@ def _apply_transaction_locked(project: Path, document: object) -> dict[str, Any]
     path = delta_path(tracking, transaction["chapter"])
     previous_record = parse_chapter_record(path) if transaction["mode"] == "revision" else None
     if previous_record is not None:
-        # 退役只在 append 發生；修订重寫舊章記錄時把當初的退役登記原樣帶過來，不讓它隨修订消失。
+        # 退役只在 append 發生；修訂重寫舊章記錄時把當初的退役登記原樣帶過來，不讓它隨修訂消失。
         transaction["delta"]["retired_context_items"] = previous_record["retired"]
 
     delta_payload = render_delta(
@@ -1329,7 +1329,7 @@ def _apply_transaction_locked(project: Path, document: object) -> dict[str, Any]
 
     write_if_changed(path, delta_payload)
     write_views(tracking, views)
-    # 唯一權威文件最後落盘；在此之前失敗可用同一事务直接重跑。
+    # 唯一權威文件最後落盤；在此之前失敗可用同一事務直接重跑。
     atomic_write_text(state_path(project), next_state_payload)
     warn_sizes(views, delta_payload)
     warn_emptied_snapshots(state["characters"], transaction["snapshots"])
@@ -1344,7 +1344,7 @@ def warn_emptied_snapshots(
 ) -> None:
     labels = {
         "abilities_resources": "能力與資源",
-        "relationships": "關鍵關系",
+        "relationships": "關鍵關係",
         "knowledge": "已知信息",
     }
     for name, updated in updated_snapshots.items():
@@ -1367,12 +1367,12 @@ def warn_emptied_snapshots(
 
 def warn_emptied_record(chapter: int, previous: dict[str, Any], delta: dict[str, Any]) -> None:
     labels = {"character_changes": "角色變化", "foreshadow_changes": "伏筆變化", "timeline_events": "時間與揭示",
-              "constraints": "連貫性约束", "next_chapter_commitments": "下一章承诺"}
+              "constraints": "連貫性約束", "next_chapter_commitments": "下一章承諾"}
     emptied = [f"{label}（原有 {len(previous[key])} 項）" for key, label in labels.items()
                if previous[key] and not delta[key]]
     if emptied:
-        emit(f"WARNING: 第{chapter}章修订把逐章記錄的 " + "、".join(emptied)
-             + " 清空了；修订的 delta 是本章完整記錄，不是只寫改動。不是有意刪除就用 draft 重新預填後再提交。", error=True)
+        emit(f"WARNING: 第{chapter}章修訂把逐章記錄的 " + "、".join(emptied)
+             + " 清空了；修訂的 delta 是本章完整記錄，不是只寫改動。不是有意刪除就用 draft 重新預填後再提交。", error=True)
 
 
 def apply_transaction(project: Path, document: object) -> dict[str, Any]:
@@ -1412,7 +1412,7 @@ def check_project(project: Path) -> dict[str, Any]:
     return state
 
 
-# 事务草稿里各文本字段的字數上限（按全中文估：UTF-8 每字 3 字節），寫進提示，免得模型反複試錯。
+# 事務草稿里各文本字段的字數上限（按全中文估：UTF-8 每字 3 字節），寫進提示，免得模型反複試錯。
 DRAFT_LIMITS = {
     "delta.result": 160, "character_changes[].change": 120, "foreshadow_changes[].summary": 120,
     "timeline_events[].objective_fact / reader_knowledge": 160, "context.position.story_time / scene": 80,
@@ -1422,11 +1422,11 @@ DRAFT_LIMITS = {
 
 
 RECORD_SECTIONS = {"角色變化": "character_changes", "伏筆變化": "foreshadow_changes",
-                   "時間與揭示": "timeline_events", "連貫性约束": "constraints", "本章退役登記": "retired"}
+                   "時間與揭示": "timeline_events", "連貫性約束": "constraints", "本章退役登記": "retired"}
 
 
 def parse_chapter_record(path: Path) -> dict[str, Any] | None:
-    """讀回本工具自己渲染的逐章記錄（render_delta 的固定格式），供修订草稿預填與修订提交核對。
+    """讀回本工具自己渲染的逐章記錄（render_delta 的固定格式），供修訂草稿預填與修訂提交核對。
     這是對自家確定性輸出的逆運算，不是解析手寫 Markdown；讀不到返回 None。"""
     try:
         text = path.read_text(encoding="utf-8")
@@ -1455,8 +1455,8 @@ def parse_chapter_record(path: Path) -> dict[str, Any] | None:
         if section is None:
             if item.startswith("結果："):
                 record["result"] = item[len("結果："):]
-            elif item.startswith("下一章承诺："):
-                value = item[len("下一章承诺："):]
+            elif item.startswith("下一章承諾："):
+                value = item[len("下一章承諾："):]
                 # 空值 = 逐條子項格式（render_commitments），後面的縮進行逐條讀回。
                 in_commitments = value == ""
                 record["next_chapter_commitments"] = [] if value in ("無", "") else value.split("；")
@@ -1468,8 +1468,8 @@ def parse_chapter_record(path: Path) -> dict[str, Any] | None:
 
 
 def record_prefill(state: dict[str, Any], record: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
-    """把已提交的逐章記錄還原成修订 delta：結果、承诺、约束、角色變化按記錄原文；伏筆與時間線
-    取受影响 ID 的當前值（修订提交的就是截至最新章的當前值）。另返回記錄里核心角色的當前快照。"""
+    """把已提交的逐章記錄還原成修訂 delta：結果、承諾、約束、角色變化按記錄原文；伏筆與時間線
+    取受影響 ID 的當前值（修訂提交的就是截至最新章的當前值）。另返回記錄里核心角色的當前快照。"""
     notes: list[str] = []
     changes = []
     for line in record["character_changes"]:
@@ -1508,7 +1508,7 @@ def record_prefill(state: dict[str, Any], record: dict[str, Any]) -> tuple[dict[
 
 
 def entry_shapes(chapter: int) -> dict[str, Any]:
-    """draft 當场給出每類條目的形狀：模型填 delta 時手裡只有空數組，字段名、整數、枚舉都靠猜，
+    """draft 當場給出每類條目的形狀：模型填 delta 時手裡只有空數組，字段名、整數、枚舉都靠猜，
     首次提交几乎都因此被退回。取值從校驗用的同一組常量生成，不另立一套。"""
     return {
         "delta.character_changes[]": {"name": "角色名", "change": "一句話：本章起了什麼變化"},
@@ -1534,11 +1534,11 @@ def entry_shapes(chapter: int) -> dict[str, Any]:
 def draft_transaction(
     project: Path, chapter: int, *, state: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
-    """按當前 state 預填一份逐章事务：修订號、模式、章名和整份提交的上下文當前值都填好。
-    新章（append）調用方只寫本章變化；另返回在场核心角色的當前快照，供有變化時整份改寫後放進事务。
-    新章的故事時間與场景留空：它們必須是本章結束時的位置，沿用上一章的值能靜默提交，
-    所以不預填，上一章的值另行返回作参考。
-    修订（revision）的 delta 是修订後本章的完整記錄，所以按已提交的逐章記錄預填，調用方在上面改；
+    """按當前 state 預填一份逐章事務：修訂號、模式、章名和整份提交的上下文當前值都填好。
+    新章（append）調用方只寫本章變化；另返回在場核心角色的當前快照，供有變化時整份改寫後放進事務。
+    新章的故事時間與場景留空：它們必須是本章結束時的位置，沿用上一章的值能靜默提交，
+    所以不預填，上一章的值另行返回作參考。
+    修訂（revision）的 delta 是修訂後本章的完整記錄，所以按已提交的逐章記錄預填，調用方在上面改；
     第三項返回 {"notes": [...], "prefilled": bool}：沒能預填的條目，以及逐章記錄是否讀到。"""
     if state is None:
         state = load_state(project)
@@ -1571,7 +1571,7 @@ def draft_transaction(
             delta, snapshots_prefill, notes = record_prefill(state, record)
             title = title or record["title"]
             if chapter == last:
-                # 最新章的承诺原樣在 state 里，比從記錄行按「；」拆回更準。
+                # 最新章的承諾原樣在 state 里，比從記錄行按「；」拆回更準。
                 delta["next_chapter_commitments"] = list(state["context"]["next_chapter_commitments"])
     document = {
         "schema_version": INPUT_SCHEMA_VERSION,
@@ -1593,11 +1593,11 @@ def draft_transaction(
 
 def rebuild_stale_draft(document: dict[str, Any], existing: dict[str, Any], append: bool,
                         current_characters: Any = ()) -> str:
-    """修订號變了：中間提交過別的事务。以當前狀態為底，只自動合並確定安全的部分，其余列給調用方核對。
+    """修訂號變了：中間提交過別的事務。以當前狀態為底，只自動合並確定安全的部分，其余列給調用方核對。
 
-    新章草稿之間只可能插進修订事务，修订不能刪约束與風險條目，所以當前约束與風險覆盖舊底稿：
+    新章草稿之間只可能插進修訂事務，修訂不能刪約束與風險條目，所以當前約束與風險覆蓋舊底稿：
     舊草稿多出來的就是本章新增，delta 里聲明退役的就是本章刪除，可以精確合並。
-    修订草稿之間可能插進新章（新章能退役條目），在场角色名修订也能刪，都無法判斷誰新：
+    修訂草稿之間可能插進新章（新章能退役條目），在場角色名修訂也能刪，都無法判斷誰新：
     取當前狀態，差異列出來；只有本章帶了快照的新角色名自動加回。"""
     def items(value: object) -> list[str]:
         return [item for item in value if isinstance(item, str)] if isinstance(value, list) else []
@@ -1605,7 +1605,7 @@ def rebuild_stale_draft(document: dict[str, Any], existing: dict[str, Any], appe
     def norm(item: str) -> str:
         return " ".join(item.replace("|", "｜").split())
 
-    notes = ["修订號已變：context 按當前狀態重建，本章已填的 delta" + ("、新增與退役的约束、結尾位置" if append else "")
+    notes = ["修訂號已變：context 按當前狀態重建，本章已填的 delta" + ("、新增與退役的約束、結尾位置" if append else "")
              + "已合並"]
     for key in ("delta", "character_snapshots"):
         if isinstance(existing.get(key), dict):
@@ -1636,7 +1636,7 @@ def rebuild_stale_draft(document: dict[str, Any], existing: dict[str, Any], appe
         if append and name in snapshots:
             names.append(name)
         else:
-            left_out.append(f"在场角色 {name}")
+            left_out.append(f"在場角色 {name}")
     names[:] = [name for name in names if name not in set(items(delta.get("retired_characters")))]
     known = set(current_characters)
     for name in list(snapshots):
@@ -1668,12 +1668,12 @@ def prepare_draft_snapshots(
     all_characters: dict[str, dict[str, Any]],
     active_names: list[str],
 ) -> tuple[dict[str, dict[str, Any]], dict[str, str], list[str]]:
-    """把全部核心角色的當前快照落到本章工作目錄，並把 stdout 內聯體积控制在預算內。
+    """把全部核心角色的當前快照落到本章工作目錄，並把 stdout 內聯體積控制在預算內。
 
-    久別回歸的非在场核心角色不在 active_character_names 里，但本章一旦變化也必須交完整新快照；
-    單角色快照放大到 64 KiB 後，20 名在场角色全塞進單行 stdout 又會撑大上下文或被宿主截斷。
+    久別回歸的非在場核心角色不在 active_character_names 里，但本章一旦變化也必須交完整新快照；
+    單角色快照放大到 64 KiB 後，20 名在場角色全塞進單行 stdout 又會撐大上下文或被宿主截斷。
     因此所有核心角色一律寫 `.story/work/第NNN章/snapshots/{名}.json`（隨 chapter commit 自動清理），
-    stdout 的 `current_snapshots` 只內聯預算內的在场角色，其余指路 `snapshot_files`。
+    stdout 的 `current_snapshots` 只內聯預算內的在場角色，其余指路 `snapshot_files`。
     """
     snapshots_dir = chapter_work_dir(project, chapter) / "snapshots"
     expected_files = {f"{name}.json" for name in all_characters}
@@ -1743,14 +1743,14 @@ def main() -> int:
             out.parent.mkdir(parents=True, exist_ok=True)
             refreshed = ""
             if out.exists() and not args.force:
-                # 重跑 draft 不冲掉已經填好的變化。修订號變了說明中間提交過別的事务：context 按當前
-                # 狀態重建（沿用舊 context 會把那次變更整份覆盖回去），只帶過本章自己填的部分。
+                # 重跑 draft 不衝掉已經填好的變化。修訂號變了說明中間提交過別的事務：context 按當前
+                # 狀態重建（沿用舊 context 會把那次變更整份覆蓋回去），只帶過本章自己填的部分。
                 existing = read_json(out)
                 require(isinstance(existing, dict) and existing.get("chapter") == document["chapter"]
                         and existing.get("mode") == document["mode"],
                         f"{out} already holds a draft for a different chapter or mode; pass --force to replace it")
                 if existing.get("expected_state_revision") == document["expected_state_revision"]:
-                    document, refreshed = existing, "已有草稿且修订號未變，原樣保留"
+                    document, refreshed = existing, "已有草稿且修訂號未變，原樣保留"
                 else:
                     refreshed = rebuild_stale_draft(document, existing, bool(previous_position), all_characters)
             out.write_text(json.dumps(document, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -1760,29 +1760,29 @@ def main() -> int:
                 args.project, args.chapter, all_characters, active_names
             )
             if document["mode"] == "revision" and not record_prefilled:
-                fill = (f"這是修订，但本章逐章記錄缺失或讀不了（{delta_path(Path('追蹤'), args.chapter).as_posix()}），delta 沒有預填："
-                        "按修订後正文把本章完整記錄整份寫上（結果、承诺、角色變化、伏筆、時間線、约束），沒寫的項不會進記錄。"
-                        "角色快照、伏筆、時間線寫截至最新已寫章的當前值（已有核心角色的當前快照見 snapshot_files）；context 原樣保留全部當前條目（修订不能退役）。"
+                fill = (f"這是修訂，但本章逐章記錄缺失或讀不了（{delta_path(Path('追蹤'), args.chapter).as_posix()}），delta 沒有預填："
+                        "按修訂後正文把本章完整記錄整份寫上（結果、承諾、角色變化、伏筆、時間線、約束），沒寫的項不會進記錄。"
+                        "角色快照、伏筆、時間線寫截至最新已寫章的當前值（已有核心角色的當前快照見 snapshot_files）；context 原樣保留全部當前條目（修訂不能退役）。"
                         "正文改過就用 story-long-write 的 storyctl.py chapter commit 提交（重新計數並清理本章工作目錄）。"
-                        "不要從脚本源碼或 state 文件里另找格式。")
+                        "不要從腳本源碼或 state 文件里另找格式。")
             elif document["mode"] == "revision":
-                fill = ("這是修订：delta 是修订後本章的完整記錄，已按本章現有逐章記錄預填（伏筆與時間線取當前值，"
-                        "記錄里的核心角色快照已放進 character_snapshots，其他核心角色當前快照見 snapshot_files）。對照修订後正文逐項改：仍成立的原樣保留，"
+                fill = ("這是修訂：delta 是修訂後本章的完整記錄，已按本章現有逐章記錄預填（伏筆與時間線取當前值，"
+                        "記錄里的核心角色快照已放進 character_snapshots，其他核心角色當前快照見 snapshot_files）。對照修訂後正文逐項改：仍成立的原樣保留，"
                         "被推翻的刪掉或改寫，新增的補上；不要清空後只寫改動，沒寫的項會從本章記錄里消失。"
-                        "角色快照、伏筆、時間線改成截至最新已寫章的當前值；context 原樣保留全部當前條目（修订不能退役）。"
+                        "角色快照、伏筆、時間線改成截至最新已寫章的當前值；context 原樣保留全部當前條目（修訂不能退役）。"
                         "正文改過就用 story-long-write 的 storyctl.py chapter commit 提交（重新計數並清理本章工作目錄）。"
-                        "不要從脚本源碼或 state 文件里另找格式。")
+                        "不要從腳本源碼或 state 文件里另找格式。")
                 if prefill_notes:
                     fill += "沒能預填：" + "；".join(prefill_notes) + "。"
             else:
-                fill = ("只填 delta 里本章的變化；context 其余字段已是當前值，要撤下的長期约束或連貫性風險從 context 刪掉並把原文放進 "
+                fill = ("只填 delta 里本章的變化；context 其余字段已是當前值，要撤下的長期約束或連貫性風險從 context 刪掉並把原文放進 "
                         "delta.retired_context_items（僅 append）；本章有變化的核心角色從 current_snapshots（未內聯的大快照或久別回歸角色讀 snapshot_files 對應 JSON）"
-                        "取當前快照整份改好放進 character_snapshots，並在 character_changes 寫一句變化。每類條目照 shapes 的形狀寫，不要從脚本源碼或 state 文件里另找格式。")
+                        "取當前快照整份改好放進 character_snapshots，並在 character_changes 寫一句變化。每類條目照 shapes 的形狀寫，不要從腳本源碼或 state 文件里另找格式。")
             if omitted_snapshots:
-                fill = (f"在场角色（{'、'.join(omitted_snapshots)}）快照較大未內聯到 stdout，本章若有變化先讀取 snapshot_files 對應 JSON 在其基础上修改，勿憑空重寫以免丢失既有條目。") + fill
+                fill = (f"在場角色（{'、'.join(omitted_snapshots)}）快照較大未內聯到 stdout，本章若有變化先讀取 snapshot_files 對應 JSON 在其基礎上修改，勿憑空重寫以免丟失既有條目。") + fill
             blank = not (document["context"]["position"].get("story_time") or document["context"]["position"].get("scene"))
             if previous_position and blank:
-                fill = ("context.position 的 story_time 與 scene 留空，填本章結束時的故事時間與场景（上一章結束時見 "
+                fill = ("context.position 的 story_time 與 scene 留空，填本章結束時的故事時間與場景（上一章結束時見 "
                         "previous_position；換卷時連同 volume 與 volume_start_chapter 一起改）。") + fill
             payload = {
                 "draft": str(out),

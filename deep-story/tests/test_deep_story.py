@@ -119,7 +119,7 @@ class DeepStoryTests(unittest.TestCase):
                 check=True,
             )
             (proj / "大綱" / "細綱_第001章.md").write_text("# 細綱 第1章\n- 核心事件: 測試\n- 字數目標: 2000字\n", encoding="utf-8")
-            (proj / "正文" / "第001章_測試.md").write_text("# 第一章 測試\n\n他推開值班室的門，桌上放着一張發黃的登記表。\n", encoding="utf-8")
+            (proj / "正文" / "第001章_測試.md").write_text("# 第一章 測試\n\n他推開值班室的門，桌上放著一張發黃的登記表。\n", encoding="utf-8")
             r_chk = subprocess.run(
                 [sys.executable, str(SCRIPTS_DIR / "storyctl.py"), "chapter", "check", "--project", str(proj), "--chapter", "1"],
                 capture_output=True, text=True, check=False,
