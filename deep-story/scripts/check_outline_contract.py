@@ -31,8 +31,10 @@ RELEASE_MAX_ITEMS = int(_OUTLINE_CFG["release_max_items"])
 
 SUBSECTION_NAMES: list[list[str]] = _OUTLINE_CFG["subsection_names"]
 SUBSECTIONS: list[str] = [names[0] for names in SUBSECTION_NAMES]
-FIVE_ACT: list[str] = _OUTLINE_CFG["five_act"]
-PLOT_HEADER_FIRST = re.compile(r"^(?:#|序号)$")
+FIVE_ACT: list[list[str]] = [
+    item if isinstance(item, list) else [item] for item in _OUTLINE_CFG["five_act"]
+]
+PLOT_HEADER_FIRST = re.compile(r"^(?:#|序号|序號|Beat)$", re.IGNORECASE)
 INTENT_FIELDS: list[str] = ["目标情绪", "主角目标/关键选择"]
 CALIBER = _OUTLINE_CFG["caliber"]
 
@@ -91,7 +93,9 @@ def to_number(raw: str) -> int:
 
 def parse_wordcount_target(text: str) -> dict[str, Any]:
     """Parse and validate the wordcount target field(s) in an outline."""
-    raw = numeric_field_values(text, "字数目标")
+    raw: list[str] = []
+    for label in ("字数目标", "字數目標", "Word Count Target"):
+        raw.extend(numeric_field_values(text, label))
     if not raw:
         return {"status": "missing", "value": None, "raw": raw}
     matches = [TARGET_VALUE.match(value) for value in raw]
@@ -105,7 +109,9 @@ def parse_wordcount_target(text: str) -> dict[str, Any]:
 
 def parse_wordcount_range(text: str) -> dict[str, Any]:
     """Parse and validate the optional wordcount range field(s) in an outline."""
-    raw = numeric_field_values(text, "字数范围")
+    raw: list[str] = []
+    for label in ("字数范围", "字數範圍", "Word Count Range"):
+        raw.extend(numeric_field_values(text, label))
     if not raw:
         return {"status": "missing", "value": None, "raw": raw}
     matches = [RANGE_VALUE.match(value) for value in raw]
@@ -128,7 +134,9 @@ def parse_wordcount_range(text: str) -> dict[str, Any]:
 
 def parse_wordcount_caliber(text: str) -> bool:
     """Validate the optional wordcount caliber field; absent means default caliber."""
-    raw = field_values(text, "字数口径")
+    raw: list[str] = []
+    for label in ("字数口径", "字數口徑", "Word Count Caliber"):
+        raw.extend(field_values(text, label))
     if not raw:
         return True
     matches = [METRIC_VALUE.match(value) for value in raw]
@@ -290,9 +298,9 @@ def check_setting_refs(
 
 def _column_kind(cell: str) -> str | None:
     """Classify an optional plotpoint column header."""
-    if "分辨率" in cell:
+    if "分辨率" in cell or "解析度" in cell or "Resolution" in cell:
         return "res"
-    if re.search(r"执行边界|分寸", cell):
+    if re.search(r"执行边界|執行邊界|分寸|Bounds", cell, re.IGNORECASE):
         return "bound"
     return None
 
@@ -531,7 +539,10 @@ def verify(file_path: str | Path, project_root: str | None = None) -> dict[str, 
         )
     )
 
-    missing_acts = [act for act in FIVE_ACT if not field_pattern(act).search(text)]
+    missing_acts = [
+        names[0] for names in FIVE_ACT
+        if not any(field_pattern(act).search(text) for act in names)
+    ]
     checks.append(
         make_check(
             "outline.five-act",
@@ -547,7 +558,7 @@ def verify(file_path: str | Path, project_root: str | None = None) -> dict[str, 
     header = _find_plotpoint_header(lines)
     header_ok = (
         bool(header)
-        and bool(re.search(r"功能标签|作用", header[2]))
+        and bool(re.search(r"功能标签|功能標籤|作用|Function", header[2], re.IGNORECASE))
         and _extra_columns_ok(header[3:])
     )
     checks.append(

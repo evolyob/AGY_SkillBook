@@ -100,54 +100,99 @@
   "outline_contract": {
     "field_names": [
       [
-        "核心事件"
+        "核心事件",
+        "Core Event"
       ],
       [
-        "字数目标"
+        "字数目标",
+        "字數目標",
+        "Word Count Target"
       ],
       [
         "属于哪段剧情",
-        "单元ID/位置"
+        "单元ID/位置",
+        "屬於哪段劇情",
+        "單元ID/位置",
+        "Unit Position"
       ],
       [
-        "目标情绪"
+        "目标情绪",
+        "目標情緒",
+        "Target Emotion"
       ],
       [
-        "主角目标/关键选择"
+        "主角目标/关键选择",
+        "主角目標/關鍵選擇",
+        "Protagonist Goal / Key Choice"
       ],
       [
-        "章首钩子"
+        "章首钩子",
+        "章首鉤子",
+        "Opening Hook"
       ],
       [
-        "爽点"
+        "爽点",
+        "爽點",
+        "Payoff"
       ]
     ],
     "release_fields": [
       "这章不能说破",
-      "本章禁止提前释放"
+      "本章禁止提前释放",
+      "這章不能說破",
+      "本章禁止提前釋放",
+      "Forbidden Reveals"
     ],
     "release_max_items": 3,
     "subsection_names": [
       [
         "这章怎么走",
-        "内容概括"
+        "内容概括",
+        "這章怎麼走",
+        "內容概括",
+        "Chapter Flow",
+        "Content Summary"
       ],
       [
-        "情节安排"
+        "情节安排",
+        "情節安排",
+        "Plot Arrangement"
       ],
       [
-        "人物关系和出场顺序"
+        "人物关系和出场顺序",
+        "人物關係和出場順序",
+        "Character Relationships & Presence Order"
       ],
       [
-        "情节细化"
+        "情节细化",
+        "情節細化",
+        "Plot Beats"
       ]
     ],
     "five_act": [
-      "起因",
-      "发展",
-      "转折",
-      "高潮",
-      "结尾"
+      [
+        "起因",
+        "Cause"
+      ],
+      [
+        "发展",
+        "發展",
+        "Escalation"
+      ],
+      [
+        "转折",
+        "轉折",
+        "Turn"
+      ],
+      [
+        "高潮",
+        "Climax"
+      ],
+      [
+        "结尾",
+        "結尾",
+        "Ending"
+      ]
     ],
     "caliber": "visible_chars_v1",
     "contract_risk_levels": [

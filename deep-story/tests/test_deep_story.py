@@ -129,6 +129,40 @@ class DeepStoryTests(unittest.TestCase):
             self.assertEqual(payload["quality"]["status"], "pass", payload)
             self.assertEqual(payload["quality"]["tool_errors"], [], payload)
 
+    def test_outline_contract_zhtw_and_en_aliases(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            outline = Path(tmp) / "細綱_第001章.md"
+            outline.write_text(
+                "# 第1章 細綱\n\n"
+                "- Core Event: 測試系統登錄與取證\n"
+                "- Word Count Target: 2000\n"
+                "- Unit Position: L1-01\n"
+                "- Target Emotion: 緊張 -> 警覺\n"
+                "- Protagonist Goal / Key Choice: 保留原始日誌 / 是否通報資安長\n"
+                "- Opening Hook: 凌晨兩點異常登入告警\n"
+                "- Payoff: 鎖定內部帳號異常\n"
+                "- Forbidden Reveals: 無\n\n"
+                "### Chapter Flow\n"
+                "- Cause: 發現異地登入\n"
+                "- Escalation: 備份被試圖刪除\n"
+                "- Turn: 啟動 WORM 唯讀鎖定\n"
+                "- Climax: 抓出跳板 IP\n"
+                "- Ending: 螢幕彈出第二封勒索信\n\n"
+                "### Plot Arrangement\n主線推進。\n\n"
+                "### Character Relationships & Presence Order\n資安長與工程師。\n\n"
+                "### Plot Beats\n"
+                "| Beat | Action | Function | Bounds |\n"
+                "| :--- | :--- | :--- | :--- |\n"
+                "| 1 | 檢視登入紀錄 | 鋪墊 | 禁：不揭內鬼姓名 |\n"
+                "| 2 | 鎖定 WORM 日誌 | 推進 | 放：可寫機房冷氣聲 |\n",
+                encoding="utf-8",
+            )
+            r = subprocess.run(
+                [sys.executable, str(SCRIPTS_DIR / "check_outline_contract.py"), "--json", str(outline)],
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
