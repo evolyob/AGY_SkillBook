@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "tracking_limits": {
+    "input_schema_version": 1,
+    "tracking_schema_version": 4,
+    "delta_target_bytes": 1536,
+    "delta_max_bytes": 3072,
+    "context_target_bytes": 8192,
+    "context_max_bytes": 12288,
+    "snapshot_target_bytes": 16384,
+    "snapshot_max_bytes": 65536,
+    "snapshot_item_max_bytes": 600,
+    "draft_inline_snapshots_max_bytes": 16384,
+    "active_character_max": 20,
+    "context_headings": [
+      "## 当前位置",
+      "## 长期约束",
+      "## 核心角色状态",
+      "## 活跃伏笔",
+      "## 近三章速记",
+      "## 下一章承诺",
+      "## 连贯性风险"
+    ],
+    "foreshadow_statuses": [
+      "已埋",
+      "已回收",
+      "已过期",
+      "放弃"
+    ],
+    "foreshadow_importance": [
+      "高",
+      "中",
+      "低"
+    ],
+    "reveal_statuses": [
+      "未揭示",
+      "部分揭示",
+      "已揭示"
+    ]
+  },
+  "outline_contract": {
+    "field_names": [
+      [
+        "核心事件"
+      ],
+      [
+        "字数目标"
+      ],
+      [
+        "属于哪段剧情",
+        "单元ID/位置"
+      ],
+      [
+        "目标情绪"
+      ],
+      [
+        "主角目标/关键选择"
+      ],
+      [
+        "章首钩子"
+      ],
+      [
+        "爽点"
+      ]
+    ],
+    "release_fields": [
+      "这章不能说破",
+      "本章禁止提前释放"
+    ],
+    "release_max_items": 3,
+    "subsection_names": [
+      [
+        "这章怎么走",
+        "内容概括"
+      ],
+      [
+        "情节安排"
+      ],
+      [
+        "人物关系和出场顺序"
+      ],
+      [
+        "情节细化"
+      ]
+    ],
+    "five_act": [
+      "起因",
+      "发展",
+      "转折",
+      "高潮",
+      "结尾"
+    ],
+    "caliber": "visible_chars_v1",
+    "contract_risk_levels": [
+      "没问题",
+      "要补",
+      "有硬伤"
+    ],
+    "legacy_risk_levels": {
+      "契约安全": "没问题",
+      "需补强": "要补",
+      "契约破坏": "有硬伤"
+    }
+  }
+}
