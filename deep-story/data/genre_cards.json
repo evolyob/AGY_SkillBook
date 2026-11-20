@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
-  "description": "Language-agnostic genre prose & pacing profiles. Pick one id in book_outline.md (Genre Profile); omit or extend as needed.",
+  "description": "Language-agnostic genre prose & pacing profiles. Pick 1 primary [+ 1 optional secondary] id in book_outline.md or short_outline.md; extend as needed.",
+  "composition_rule": "Primary genre governs opening, conflict_engine, and taboos. Optional secondary genre adds scene_anchors or payoff; if rules conflict, primary taboos always win.",
   "genres": {
     "cyber_legal_thriller": {
       "aliases": ["科法資安驚悚", "cyber-legal", "forensic thriller", "legal tech"],

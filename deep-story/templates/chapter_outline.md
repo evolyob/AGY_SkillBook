@@ -2,6 +2,7 @@
 
 > **Output**: `<project>/大綱/細綱_第<NNN>章.md`
 > **Gate**: `python3 scripts/check_outline_contract.py --project <project> --chapter <N>`
+> **Genre**: Align `Opening Hook`, `Payoff`, and `放：` props with the selected Genre Profile's `opening`, `payoff`, and `scene_anchors`.
 
 - Core Event: <One-sentence core event>
 - Word Count Target: 2500

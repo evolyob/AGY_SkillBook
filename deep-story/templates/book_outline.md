@@ -3,7 +3,7 @@
 > **Output**: Split into `<project>/大綱/大綱.md` (spine) and `<project>/大綱/卷綱_<Vol>.md` (volume/unit cards).
 > **Gate**: `python3 scripts/outline_view.py --check <project>/大綱/卷綱_<Vol>.md`
 
-- **Genre Profile**: <genre_id from data/genre_cards.json, e.g. general_fallback>
+- **Genre Profile**: <primary_id> [+ <optional secondary_id>] (from data/genre_cards.json)
 - **Core Selling Point**: <Unique reader hook>
 - **Protagonist Starting Point**: <Current lack, constraint, and fear>
 - **Book-Wide Goal**: <One concrete objective with clear pass/fail>
