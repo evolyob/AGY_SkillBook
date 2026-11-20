@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "description": "Language-agnostic genre prose & pacing profiles. Pick one id in book_outline.md (Genre Profile); omit or extend as needed.",
+  "genres": {
+    "cyber_legal_thriller": {
+      "aliases": ["科法資安驚悚", "cyber-legal", "forensic thriller", "legal tech"],
+      "opening": "Start with a concrete technical anomaly, breach alert, subpoena, or courtroom contradiction.",
+      "conflict_engine": "Technical evidence constraints + statutory deadlines + asymmetric knowledge between investigator, counsel, and suspect.",
+      "payoff": "Turning raw forensic artifacts (logs, hashes, timestamps) or procedural rules into decisive courtroom leverage.",
+      "taboos": "Never dump statute text or compliance checklists as narrator lectures; embed rules inside stakes and cross-examination."
+    },
+    "suspense_rules": {
+      "aliases": ["懸疑腦洞", "规则悬疑", "system suspense", "rule-based mystery"],
+      "opening": "Open on an anomalous scene, rule notice, missing person, phone clue, or sudden behavior shift in a close relationship.",
+      "conflict_engine": "Limited POV + escalating rule violation cost + character misjudgment.",
+      "payoff": "Micro-truths uncovered, misjudgments corrected, or rules exploited to dodge danger—each answer raising a sharper threat.",
+      "taboos": "Never reveal answers through narrator exposition; hide clues inside physical actions."
+    },
+    "espionage_intel": {
+      "aliases": ["抗戰諜戰", "谍战", "espionage", "undercover"],
+      "opening": "Enter mid-interrogation, dead-drop handoff, search, document transfer, or traitor tip-off.",
+      "conflict_engine": "Mission objective + cover identity exposure risk + asymmetric intel; every op needs time, place, token, and exfil risk.",
+      "payoff": "Verifying intel authenticity, preserving cover under pressure, or inducing enemy miscalculation at mortal stakes.",
+      "taboos": "Never hand intelligence to the protagonist via omniscient narration."
+    },
+    "investigative_mystery": {
+      "aliases": ["女頻懸疑", "女性悬疑", "crime mystery", "detective"],
+      "opening": "Start with a crime scene, unknown call, reopened cold case, or workplace/police skepticism.",
+      "conflict_engine": "Case deadline + relational/social pressure + information gap shifting trust and safety.",
+      "payoff": "Spotting overlooked details, clearing false suspicion, and forcing peers or authorities to re-evaluate the lead.",
+      "taboos": "Never isolate puzzle-solving from the protagonist's relational stakes."
+    },
+    "urban_daily": {
+      "aliases": ["都市日常", "日常文", "slice of life", "urban realistic"],
+      "opening": "Enter via a phone message, bill, commute, work snag, or minor family/neighbor friction.",
+      "conflict_engine": "Concrete everyday problem + acquaintance ties + real financial or social cost.",
+      "payoff": "Steady, earned improvement in livelihood, trust, or stability through tangible small wins.",
+      "taboos": "Never open on pure weather/mood prose or escalate slice-of-life into power-fantasy escalation."
+    },
+    "workplace_romance": {
+      "aliases": ["職場婚戀", "职场言情", "office drama", "professional romance"],
+      "opening": "Open on a project crisis, client pitch, office rumor, overtime clash, or promotion/contract constraint.",
+      "conflict_engine": "Career deliverables + intimacy boundaries + public professional reputation.",
+      "payoff": "Competence recognized publicly, mutual boundary clarity, and turning a stalled project or relationship around.",
+      "taboos": "Never write pure project reports devoid of interpersonal tension, or pure romance detached from work stakes."
+    },
+    "sci_fi_catastrophe": {
+      "aliases": ["科幻末世", "末世", "catastrophe", "post-apocalyptic", "system collapse"],
+      "opening": "Start with early collapse signs, supply shortage, shelter gate conflict, betrayal, or system failure alert.",
+      "conflict_engine": "Scarce resources + trust cost + external existential threat.",
+      "payoff": "Correct foresight, securing critical infrastructure/supplies, and exploiting hazard rules at real attrition cost.",
+      "taboos": "Never grant free survival windfalls without new risk or depletion."
+    },
+    "historical_intrigue": {
+      "aliases": ["歷史古代", "朝堂权谋", "historical court", "period drama"],
+      "opening": "Enter via court dispute, clan crisis, border dispatch, trial hearing, or sudden appointment/exile.",
+      "conflict_engine": "Institutional hierarchy + status constraints + factional power play.",
+      "payoff": "Public case reversal, turning an opponent's own decree against them, backed by documented proof and proper venue.",
+      "taboos": "Never let the protagonist win purely by modern speechifying; ground moves in period authority."
+    },
+    "urban_high_concept": {
+      "aliases": ["都市腦洞", "都市系统", "urban system", "high-concept urban"],
+      "opening": "Show a concrete real-world predicament first, then let the anomaly immediately alter it.",
+      "conflict_engine": "Conventional commonsense expectations vs. verifiable anomalous outcomes on bills, contracts, or public feeds.",
+      "payoff": "Bystanders or rivals miscalculating based on normal rules while the anomaly lands on tangible reality.",
+      "taboos": "Never let system panels float in isolation without real-world social or financial impact."
+    },
+    "historical_high_concept": {
+      "aliases": ["歷史腦洞", "历史系统", "alt-history", "industrial history"],
+      "opening": "Open in a military, court, or clan crisis before introducing the anachronistic tech or info advantage.",
+      "conflict_engine": "Period institutional friction + execution cost + asymmetric knowledge.",
+      "payoff": "Shifting concrete power balances and exploiting institutional loopholes with layered reactions.",
+      "taboos": "Never rely solely on memorized history trivia without logistical cost."
+    },
+    "occult_suspense": {
+      "aliases": ["懸疑靈異", "灵异怪谈", "supernatural horror", "folklore mystery"],
+      "opening": "Start with an unexplained night shift incident, old object, folk rule note, or urgent plea.",
+      "conflict_engine": "Unknown phenomenon + occupational compulsion to investigate + rising personal toll.",
+      "payoff": "Mapping one more rule boundary, narrowly escaping a cost, or turning an entity's constraint against it.",
+      "taboos": "Never let the anomaly explain its own rules on first appearance."
+    },
+    "eastern_xianxia": {
+      "aliases": ["東方仙俠", "仙侠修真", "xianxia", "cultivation"],
+      "opening": "Open on sect discipline, master-disciple tension, trial peril, or cultivation bottleneck.",
+      "conflict_engine": "Cultivation rules + sect/imperial hierarchy + moral vs. resource trade-offs.",
+      "payoff": "Breakthrough earned through costly choice, sect backing, and status re-evaluation.",
+      "taboos": "Never replace character choice and human stakes with bare technique jargon."
+    },
+    "western_fantasy": {
+      "aliases": ["西方奇幻", "西幻", "western fantasy", "magic academy"],
+      "opening": "Start with guild commission, temple trial, academy evaluation, or racial/estate friction.",
+      "conflict_engine": "Institutional magic/feudal rules + identity limits + casting/contract cost.",
+      "payoff": "Reversing formal evaluations, breaking prejudice, or weaponizing contract/magic costs.",
+      "taboos": "Never treat fantasy institutions as passive wallpaper; make them constrain choices."
+    },
+    "general_fallback": {
+      "aliases": ["流派兜底", "general", "default", "hybrid"],
+      "opening": "Open in motion with an immediate problem, relationship friction, or concrete stakes.",
+      "conflict_engine": "Goal + resistance + irreversible cost driving the next scene's expectation.",
+      "payoff": "Earned shift in leverage, knowledge, or relationship standing.",
+      "taboos": "Never pad scenes with static mood prose or unmotivated exposition."
+    },
+    "esports_competitive": {
+      "aliases": ["遊戲體育", "网游", "电竞", "esports", "competitive"],
+      "opening": "Enter mid-match, live raid, teammate skepticism, talent check, ranking shift, or pre-tactic decision.",
+      "conflict_engine": "Clear win condition + tournament/rule constraints + opponent or bystander misjudgment.",
+      "payoff": "Executing high-visibility counter-plays backed by visible stats, rankings, or live audience feedback.",
+      "taboos": "Never stall with lengthy rule manuals; jump straight into tactical execution."
+    },
+    "quick_transmigration": {
+      "aliases": ["快穿", "快穿系统", "quick transmigration", "episodic arc"],
+      "opening": "Drop straight into a high-pressure scene—one minute before trial, breakup, or failure warning.",
+      "conflict_engine": "Original plot/role pressure + mission constraints + shifting local character emotions.",
+      "payoff": "Using cross-world experience to rewrite the arc and throw original antagonists off balance.",
+      "taboos": "Never start a new world with long system exposition or let foreknowledge become an effortless win."
+    },
+    "ancient_romance_high_concept": {
+      "aliases": ["古言腦洞", "穿书古言", "ancient romance system", "court fantasy"],
+      "opening": "Open on an imperial betrothal/annulment, clan interrogation, household rule trap, or identity exposure.",
+      "conflict_engine": "Period hierarchy/etiquette + protagonist's anomalous edge (transmigration, system, mind-reading) + family politics.",
+      "payoff": "Turning the anomaly into immediate agency that shifts power inside the household or court.",
+      "taboos": "Never treat period etiquette as ignorable; the anomaly must work through or against real social rules."
+    },
+    "period_slice_of_life": {
+      "aliases": ["年代", "年代文", "period slice of life", "retro era"],
+      "opening": "Start with household division, ration/coupon friction, job quota, housing squeeze, or clan slight—showing what the lead lacks.",
+      "conflict_engine": "Material scarcity + institutional paperwork/quotas + everyday relational debts.",
+      "payoff": "Earning tangible security, reputation, and independence within the constraints of the era.",
+      "taboos": "Never dump textbook history; convey the era naturally through objects, forms, and social etiquette."
+    }
+  }
+}
