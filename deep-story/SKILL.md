@@ -8,7 +8,7 @@ dependencies: []
 
 ## Objective
 Manage long-form and short-form fiction projects using the pure Python 3 core (`tracking_commit.py`, `storyctl.py`, `outline_view.py`) with strict Single-Source-of-Truth (SSOT) layer separation:
-- `data/`: Machine-verified contract rules and narrative pattern definitions (`contracts.json`, `deslop_rules.json`).
+- `data/`: Machine-verified contract rules, narrative pattern definitions, and genre prose profiles (`contracts.json`, `deslop_rules.json`, `genre_cards.json`).
 - `templates/`: Sole authoritative blank schemas for project initialization, cards, and outlines.
 - `references/`: Filled exemplars, craft diagnostics, and failure-mode repair guides (loaded on demand only).
 - `scripts/`: Deterministic CLI verifiers and single-ledger state mutators.
@@ -27,7 +27,7 @@ Load **only** the `templates/` skeleton for daily drafting; load `references/` *
 | Stage | Current Task | Authoritative Blank Schema (`templates/`) | On-Demand Craft Guide (`references/`) | Deterministic CLI Gate |
 | :--- | :--- | :--- | :--- | :--- |
 | **1. Init & Bible** | Initialize ledger, cards & rules | `templates/init.json`, `character_card.md`, `world_rule.md`, `deslop-whitelist` | `references/outline_and_bible_guide.md` | `python3 scripts/tracking_commit.py init --project <dir> --input <init.json>` |
-| **2. Book / Vol Outline** | Backward-plan volume & unit arcs | `templates/book_outline.md` | `references/outline_and_bible_guide.md` | `python3 scripts/outline_view.py --check <卷綱.md>` |
+| **2. Book / Vol Outline** | Backward-plan volume & unit arcs | `templates/book_outline.md` *(pick 1 `Genre Profile` from `data/genre_cards.json`)* | `references/outline_and_bible_guide.md` | `python3 scripts/outline_view.py --check <卷綱.md>` |
 | **3. Chapter / Short Outline** | Build detailed beats (`禁/放`) | `templates/chapter_outline.md` (long) / `templates/short_outline.md` (short) | `references/opening_and_hooks.md` *(Ch 1–3 / hooks)* | `python3 scripts/check_outline_contract.py --project <dir> --chapter <N>` |
 | **4. Draft Prose** | Execute long or short drafting loop | *(Use `追蹤/上下文.md` + outline)* | `references/workflows_and_review.md` / `dialogue_and_scene_craft.md` | `python3 scripts/storyctl.py chapter check --project <dir> --chapter <N> --fix-punctuation` |
 | **5. De-Slop & Polish** | Fix flagged prose (logic -> expression) | *(Fix only flagged lines)* | `references/deslop_logic_and_focus.md` -> `references/deslop_expression.md` | Re-run `storyctl.py chapter check` until `blocking_findings == []` |
