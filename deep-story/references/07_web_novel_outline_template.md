@@ -12,7 +12,7 @@ An outline is meant to anchor the direction of a long-form work, not to pre-writ
 | Volume Route (分卷路线) | How far this volume pushes the situation and how the volume-end climax plays out; specific paths can be adjusted, but do not overturn previously established causes. |
 | Scene Memos (场景备忘) | Which scene, clue, or dialogue you plan to use to cross a beat; revise as you write. Ideas not yet written into the main text do not count as established facts. |
 
-This has a different division of labor from the [Detailed Chapter Outline Template (细纲模板)](novel-chapter-outline-template.md): the book-wide outline governs the big direction, while the detailed outline (细纲) governs how to write the next few chapters. This article recommends deciding the climax first and working backward, though you can also start by exploring characters or trial-writing the opening and then converge on the endpoint once the flow feels right; do not force yourself to invent unused secrets, abilities, or subplots just to fill out a form.
+This has a different division of labor from the [Detailed Chapter Outline Template (细纲模板)](08_novel_chapter_outline_template.md): the book-wide outline governs the big direction, while the detailed outline (细纲) governs how to write the next few chapters. This article recommends deciding the climax first and working backward, though you can also start by exploring characters or trial-writing the opening and then converge on the endpoint once the flow feels right; do not force yourself to invent unused secrets, abilities, or subplots just to fill out a form.
 
 ## Copyable Long-Form Novel Outline Template
 
@@ -70,15 +70,3 @@ Plan each volume the same way: set the volume-end climax first, then give the st
 | Writing the outline like full-text scenes | Why it stalls: Great ideas pop up while drafting the main text, but there's no room to fit them in; Fix: Lock down the big direction and leave maneuvering room for specific scenes. |
 
 To judge whether an outline is sufficient, simply check if you can answer: what is being pursued in the next stage, who is blocking it, what will be lost upon failure, and what will the climax change.
-
-## How to Do This with Oh Story
-
-After installing this repository's skill (corresponding to [story-long-write](../skills/story-long-write/SKILL.md)): in Claude Code, say: "Use /story-long-write to only build the long-form novel outline: first set the core selling point, book-wide goal, and endgame choice, then work backward to volume climaxes and stage milestones; only detail specific scenes for the current writing window, and do not write main text" (written as `$story-long-write` in Codex).
-
-## Related
-
-- [Methodology source for this article (本文方法来源)](../skills/story-long-write/references/outline-methods.md)
-- [Established facts and subsequent planning (已定事实与后续规划)](../skills/story-long-write/references/workflow-volume.md)
-- [Author choices and default methods (作者选择与默认方法)](../skills/story-long-write/references/writing-craft.md)
-- [Completing and checking this chapter's detailed outline before writing main text (正文前补齐并检查本章细纲)](../skills/story-long-write/references/workflow-chapter.md)
-- Repository URL: https://github.com/zenstory-ai/oh-story-claudecode

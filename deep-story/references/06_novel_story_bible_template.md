@@ -61,20 +61,3 @@ When updating, only change the key row and carry all other items over to Chapter
 ## How to Prioritize When Conflicts Are Found
 
 First locate the explicit facts in the main text, then cross-check rule conditions, chronological order, causality, and costs. Fix direct contradictions or conflicts that damage the main plot first; hidden causal breaks second; note minor appearance discrepancies separately; and treat overdue foreshadowing merely as reminders. For each issue, clearly state the premise, triggering event, and point of contradiction; the story bible only lays out the before-and-after facts clearly, while the author makes the final call on where the plot goes.
-
-## How to Do This Using This Repository's Skill
-
-The above is the manual maintenance approach. When writing a long-form novel with Oh Story, these states are maintained by [story-long-write](../skills/story-long-write/SKILL.md): after finishing each chapter, the Agent only submits the changes for that chapter, and a script updates the single master ledger file accordingly, then automatically generates files such as character states, foreshadowing, author timeline, and reader knowledge under the book directory's `追踪/` (Tracking) folder. Do not manually edit these auto-generated files, as manual edits will trigger errors during verification. For how the four file layers divide responsibilities, see [How to Keep Character Consistency When Writing Long-Form Novels with AI (AI 写长篇小说怎么不崩人设)](ai-long-novel-character-consistency.md).
-
-If the manuscript wasn't written in Oh Story, import it first with `/story-import`, which organizes existing chapters into a project with settings, outline, and tracking. When you are already in an Oh Story project and want to audit the story bible against the main text, you can say this in Claude Code (replace `/` with `$` in Codex):
-
-> Use /story-long-write to audit the story bible against the written main text, dividing it into stable settings, full state as of Chapter 12, objective events, and what each party knows. Cite the main text for every change, only update what has changed, and keep all other facts that still hold. Do not write main text in this round.
-
-The verification tool can confirm that each tracking file matches the master ledger, but it cannot judge for you whether the novel itself has omissions or misremembered details—the author still needs to read through it at the end.
-
-## Related
-
-- [Tracking state update guide (追踪状态更新说明)](../skills/story-long-write/references/tracking-transaction.md)
-- [Verifying states forward from the edited point after revision (改稿后从改动处往后核对状态)](../skills/story-long-write/references/workflow-revision.md)
-- [Turning confirmed changes into coherent scenes (把已定的变化写成连贯场景)](../skills/story-long-write/references/writing-craft.md)
-- Repository URL: https://github.com/zenstory-ai/oh-story-claudecode

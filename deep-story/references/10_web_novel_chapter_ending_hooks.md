@@ -61,7 +61,7 @@ A chapter-ending hook delivers readers to the next chapter, and the chapter open
 
 Which type to pick depends on how you want the chapter to open: for direct impact, use an Unfinished-Action Opening or Countdown Opening; to create curiosity, use Suspense Dialogue, a Flash-Forward Fragment, or a Mysterious Monologue; to grab attention through contrast, use a Contrast Scene or Imagery Foreshadowing.
 
-Compare the chapter opening side by side with the expectation left by the previous chapter: is it continuing action, verifying information, or carrying forward emotion? Both long-form and short-form judge by the book's needs rather than treating "first hundred characters" or "no weather openings" as universal rules. For how to open Chapter 1 of the entire book, see [How to Write a Novel Opening (小说开头怎么写)](web-novel-golden-three-chapters.md).
+Compare the chapter opening side by side with the expectation left by the previous chapter: is it continuing action, verifying information, or carrying forward emotion? Both long-form and short-form judge by the book's needs rather than treating "first hundred characters" or "no weather openings" as universal rules. For how to open Chapter 1 of the entire book, see [How to Write a Novel Opening (小说开头怎么写)](09_web_novel_golden_three_chapters.md).
 
 ## How to Write Chapter-Ending Hooks: Choosing by Chapter Emotion and Story Stage
 
@@ -115,7 +115,7 @@ First look at what information the ending lands on and whether it does any work,
 | Continuing to explain after throwing out the hook | Stop writing on the exact sentence where the suspense is clearest |
 | Ignoring the hook in the next chapter to write something else | First pick up the thread or goal left by the previous chapter |
 
-Stopping on an action, dialogue, a thought in the character's head, or a narrator's pointed remark all work as long as they fit your book's style—there is no need to force every insight and emotion into tiny hand-and-eye gestures. For removing AI flavor across an entire chapter, see [Removing AI Flavor (去 AI 味)](how-to-remove-ai-flavor-from-web-fiction.md).
+Stopping on an action, dialogue, a thought in the character's head, or a narrator's pointed remark all work as long as they fit your book's style—there is no need to force every insight and emotion into tiny hand-and-eye gestures. For removing AI flavor across an entire chapter, see [Removing AI Flavor (去 AI 味)](12_deslop_expression_guide.md).
 
 ## How the Next Chapter Picks Up: Actually Paying Off the Hook Instead of Repeating "More Secrets Ahead"
 
@@ -142,17 +142,3 @@ Continuing with Candidate 1 above, without cramming Candidate 2 into this versio
 This handoff verifies the serial number, issue time, and phone booking, narrowing what needs investigating next to a single question: who gave that name. Her father still hasn't been found, nor is it proven that the caller was him. The clerk's words are on-site testimony and the log page is immediate evidence, yet neither yields the whole truth.
 
 Checking the phone call is her next plan; this passage has not yet traced the caller. If the prose only dropped a line like "she didn't know a bigger secret was waiting," this whole trip to verify the ticket would have been wasted. The long missing-person thread can be uncovered gradually, while the immediate question raised must first get an echo: advancing one small step per inquiry is enough, without needing to unmask the mastermind or trigger a catastrophic crisis every time.
-
-## How to Do This with Oh Story
-
-After installing this repository's skill, you can tell the Agent directly (corresponding to [story-long-write](../skills/story-long-write/SKILL.md)):
-
-> Use /story-long-write to first check what this chapter actually accomplished and the next chapter's goal, then select suitable landing points from the chapter-opening and chapter-ending candidates. Preserve this book's writing style—do not rotate mechanically and do not alter established facts for the sake of a hook; revise the detailed outline first, and write the specified chapter after confirmation.
-
-In Codex, write `/story-long-write` as `$story-long-write`.
-
-## Related
-
-- [Long-Form Chapter-Opening & Chapter-Ending Hooks and Handoffs (长篇章首章尾钩子与承接)](../skills/story-long-write/references/long-chapter-hooks.md)
-- [Author Requirements, Writing Style, and Immutable Facts (作者要求、文风与不能改的事实)](../skills/story-long-write/references/writing-craft.md)
-- Repository URL: https://github.com/zenstory-ai/oh-story-claudecode

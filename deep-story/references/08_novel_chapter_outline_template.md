@@ -24,7 +24,7 @@ Expand into a detailed outline when you need more specific choices and actions.
 
 ## Web-Novel Detailed Outline Template (Copyable)
 
-Below is a detailed outline card for authors to fill in by hand, adapted from this repository's [Detailed Outline Workflow Guide](../skills/story-long-write/references/workflow-outline.md). When writing by hand, you can delete any fields you do not need; inside an Oh Story project, simply let the skill save according to its built-in template and word-count rules.
+Below is a detailed outline card for authors to fill in by hand, adapted from this repository's [Detailed Outline Workflow Guide](long_workflow.md). When writing by hand, you can delete any fields you do not need; inside an Oh Story project, simply let the skill save according to its built-in template and word-count rules.
 
 ### 1. Chapter Positioning (`本章定位`)
 
@@ -66,7 +66,7 @@ The number of beats is decided by content, not divided evenly by target word cou
 - Detail & pacing allocation (`详略安排`): Which beats get full scene-by-scene treatment, which get only one or two details, and which are brushed over in a line; not every climax has to be written in slow motion.
 - Drafter free zone (`写手自由区`): On-the-spot actions, sounds, or phrasing that can be expanded freely, while holding fast to established events and character knowledge.
 
-Chapter openings and chapter endings carry different jobs; next you can read [How to Write Hooks](web-novel-chapter-ending-hooks.md) (`钩子写法`).
+Chapter openings and chapter endings carry different jobs; next you can read [How to Write Hooks](10_web_novel_chapter_ending_hooks.md) (`钩子写法`).
 
 ## How to Write a Detailed Outline: Fill-in Order and Key Fields
 
@@ -123,17 +123,4 @@ Once the second hand moves, the reader sees the "beyond saving" verdict overturn
 - **Mechanically filling the withhold list**: Only list information with a real leak risk in this chapter; write "None" (`无`) if there is none—do not pad to three or five items.
 - **Treating a plan as an accomplished fact**: Preparing to expose something is not the same as having exposed it; obtaining permission is not the same as having completed the action.
 
-Check the opening chapters separately against opening-chapter tasks; see [Novel Openings](web-novel-golden-three-chapters.md) (`小说开头`).
-
-## How to Do This with Oh Story
-
-After installing this repository's skill (corresponding to [story-long-write](../skills/story-long-write/SKILL.md)): inside a configured long-form novel project, run `/story-long-write` and say "Fill detailed outlines: Chapters 12 to 20" (`补细纲：第 12 到 20 章`) or "Write Chapter 12 detailed outline" (`写第 12 章细纲`). It will deliver only the detailed outlines for the named range without moving on to drafting prose. After each chapter's detailed outline is saved, it uses `check-outline-contract.js` to verify that all required fields and the plot-beats table are complete.
-
-## Related
-
-- [Detailed Outline Template and Optional Fields](../skills/story-long-write/references/outline-template.md)
-- [Outline Layers and Reverse-Engineering Methods](../skills/story-long-write/references/outline-methods.md)
-- [Author Style and General Writing Craft](../skills/story-long-write/references/writing-craft.md)
-- [Detailed Outline Workflow Guide](../skills/story-long-write/references/workflow-outline.md)
-- [Long-Form Writing Entry Guide](../skills/story-long-write/SKILL.md)
-- Repository URL: https://github.com/zenstory-ai/oh-story-claudecode
+Check the opening chapters separately against opening-chapter tasks; see [Novel Openings](09_web_novel_golden_three_chapters.md) (`小说开头`).

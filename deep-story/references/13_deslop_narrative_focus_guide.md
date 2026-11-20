@@ -1,6 +1,6 @@
 # Narrative Focus (叙事用笔): Putting Word Count Where It Is Worth Experiencing
 
-This file examines the level of detail (详略) across scenes and paragraph groups. For expression-level fixes, see [expression.md](expression.md); when events or character choices need to change, see [story-logic.md](story-logic.md). Trade-offs and editorial decisions follow the stylistic rulings in [style-resolution.md](style-resolution.md).
+This file examines the level of detail (详略) across scenes and paragraph groups. For expression-level fixes, see [expression.md](12_deslop_expression_guide.md); when events or character choices need to change, see [story-logic.md](14_deslop_story_logic_guide.md). Trade-offs and editorial decisions follow the stylistic rulings in [style-resolution.md](15_deslop_style_resolution.md).
 
 ## Finding the Center of Gravity from Scene Function
 
@@ -40,7 +40,7 @@ After rearranging, read through the entire scene: can the reader still clearly s
 
 When a new character, new object, or new worldbuilding/rule element (新设定) appears, let the reader know the identity, function, or constraint needed for the current action. Both existing in-scene carriers (场内载体) and concise narration may be used; do not force changes into phones, bills/receipts, or administrative bottlenecks (办事卡点). Necessary explanations can be stated directly; when the reader temporarily does not know the answer, they should at least know which question they are waiting on.
 
-Distinguish between what characters know, what the reader knows, and what remains to be revealed. Do not fill in answers for deliberately left suspense, and do not strip necessary transitions down into a vocabulary list (生词清单). For verification of factual basis and timing of revelation, see [story-logic.md](story-logic.md).
+Distinguish between what characters know, what the reader knows, and what remains to be revealed. Do not fill in answers for deliberately left suspense, and do not strip necessary transitions down into a vocabulary list (生词清单). For verification of factual basis and timing of revelation, see [story-logic.md](14_deslop_story_logic_guide.md).
 
 At the ending, check what the final beat brings: an unfinished action, a shift in relationship, a fulfillment/payoff (一次兑现), an unresolved question, or emotional lingering resonance (情绪余韵) can all work. Action, dialogue, interiority, and stance-bearing narration can all close a scene; clean out repeated restatements, vague philosophizing (空泛哲理), and previews/teasers without a concrete target (没有具体对象的预告). For short-form fiction's subjective judgments (主观审判), "heart-dead" verdicts (心死判词), and "crematorium" groveling-arc teasers (火葬场预告), keep or cut according to the book's selling points—keeping them does not mean letting repetition slide.
 

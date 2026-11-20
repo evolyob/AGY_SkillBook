@@ -124,19 +124,3 @@ A chapter title can highlight the theme, but it cannot rescue main text that mar
 - Blurb and main text feel like two different books: Check whether the title, blurb, and first three chapters deliver the same flavor, and do not twist character decisions just to hit word-count milestones.
 
 Opening techniques are only a toolbox—within the same genre, swapping in a different character situation, task, and order of revealing cards lets you avoid cookie-cutter opening templates (模板).
-
-## How to Do This with Oh Story
-
-After installing this repository's skill, you can tell the Agent directly (corresponding to [story-long-write](../skills/story-long-write/SKILL.md)):
-
-> Use /story-long-write to plan only the detailed outline for this book's first three chapters. Arrange the immediate task, stage-by-stage outcomes, and next-chapter handoff according to the confirmed genre, protagonist goal, and selling points, and list settings that need confirmation; do not fill in blanks from a same-genre skeleton, and do not write body prose. Request specific chapters only after confirmation.
-
-In Codex, write `/story-long-write` as `$story-long-write`.
-
-## Related
-
-- [Three Opening Elements and Several Ways to Open (开篇三要素与几种开头写法)](../skills/story-long-write/references/opening-design.md)
-- [Reader Expectations and Stage-by-Stage Delivery (读者期待与分阶段兑现)](../skills/story-long-write/references/reader-contract-and-progression.md)
-- [Author Requirements, Writing Style, and Immutable Facts (作者要求、文风与不能改的事实)](../skills/story-long-write/references/writing-craft.md)
-- [Turning Decided Outcomes into Complete Scenes (把定好的结果写成完整场景)](../skills/story-long-write/references/writing-craft.md)
-- Repository URL: https://github.com/zenstory-ai/oh-story-claudecode

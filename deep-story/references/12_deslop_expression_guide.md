@@ -1,6 +1,6 @@
 # Expression: Making Language Serve the Narrative
 
-This document addresses only how the same fact is phrased. Resolve conflicts first according to [style-resolution.md](style-resolution.md); long sentences, direct emotional statement, parallelism, narrator commentary, and pause punctuation that are explicitly adopted by the author and serve a narrative function may be retained. Word lists serve only as location cues—do not delete word-for-word mechanically, and do not judge authorship based on diction.
+This document addresses only how the same fact is phrased. Resolve conflicts first according to [style-resolution.md](15_deslop_style_resolution.md); long sentences, direct emotional statement, parallelism, narrator commentary, and pause punctuation that are explicitly adopted by the author and serve a narrative function may be retained. Word lists serve only as location cues—do not delete word-for-word mechanically, and do not judge authorship based on diction.
 
 ## Fix Telegraphic Style and Choppy Short Sentences First
 
@@ -20,7 +20,7 @@ Here, the address error becomes the reason the driver went to the wrong gate, th
 
 After merging fragmented sentences belonging to the same action, train of thought, or causal chain, each sentence should still center on a single focal point and break only after a complete thought finishes. Restore necessary subjects, objects, and the causal, adversative, conditional, or temporal-sequence relationships already present in the original text—do not try to meet standards by counting merged sentences or padding with function words (虚词). Do not add gestures, sensory details, motives, or observation timestamps merely for the sake of coherence.
 
-Read continuously at the end: if every clause is merely re-reporting a state, restructure the sentence or paragraph rather than patching words locally. Likewise, dialogue must not split every condition into a line-by-line Q&A where characters check off information against an outline; see [narrative-focus.md](narrative-focus.md) for the division of labor among narration, dialogue, and interiority.
+Read continuously at the end: if every clause is merely re-reporting a state, restructure the sentence or paragraph rather than patching words locally. Likewise, dialogue must not split every condition into a line-by-line Q&A where characters check off information against an outline; see [narrative-focus.md](13_deslop_narrative_focus_guide.md) for the division of labor among narration, dialogue, and interiority.
 
 Keep step-by-step presentation for single-sentence paragraphs that carry a complete thought, short dialogue, new clues, shifts in judgment, punchlines/reveals (爆点), and deliberate white space (留白); merge only fragmented remnants chopped into three-to-five-character snippets. Restore coherent narration with ordinary transitions, rather than trying to meet a quota by alternating long and short sentences uniformly.
 
@@ -43,7 +43,7 @@ Words such as “很” (*very*), “才” (*only/just*), “连” (*even*), �
 
 Read each line of dialogue back in its addressee, setting, and intent: is the character asking for help, brushing someone off, probing, or making a public statement? Honorifics, jargon, circumlocution, repetition, and silence can all be deliberate choices. When everyone speaks in equally complete explanations and equally polished rhetorical questions, restore differentiation using existing character identity, language profiles, and context—not by sprinkling slang, profanity, slips of the tongue, or catchphrases onto everyone.
 
-Polishing must preserve the original communicative intent and information: do not turn an explanation into a provocation, a request into a command, or restraint into losing control. If the basis for why a character speaks this way or why the other party accepts it is missing, route to [story-logic.md](story-logic.md). For whether a key confrontation has been over-summarized or how many exchanges it should span, route to [narrative-focus.md](narrative-focus.md).
+Polishing must preserve the original communicative intent and information: do not turn an explanation into a provocation, a request into a command, or restraint into losing control. If the basis for why a character speaks this way or why the other party accepts it is missing, route to [story-logic.md](14_deslop_story_logic_guide.md). For whether a key confrontation has been over-summarized or how many exchanges it should span, route to [narrative-focus.md](13_deslop_narrative_focus_guide.md).
 
 ## Emotion Can Be Stated Directly; Actions Are Not Responsible for Translating Emotion Words
 
@@ -65,7 +65,7 @@ Judge the following by context; do not treat them as fill-in-the-blank templates
 
 | Known Facts & Original Sentence | Acceptable Expression | "De-slopped" on the Surface, Actually Broken |
 |---|---|---|
-| Keys forgotten at home, will return tomorrow; no one accused her of refusing to return them. Original: “她不是不肯还钥匙，而是忘在家里了。‘我明天带来。’她说。” (*"It's not that she refuses to return the keys, it's that she left them at home. 'I'll bring them tomorrow,' she said."*) | “她把钥匙忘在家里了。‘我明天带来。’她说。” (*"She left the keys at home. 'I'll bring them tomorrow,' she said."*) Removes the useless strawman target; if she is actually responding to an accusation of refusal, retain the corrective function and register the original sentence in the whitelist per [style-resolution.md](style-resolution.md). | “‘爱等就等。’她说。” (*"'Wait if you feel like it,' she said."*) Alters her commitment and attitude. |
+| Keys forgotten at home, will return tomorrow; no one accused her of refusing to return them. Original: “她不是不肯还钥匙，而是忘在家里了。‘我明天带来。’她说。” (*"It's not that she refuses to return the keys, it's that she left them at home. 'I'll bring them tomorrow,' she said."*) | “她把钥匙忘在家里了。‘我明天带来。’她说。” (*"She left the keys at home. 'I'll bring them tomorrow,' she said."*) Removes the useless strawman target; if she is actually responding to an accusation of refusal, retain the corrective function and register the original sentence in the whitelist per [style-resolution.md](15_deslop_style_resolution.md). | “‘爱等就等。’她说。” (*"'Wait if you feel like it,' she said."*) Alters her commitment and attitude. |
 | She entered an unlit room, felt her way to the edge of the table, and picked up the pillbox. Original: “她推门。屋里没开灯。她摸到桌边。把药盒拿起来。” (*"She pushed the door. The room's light wasn't on. She felt her way to the table edge. Picked up the pillbox."*) | “进屋后，她摸黑走到桌边，拿起药盒。” (*"After entering the room, she felt her way in the dark to the table edge and picked up the pillbox."*) Embeds the lighting into the action; in a tense shot where the original fragmented breaks work, those may also be kept. | “她摸黑吞了两片药。” (*"In the dark, she swallowed two pills."*) Changes fetching the medicine into taking it, inventing both quantity and consequence. |
 
 ## How Script Alerts Enter Semantic Judgment

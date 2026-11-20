@@ -1,6 +1,6 @@
 # Story Validity and Change (故事成立与变化): Diagnosing Causality, Repairing by Authorization
 
-This file examines the relationships among events, actions, information, and outcomes. For sentence- and paragraph-level expression, see [expression.md](expression.md); for the level of detail (详略) of existing content, see [narrative-focus.md](narrative-focus.md). Execution scope is determined by the caller; review-only mode (审稿) only reports.
+This file examines the relationships among events, actions, information, and outcomes. For sentence- and paragraph-level expression, see [expression.md](12_deslop_expression_guide.md); for the level of detail (详略) of existing content, see [narrative-focus.md](13_deslop_narrative_focus_guide.md). Execution scope is determined by the caller; review-only mode (审稿) only reports.
 
 ## Inspect Along the Events, Without Forcing a Conflict Formula
 
