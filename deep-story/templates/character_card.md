@@ -2,11 +2,11 @@
 
 > **Output**: `<project>/settings/characters/<slug>.md` (create only for recurring characters).
 > **Sync**: Mirror dynamic fields into `init.json` or chapter `delta.json` (`tracking_commit.py` owns `tracking/characters/`).
-> **Craft Ref**: Compose `<role_archetype> + <motivation_engine> + <flaw_pattern> [+ <relationship_arcs>]` from `data/story_blocks.json`.
+> **Craft Ref**: Compose `<role_definition> + <motivation_engine> + <flaw_pattern> [+ <relationship_arcs>]` from `data/story_blocks.json`.
 
 ## Core Identity & Bounds (Static)
-- **Craft Profile**: `<role_archetype> + <motivation_engine> + <flaw_pattern> [+ <relationship_arcs>]`
-- **Role / Title**:
+- **Craft Profile**: `<role_definition> + <motivation_engine> + <flaw_pattern> [+ <relationship_arcs>]`
+- **role_definition**:
 - **Core Motivation**:
 - **Fatal Flaw (Character defect causing plot mistakes)**:
 - **Hard Bottom Line**:

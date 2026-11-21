@@ -4,7 +4,8 @@
 > **Gate**: `python3 scripts/outline_view.py --check <project>/outlines/vol_<NN>.md`
 
 - **Genre Profile**: <primary_id> [+ <optional secondary_id>] (from data/story_blocks.json)
-- **Core Selling Point**: <Unique reader hook>
+- **scenario**: <Unique reader hook, crisis arc, and payoff>
+- **tone_and_persona**: <Voice, register, domain anchors, and style boundaries>
 - **Protagonist Starting Point**: <Current lack, constraint, and fear>
 - **Book-Wide Goal**: <One concrete objective with clear pass/fail>
 - **Endgame Binary Choice**: <Climax trade-off contrasting the opening>

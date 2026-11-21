@@ -15,7 +15,7 @@
    - If asked only to discuss structure, deliver structural options and create zero files.
 2. **Source Inspection Before Card Selection** (for large external note folders):
    - Inspect only the directory listing, master index, or file headers first—never ingest an entire multi-volume folder at once.
-   - Present a **Preliminary Card Selection** for user confirmation: (a) long-form vs short-form; (b) `primary [+ secondary]` genre IDs from `data/story_blocks.json`; (c) initial protagonist/antagonist archetypes; (d) which 1–2 source files to extract for Volume 1 `settings/world/` and `.deslop-whitelist`.
+   - Present a **Preliminary Card Selection** for user confirmation: (a) long-form vs series short-form; (b) `primary [+ secondary]` genre IDs from `data/story_blocks.json`; (c) initial protagonist/antagonist archetypes; (d) which 1–2 source files to extract for Volume 1 `settings/world/` and `.deslop-whitelist`.
 
 ## State 1 (Phase 1–3): Planning & Bible (Stop After Delivery)
 
@@ -70,13 +70,13 @@
 
 ---
 
-# Short-Form Workflow (`deep-story`)
+# Series Short-Form Workflow (`deep-story`)
 
-> Scope: Four-phase execution loop for self-contained short stories (`settings.md`, `short_outline.md`, `story.md`).
+> Scope: Four-phase execution loop for episodic short stories sharing a unified cast and world bible (`settings/characters/`, `settings/world/`, `.deslop-whitelist`) with per-episode `stories/ep<NN>/short_outline.md` and `stories/ep<NN>/story.md`.
 
-1. **Phase 1 (Emotional Target & Premise)**: Define target reader emotion, core twist/payoff, and style constraints in `settings.md`.
-2. **Phase 2 (Design Gate)**: Populate `settings.md` and `short_outline.md` per `templates/short_outline.md`. **Hard Gate**: Do not draft `story.md` until both are complete.
-3. **Phase 3 (Scene Drafting)**: Draft `story.md` following `short_outline.md` and `references/opening_and_hooks.md`.
+1. **Phase 1 (Series Anchor)**: Once per series, lock recurring protagonist `character_card.md` files in `settings/characters/`, shared `tone_and_persona`, and `.deslop-whitelist`. For each episode, extract only 1–2 needed `world_rule.md` files into `settings/world/`.
+2. **Phase 2 (Episode Design Gate)**: Populate `stories/ep<NN>/short_outline.md` per `templates/short_outline.md` (`scenario`, `tone_and_persona`, `Plot Beats`). **Hard Gate**: Do not draft `story.md` until the series anchor and episode `short_outline.md` are complete.
+3. **Phase 3 (Scene Drafting)**: Draft `stories/ep<NN>/story.md` following `short_outline.md` and `references/opening_and_hooks.md`.
 4. **Phase 4 (Quality Gate)**: Run `check_ai_patterns.py --check --json --fail-on=blocking story.md`, `check_degeneration.py --check --json --fail-on=blocking story.md`, `normalize_punctuation.py --check story.md`, and `check_outline_copy.py --outline short_outline.md story.md`. Resolve all `blocking` findings per `references/deslop_logic_and_focus.md` -> `references/deslop_expression.md`.
 
 ---
