@@ -51,7 +51,7 @@
 ## State 3: Revision & Diagnosis Workflow
 
 1. **Locate & Scope**:
-   - If the user cites only reader symptoms without naming a chapter, diagnose first using the Symptom Table below and confirm the target chapter before editing.
+   - If the user cites only reader symptoms without naming a chapter, scan `Opening Hook -> Ending Landing -> Mid-Chapter Turn` against the Symptom Table below and confirm the target chapter before editing.
    - Confirm scope (3 options): `1. Local edit` (touch only named paragraphs; read adjacent chapter ends only) / `2. Full chapter rewrite` (follow existing outline; read full prev/next chapters) / `3. Revise outline first, then rewrite` (unlock outline with user consent).
 2. **Backup & Revise**:
    - Copy the original file to `chapters/ch_<NNN>_bak_<YYYYMMDD>.md` before editing.
@@ -84,6 +84,6 @@
 # Cross-Chapter Consistency Review Rubric (`deep-story`)
 
 - **S1 / S2 (`Must Fix`)**: Direct factual contradictions, broken causality, premature epistemic leaks (`author_truth.md` leaked before reveal), or violated deadlines/statutes.
-- **S3 (`Recommended Fix`)**: Pacing imbalance, weak scene payoff, missing `Goal -> Obstacle -> Action -> Cost -> New Expectation` loop, or unfulfilled foreshadowing.
+- **S3 (`Recommended Fix`)**: Pacing imbalance, weak scene payoff, missing `Goal -> Obstacle -> Action -> Cost -> New Expectation` loop, or unfulfilled foreshadowing *(never blocks commit or forces full rewrite)*.
 - **S4 (`Optional`)**: Minor wording polish or optional detail alignment.
-- **User-Facing Output Rule**: Present findings in plain domain language citing `Chapter N, "quote"`, never internal script names or raw `S1-S4` codes in the main body.
+- **User-Facing Output Rule**: Present findings in plain domain language; for conflicts use `[Upstream Canon (Rule/Ch, "quote")] vs [Downstream Clash (Ch N, "quote")]`, never internal script names or raw `S1-S4` codes in the main body.

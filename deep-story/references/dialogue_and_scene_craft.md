@@ -48,3 +48,5 @@ Subtext is the gap between **what the speaker secretly wants to verify/obtain** 
   - *Payoff / Face-Slap*: Never let a protagonist play their trump card only to be mocked or beaten anyway; show concrete attitude/status shifts among stakeholders.
   - *Reversal*: Never lie to the reader in narration—misdirection must come from limited POV or selective interpretation of real actions, and red herrings must advance a real subplot.
   - *Suspense*: Keep short (2–3 ch), medium (5–8 ch), and volume-long mystery arcs running simultaneously; never detonate all three in the same chapter.
+  - *Evidence Ceiling*: `Deduction Scope <= What Current Inspection Actually Proves` (partial clues only unlock the next check, never an instant jump to full guilt).
+  - *Countdown Budget*: `Action Duration <= Stated Timer`; never invent exact minutes, seconds, or timestamps absent from the outline.
