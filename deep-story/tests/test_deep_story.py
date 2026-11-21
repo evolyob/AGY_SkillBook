@@ -24,7 +24,7 @@ class DeepStoryTests(unittest.TestCase):
         self.assertEqual(contracts["tracking_limits"]["active_character_max"], 20)
         self.assertIn("zhtw_narrative_supplement", deslop)
         valid_ids = set()
-        for key in ("role_archetypes", "motivation_engines", "flaw_patterns", "relationship_arcs"):
+        for key in ("role_definitions", "motivation_engines", "flaw_patterns", "relationship_arcs"):
             valid_ids.update(blocks[key].keys())
         for g in blocks["genres"].values():
             for cid in g.get("recommended_character_mix", []):
