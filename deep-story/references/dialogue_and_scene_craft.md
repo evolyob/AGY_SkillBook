@@ -37,3 +37,14 @@ Line length signals leverage: the party holding power delivers short facts or ou
 Subtext is the gap between **what the speaker secretly wants to verify/obtain** and **the casual pretext they speak aloud**.
 - **Confrontation / Elicitation**: Never blurt out the accusation immediately. Probe through everyday remarks so the guilty party exposes themselves via defensive over-correction (e.g., deleting a photo, abruptly changing travel dates).
 - **Three Tone Drivers**: Always calibrate word choice by **(1) Relationship**, **(2) Setting** (private = direct; public = face-saving/double-entendre), and **(3) Immediate Objective**.
+
+---
+
+## 4. Scene Craft, Emotion Channels & Genre Red Lines
+
+- **Four Equal Emotion Channels (Ban Micro-Action Padding)**: When context already conveys the emotion, omit extra reaction tags. Otherwise pick the single highest-information channel: **(1) Direct emotional statement**, **(2) Character's immediate stake calculation / inner verdict**, **(3) Spoken line / tactical choice**, or **(4) Consequence-bearing action/object change**. Delete stock hand/eye/cup micro-actions that alter no choice or physical result.
+- **Stakeholder-Layered Reactions**: Before giving bystanders a line, define what each person is protecting or calculating right now. If hiding character names makes their reactions indistinguishable, cut the chorus and keep only reactions from stakeholders with distinct stances.
+- **Payoff, Reversal & Suspense Red Lines**:
+  - *Payoff / Face-Slap*: Never let a protagonist play their trump card only to be mocked or beaten anyway; show concrete attitude/status shifts among stakeholders.
+  - *Reversal*: Never lie to the reader in narration—misdirection must come from limited POV or selective interpretation of real actions, and red herrings must advance a real subplot.
+  - *Suspense*: Keep short (2–3 ch), medium (5–8 ch), and volume-long mystery arcs running simultaneously; never detonate all three in the same chapter.

@@ -230,11 +230,11 @@ def parse_table_row(line: str) -> list[str] | None:
 
 
 def resolve_book_root(file_path: str | Path, project_root: str | None) -> Path | None:
-    """Resolve the book root directory from `--project` or an `大綱/` parent folder."""
+    """Resolve the book root directory from `--project` or an `outlines/` parent folder."""
     if project_root:
         return Path(project_root).resolve()
     parent = Path(file_path).resolve().parent
-    if parent.name == "大綱":
+    if parent.name == "outlines":
         return parent.parent
     return None
 
@@ -242,21 +242,21 @@ def resolve_book_root(file_path: str | Path, project_root: str | None) -> Path |
 def has_existing_chapter_prose(file_path: str | Path, project_root: str | None) -> bool:
     """Return True if a non-draft prose file already exists for the outline's chapter."""
     book_root = resolve_book_root(file_path, project_root)
-    ch_match = re.match(r"^細綱_第0*(\d+)章.*\.md$", Path(file_path).name)
+    ch_match = re.match(r"^ch_0*(\d+)(?:[_\-].*)?\.md$", Path(file_path).name)
     if not book_root or not ch_match:
         return False
     wanted = int(ch_match.group(1))
     if wanted < 1:
         return False
-    prose_dir = book_root / "正文"
+    prose_dir = book_root / "chapters"
     try:
         entries = list(prose_dir.iterdir())
     except OSError:
         return False
     for entry in entries:
-        if "_原稿_" in entry.name:
+        if "_bak_" in entry.name:
             continue
-        match = re.match(r"^第0*(\d+)章(?:[_\- 　].*)?\.md$", entry.name)
+        match = re.match(r"^ch_0*(\d+)(?:[_\-].*)?\.md$", entry.name)
         if match and int(match.group(1)) == wanted and entry.is_file():
             return True
     return False
@@ -656,15 +656,15 @@ def report(
 
 
 def resolve_chapter(project: str, chapter: str) -> dict[str, str]:
-    """Locate the outline file for chapter N under `<project>/大綱/`."""
-    outline_dir = Path(project) / "大綱"
+    """Locate the outline file for chapter N under `<project>/outlines/`."""
+    outline_dir = Path(project) / "outlines"
     try:
         entries = os.listdir(outline_dir)
     except OSError as error:
         return {"error": f"無法讀取 {outline_dir}：{error}"}
     wanted = int(chapter)
     for entry in entries:
-        match = re.match(r"^細綱_第0*(\d+)章.*\.md$", entry)
+        match = re.match(r"^ch_0*(\d+)(?:[_\-].*)?\.md$", entry)
         if match and int(match.group(1)) == wanted:
             return {"file": str(outline_dir / entry)}
     return {"error": f"{outline_dir} 下沒有第 {wanted} 章細綱"}
@@ -689,9 +689,8 @@ def notes_candidates(volume_file: str | Path, unit_id: str) -> list[tuple[Path, 
     outline_dir = Path(volume_file).resolve().parent
     book_root = outline_dir.parent
     return [
-        (book_root / ".story" / "排綱筆記" / f"{unit_id}.md", "排綱筆記"),
-        (outline_dir / f"排綱筆記_{unit_id}.md", "排綱筆記"),
-        (outline_dir / f"排綱底稿_{unit_id}.md", "排綱底稿"),
+        (book_root / ".story" / "outline_notes" / f"{unit_id}.md", "排綱筆記"),
+        (outline_dir / f"outline_notes_{unit_id}.md", "排綱筆記"),
     ]
 
 
@@ -870,7 +869,7 @@ def main(argv: list[str]) -> int:
     parsed = parse_args(argv)
     if not parsed:
         sys.stderr.write(
-            "用法: node scripts/check-outline-contract.js --json <細綱路徑...> | --json --project <書目錄> --chapter N | --json --supply <卷綱路徑> <單元ID>\n"
+            "用法: python3 scripts/check_outline_contract.py --json <outline_path...> | --json --project <dir> --chapter N | --json --supply <vol_path> <unit_id>\n"
         )
         return 2
     if "supply" in parsed:

@@ -1,7 +1,7 @@
-# Short Story Outline (`<project>/小節大綱.md`)
+# Short Story Outline (`<project>/short_outline.md`)
 
-> **Output**: `<project>/小節大綱.md` (must be complete before drafting `<project>/正文.md`).
-> **Gate**: `python3 scripts/check_outline_copy.py --outline <project>/小節大綱.md <project>/正文.md`
+> **Output**: `<project>/short_outline.md` (must be complete before drafting `<project>/story.md`).
+> **Gate**: `python3 scripts/check_outline_copy.py --outline <project>/short_outline.md <project>/story.md`
 
 - **Genre Profile**: <primary_id> [+ <optional secondary_id>] (from data/story_blocks.json)
 - **Core Conflict**: <One-sentence central clash>

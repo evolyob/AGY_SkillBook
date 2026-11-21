@@ -1,69 +1,89 @@
 # Long-Form Workflow (`deep-story`)
 
-> Scope: Five-phase execution loop for multi-chapter serialized fiction using `storyctl.py`, `tracking_commit.py`, and `outline_view.py`.
-> **Directory & Filename Invariant**: The Python engine enforces canonical project directory names: `設定/` (`設定/角色/`), `大綱/` (`大綱/卷綱_第X卷.md`, `大綱/細綱_第001章.md`), `正文/` (`正文/第001章_章名.md`), and `追蹤/` (`追蹤/_tracking-state.json`, `追蹤/上下文.md`, `追蹤/伏筆.md`, `追蹤/角色狀態/`, `追蹤/時間線/作者真相.md`, `追蹤/時間線/讀者已知.md`). Always use these exact folder names.
+> Scope: Four-state execution loop (`0. Intake` -> `1. Planning` -> `2. Drafting` -> `3. Revision`) using `storyctl.py`, `tracking_commit.py`, and `outline_view.py`.
+> **Canonical Project Paths (Pure English ASCII)**:
+> - `settings/` (`settings/characters/<slug>.md`, `settings/world/<slug>.md`, `settings/style.md`)
+> - `outlines/` (`outlines/book_outline.md`, `outlines/vol_<NN>.md`, `outlines/ch_<NNN>.md`)
+> - `chapters/` (`chapters/ch_<NNN>.md`; revision backups: `chapters/ch_<NNN>_bak_<YYYYMMDD>.md`)
+> - `tracking/` (`tracking/_tracking-state.json`, `tracking/context.md`, `tracking/foreshadowing.md`, `tracking/characters/`, `tracking/logs/`, `tracking/timeline/author_truth.md`, `tracking/timeline/reader_known.md`)
+> - `.story/outline_notes/<unit_id>.md`, `.story/work/ch_<NNN>/`
 
-## Phase 1–3: Planning (Stop After Delivery)
+## State 0: Entry Guard & External Source Intake
 
-1. **Phase 1 (Premise & Preferences)**: Lock core selling point, genre rules, and book-level style preferences inside `tracking_commit.py` (`long_term_constraints`).
-2. **Phase 2 (Settings)**: Create character cards (`設定/角色/{名}.md`), world rules (`設定/世界觀/`), and domain anchors (statutes, deadlines, forensic hashes).
-   - **External Source Anchoring**: When the user provides external notes, manuals, or reference folders, extract verifiable rules, timelines, and technical constraints into `設定/世界觀/` and `long_term_constraints` without binding the skill to machine-specific paths.
-   - **Book-Local Term Whitelist**: For domain-heavy fiction (legal statutes, technical protocols, proper nouns), list literal terms (one per line, `#` for comments) in `<project>/.deslop-whitelist` so `check_ai_patterns.py` and `normalize_punctuation.py` preserve them verbatim.
-3. **Phase 3 (Outlines)**:
-   - Book-wide & Volume outlines (`大綱/大綱.md`, `大綱/卷綱_第一卷.md`) per `templates/book_outline.md` (backward-planned from climax).
-   - **寫綱前查缺**：每批產生章細綱前，須先在 `.story/排綱筆記/{unit_id}.md`（或卷綱該劇情段下）填寫「寫綱前查缺」小節，核對是否缺少設定、道具或伏筆前提；無缺口則明寫 `無缺口`。
-   - Chapter detailed outlines (`大綱/細綱_第001章.md`) per `templates/chapter_outline.md` with required metadata labels (`- 核心事件:`, `- 字數目標:`, `- 屬於哪段劇情:`, `- 目標情緒:`, `- 主角目標/關鍵選擇:`, `- 章首鉤子:`, `- 爽點:`, `- 本章禁止提前釋放:`) and subsections (`### 這章怎麼走`, `### 情節安排`, `### 人物關係和出場順序`, `### 情節細化` with numbered table).
-   - Verify with `python3 scripts/check_outline_contract.py --project <dir> --chapter <N>`.
-   - **Hard Stop**: Deliver requested outlines and wait for explicit user approval before entering Phase 4.
+1. **Bare Invocation / Scope Guard**:
+   - If invoked with no clear task, inspect project state (`settings/`, `outlines/`, `chapters/`, `tracking/`) and offer 2–4 plain-language options (e.g., discuss structure, plan volume/chapters, draft Chapter N, revise Chapter X). Never auto-draft prose.
+   - If asked only to discuss structure, deliver structural options and create zero files.
+2. **Source Inspection Before Card Selection** (for large external note folders):
+   - Inspect only the directory listing, master index, or file headers first—never ingest an entire multi-volume folder at once.
+   - Present a **Preliminary Card Selection** for user confirmation: (a) long-form vs short-form; (b) `primary [+ secondary]` genre IDs from `data/story_blocks.json`; (c) initial protagonist/antagonist archetypes; (d) which 1–2 source files to extract for Volume 1 `settings/world/` and `.deslop-whitelist`.
 
-## Phase 4: Single-Chapter Drafting
+## State 1 (Phase 1–3): Planning & Bible (Stop After Delivery)
 
-1. **Pre-Read Gate**: Read `追蹤/上下文.md`, active `追蹤/角色狀態/*.md`, `追蹤/時間線/讀者已知.md`, `大綱/細綱_第NNN章.md`, and the unit slice from `python3 scripts/outline_view.py --project <dir> --chapter <N>`.
-2. **Draft Prose**: Write `正文/第NNN章_章名.md` honoring `禁/放` bounds and epistemic isolation (characters cannot act on `追蹤/時間線/作者真相.md` facts absent from `追蹤/時間線/讀者已知.md` or their character state).
-3. **Prose Gate**: Run `python3 scripts/storyctl.py chapter check --project <dir> --chapter <N> --fix-punctuation`.
-   - Resolve all `blocking` findings (`check_ai_patterns.py`, `check_degeneration.py`, `normalize_punctuation.py`) and inspect `check_outline_copy.py` advisories per `references/deslop_logic_and_focus.md` -> `references/deslop_expression.md`.
+1. **Phase 1–2 (Settings & Domain Anchors)**:
+   - Create `settings/characters/<slug>.md` (recurring characters only), `settings/world/<slug>.md` (extract trigger conditions, exceptions, costs, and deadlines per volume), and `<project>/.deslop-whitelist` (one literal domain term per line, `#` for comments).
+   - Keep `long_term_constraints` (max 6 items) reserved for book-wide selling points and non-negotiable invariants; put detailed statutes/procedures in `settings/world/`.
+2. **Phase 3 (Book, Volume & Chapter Outlines)**:
+   - Build `outlines/book_outline.md` and `outlines/vol_01.md` per `templates/book_outline.md` (backward-planned from climax), checking the four agency/pacing questions in `references/outline_and_bible_guide.md`. Verify with `python3 scripts/outline_view.py --check outlines/vol_01.md`.
+   - **Pre-Outline Supply Check (`寫綱前查缺`)**: Before generating a batch of chapter outlines, complete the 3-item check in `.story/outline_notes/<unit_id>.md` or under the unit card: (1) antagonist continuity; (2) recurring character cards & ability bounds; (3) cited statutes, prices, and deadlines in `settings/world/` (write `無缺口` if none).
+   - Build `outlines/ch_<NNN>.md` per `templates/chapter_outline.md` (aim for 4–5 `Plot Beats` per standard 2,200–2,800 char chapter). Verify with `python3 scripts/check_outline_contract.py --project <dir> --chapter <N>`.
+   - **Outline Lock & Hard Stop**: Outlines and volume units for already-drafted chapters are locked (append-only for new units unless user confirms edits). Deliver requested outlines and **stop**; do not initialize `tracking/` or draft prose.
 
-## Phase 5: Delta Commit & Integrity
+## State 2 (Phase 4–5): Beat-Driven Drafting & Commit (Max 3 Chapters/Turn)
 
-1. Prepare the chapter delta JSON payload and commit via `python3 scripts/storyctl.py chapter commit --project <dir> --chapter <N> --input <delta.json>`.
-2. Verify `python3 scripts/tracking_commit.py check --project <dir>` passes with zero drift.
-3. Cap at **3 chapters** per turn.
+1. **First-Chapter Init & Pre-Read Gate**:
+   - Before drafting Chapter 1 (if `tracking/_tracking-state.json` is absent), initialize via `python3 scripts/tracking_commit.py init --project <dir> --input <init.json>`.
+   - Read `tracking/context.md`, active `tracking/characters/*.md`, `tracking/timeline/reader_known.md`, `outlines/ch_<NNN>.md`, and the unit slice from `python3 scripts/outline_view.py --project <dir> --chapter <N>`.
+2. **Beat-Driven Drafting & New-Element Escalation**:
+   - Draft `chapters/ch_<NNN>.md` beat-by-beat along `Plot Beats`, honoring `禁/放` bounds and epistemic isolation. Stop once all approved beats land—never pad prose to chase word count.
+   - **Three-Tier New-Element Rule**:
+     - *Write directly*: Walk-on NPCs, props, one-off scene details (no card, no tracking).
+     - *File & track*: Recurring NPCs, factions, reusable rules, new foreshadowing (create card + record in tracking delta).
+     - *Ask user first*: New main-plot twists, power-ceiling changes, economic anchors, early truth reveals, or overriding established outline decisions (pause and propose 1–2 options).
+3. **Prose Gate & Word-Count Resolution**:
+   - Run `python3 scripts/storyctl.py chapter check --project <dir> --chapter <N> --fix-punctuation`.
+   - Resolve all `blocking` findings (including AI patterns, degeneration, and engineering-word leaks) in the same turn. Only skip AI-pattern checks if the user explicitly requested it (`<!-- 去味:跳過 -->` within the first 6 lines; degeneration/engineering terms still block).
+   - **Out-of-Band Word Count**: If *under* target band, **never pad**—offer the user 3 choices (accept current length / revise outline & redraft / discard). If *over* band, run one pure-deletion pass (`compress-once`, cutting repetition without inventing new plot) and re-check; if still over, ask user whether to `chapter accept-current-length`.
+4. **Draft-Prefill & Atomic Commit**:
+   - Run `python3 scripts/tracking_commit.py draft --project <dir> --chapter <N>` to pre-fill `.story/work/ch_<NNN>/tracking.json`, update only changed delta/snapshots, then commit via `python3 scripts/storyctl.py chapter commit --project <dir> --chapter <N> --input <tracking.json>`.
+   - Verify `python3 scripts/tracking_commit.py check --project <dir>` passes with zero drift.
+   - Report to the user in plain story language only (what happened, ending hook, any new recurring elements or decisions needed).
+
+## State 3: Revision & Diagnosis Workflow
+
+1. **Locate & Scope**:
+   - If the user cites only reader symptoms without naming a chapter, diagnose first using the Symptom Table below and confirm the target chapter before editing.
+   - Confirm scope (3 options): `1. Local edit` (touch only named paragraphs; read adjacent chapter ends only) / `2. Full chapter rewrite` (follow existing outline; read full prev/next chapters) / `3. Revise outline first, then rewrite` (unlock outline with user consent).
+2. **Backup & Revise**:
+   - Copy the original file to `chapters/ch_<NNN>_bak_<YYYYMMDD>.md` before editing.
+   - Apply edits and run `python3 scripts/storyctl.py chapter check --project <dir> --chapter <N> --fix-punctuation`. Report explicitly if length changed by >30% or >800 chars.
+3. **Cascade Recompute (`mode=revision`)**:
+   - Run `tracking_commit.py draft --project <dir> --chapter <N>`, inspect chapters `N..M` (up to latest committed chapter `M`), and merge updated foreshadowing, timeline truths/reader knowledge, and multi-dimensional character snapshots without wiping later chapters' valid state.
+   - Commit via `storyctl.py chapter commit`, verify `tracking_commit.py check`, and scan chapters `N+1..M` to flag any prose lines impacted by the revision.
+
+| Reader Symptom | Likely Root Cause | Actionable Fix |
+| :--- | :--- | :--- |
+| Pacing drags / filler | Previous payoff landed without a new hook; transition lacks active thread | Pull next conflict/clue forward; cut status-quo scenes |
+| Payoff feels flat ("that's it?") | Insufficient pressure/stakes before payoff, or weak bystander stakes | Add concrete cost/leverage before turn; show stakeholder reactions |
+| Repetitive loop | Same obstacle/solution pattern repeated 3+ units | Keep core emotion, swap antagonist, venue, and tactic |
+| Protagonist feels passive / tool-like | Institutions or allies make the key choices and take credit | Restore protagonist's irreversible choice and direct gain |
+| Opening fails to hook | Worldbuilding/backstory placed ahead of immediate trouble | Move Ch 1 conflict and personal stakes into first 1,000 chars |
 
 ---
 
 # Short-Form Workflow (`deep-story`)
 
-> Scope: Four-phase execution loop for self-contained short stories (`setting.md`, `小節大綱.md`, `正文.md`) without heavy chapter-by-chapter tracking.
+> Scope: Four-phase execution loop for self-contained short stories (`settings.md`, `short_outline.md`, `story.md`).
 
-## Phase 1: Emotional Target & Premise
-- Define the target reader emotion, core twist/payoff, and genre constraints in `setting.md`.
-- Record any style preferences directly in `setting.md`.
-
-## Phase 2: Design Gate
-- Populate `setting.md` (characters, stakes, domain anchors) and `小節大綱.md` per `templates/short_outline.md` (emotional arc, scene beats, payoff/reversal timing).
-- **Hard Gate**: Do not draft `正文.md` until both `setting.md` and `小節大綱.md` are complete and verified.
-
-## Phase 3: Scene-by-Scene Drafting
-- Draft `正文.md` following `小節大綱.md` and `references/opening_and_hooks.md`.
-- Keep every scene advancing conflict, relationship, or reveal.
-
-## Phase 4: Revision & Quality Gate
-- Run `check_ai_patterns.py --check --json --fail-on=blocking 正文.md`, `check_degeneration.py --check --json --fail-on=blocking 正文.md`, `normalize_punctuation.py --check 正文.md`, and `check_outline_copy.py --outline 小節大綱.md 正文.md`.
-- Resolve all `blocking` findings and perform a semantic review per `references/deslop_expression.md` and `deslop_logic_and_focus.md`.
+1. **Phase 1 (Emotional Target & Premise)**: Define target reader emotion, core twist/payoff, and style constraints in `settings.md`.
+2. **Phase 2 (Design Gate)**: Populate `settings.md` and `short_outline.md` per `templates/short_outline.md`. **Hard Gate**: Do not draft `story.md` until both are complete.
+3. **Phase 3 (Scene Drafting)**: Draft `story.md` following `short_outline.md` and `references/opening_and_hooks.md`.
+4. **Phase 4 (Quality Gate)**: Run `check_ai_patterns.py --check --json --fail-on=blocking story.md`, `check_degeneration.py --check --json --fail-on=blocking story.md`, `normalize_punctuation.py --check story.md`, and `check_outline_copy.py --outline short_outline.md story.md`. Resolve all `blocking` findings per `references/deslop_logic_and_focus.md` -> `references/deslop_expression.md`.
 
 ---
 
 # Cross-Chapter Consistency Review Rubric (`deep-story`)
 
-> Scope: Deterministic and semantic continuity audit across chapters, timelines, statutes, and character motivations.
-
-## Severity Levels (Internal -> User-Facing Translation)
-- **S1 / S2 (`Must Fix`)**: Direct factual contradictions, broken causality, premature epistemic leaks (character knows `作者真相` before reveal), or violated deadlines/statutes.
+- **S1 / S2 (`Must Fix`)**: Direct factual contradictions, broken causality, premature epistemic leaks (`author_truth.md` leaked before reveal), or violated deadlines/statutes.
 - **S3 (`Recommended Fix`)**: Pacing imbalance, weak scene payoff, missing `Goal -> Obstacle -> Action -> Cost -> New Expectation` loop, or unfulfilled foreshadowing.
 - **S4 (`Optional`)**: Minor wording polish or optional detail alignment.
-
-## Review Checklist
-1. **Epistemic & Timeline Integrity**: Cross-check `prose` against `時間線/作者真相.md`, `時間線/讀者已知.md`, and `角色狀態/*.md`. Flag any character acting on unrevealed information.
-2. **Plot Loop & Climax**: Verify tight chapters contain `Goal -> Obstacle -> Action -> Cost/Feedback -> New Expectation`.
-3. **Narrative Focus**: Flag scenes where minor logistics are over-detailed while key confrontations are summarized.
-4. **User-Facing Output Rule**: Present findings in plain domain language citing `Chapter N, "quote"`, never internal script names or raw `S1-S4` codes in the main body.
+- **User-Facing Output Rule**: Present findings in plain domain language citing `Chapter N, "quote"`, never internal script names or raw `S1-S4` codes in the main body.

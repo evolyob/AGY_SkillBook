@@ -1,6 +1,6 @@
-# 第1章 細綱
+# Chapter N Outline
 
-> **Output**: `<project>/大綱/細綱_第<NNN>章.md`
+> **Output**: `<project>/outlines/ch_<NNN>.md`
 > **Gate**: `python3 scripts/check_outline_contract.py --project <project> --chapter <N>`
 > **Genre**: Align `Opening Hook`, `Payoff`, and `放：` props with the selected Genre Profile's `opening`, `payoff`, and `scene_anchors`.
 

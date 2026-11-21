@@ -69,7 +69,7 @@ def report_usage_error(message: str) -> int:
     """Write a localized CLI usage error to stderr and return exit code 2."""
     sys.stderr.write(f'錯誤: {message}。\n')
     sys.stderr.write(
-        '用法: node check-outline-copy.js [--outline <細綱路徑>] <正文路徑...>\n'
+        '用法: python3 scripts/check_outline_copy.py [--outline <outline_path>] <chapter_path...>\n'
     )
     return 2
 

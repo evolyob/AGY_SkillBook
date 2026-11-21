@@ -101,6 +101,17 @@ Plan each volume the same way: set the volume-end climax first, then give the st
 
 To judge whether an outline is sufficient, simply check if you can answer: what is being pursued in the next stage, who is blocking it, what will be lost upon failure, and what will the climax change.
 
+## Four-Question Agency & Pacing Audit (Run Per Volume / Unit)
+
+1. **Protagonist Agency**: Did the protagonist make the irreversible choice and earn the outcome? (If institutions or allies resolve the crisis without strategic trade-offs, fix the outline.)
+2. **Credit & Gain Ownership**: Did core gains, leverage, or recognition stay with the protagonist rather than being hijacked by bystanders or coincidence?
+3. **Late-Stage Reserve**: Did this volume/unit accidentally burn endgame masterminds, final truths, or power ceilings meant for later volumes? (Reveal at most one major secret per volume.)
+4. **Expectation & Map Continuity**: Did prior promises advance or pay off, and if switching maps/arenas, did at least one unresolved goal, debt, or relationship carry over?
+
+### Volume Anchors & Beat Cadence
+- Anchor major turning points at **1/4** (inciting pressure / first reversal), **1/2** (midpoint shift raising stakes), and **3/4** (volume climax). Rotate emotional motifs so the same tension (e.g., pure courtroom or pure grief) does not repeat >2–3 chapters consecutively.
+- For standard 2,200–2,800 char chapters, aim for **4–5 concrete `Plot Beats` per chapter** (~450–600 chars per scene/beat) so pacing stays crisp and easy to adapt.
+
 ---
 
 # How to Write a Novel Detailed Outline: Chapter Template and Fill-in Example

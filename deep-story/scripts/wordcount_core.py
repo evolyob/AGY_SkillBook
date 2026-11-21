@@ -102,7 +102,11 @@ def require(condition: bool, message: str) -> None:
         raise WordcountError(message)
 
 
-BOOK_DIRS = ("設定", "大綱", "正文", "追蹤")
+BOOK_DIRS = ("settings", "outlines", "chapters", "tracking")
+OUTLINES_DIR = "outlines"
+CHAPTERS_DIR = "chapters"
+TRACKING_DIR = "tracking"
+SETTINGS_DIR = "settings"
 
 
 def resolve_book_dir(project: Path) -> Path:
@@ -295,11 +299,10 @@ def range_from_outline(value: str) -> dict[str, int] | None:
 
 
 def _chapter_number_from_name(name: str, *, outline: bool) -> int | None:
-    # 改稿流程把原文備份為 第N章_章名_原稿_{日期}.md，與 hooks 一樣不把它當本章正文。
-    if not outline and "_原稿_" in name:
+    # Exclude revision backup files (_bak_) from matching the active chapter body.
+    if not outline and "_bak_" in name:
         return None
-    pattern = r"^細綱_第0*(\d+)章.*\.md$" if outline else r"^第0*(\d+)章(?:[_\- 　].*)?\.md$"
-    match = re.match(pattern, name)
+    match = re.match(r"^ch_0*(\d+)(?:[_\-].*)?\.md$", name)
     return int(match.group(1)) if match else None
 
 
@@ -316,7 +319,7 @@ def find_chapter_file(directory: Path, chapter: int, *, outline: bool) -> Path:
 
 
 def read_chapter_outline(project: Path, chapter: int) -> tuple[Path, str]:
-    outline_path = find_chapter_file(project.resolve() / "大綱", chapter, outline=True)
+    outline_path = find_chapter_file(project.resolve() / OUTLINES_DIR, chapter, outline=True)
     try:
         return outline_path, outline_path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
@@ -333,7 +336,7 @@ def read_project_chapter(
 ) -> tuple[Path, Path, int, dict[str, int] | None]:
     """定位本章細綱與正文，讀出字數目標和生效的作者字數范圍。"""
     outline_path, outline = read_chapter_outline(project, chapter)
-    body_path = find_chapter_file(project.resolve() / "正文", chapter, outline=False)
+    body_path = find_chapter_file(project.resolve() / CHAPTERS_DIR, chapter, outline=False)
     return outline_path, body_path, target_from_outline(outline), effective_author_range(outline, author_range)
 
 
@@ -401,8 +404,8 @@ def wordcount_record_drift(project: Path, chapter: int, value: object) -> list[s
     """
     record = normalize_wordcount_record(value)
     root = project.resolve()
-    outline_path = find_chapter_file(root / "大綱", chapter, outline=True)
-    body_path = find_chapter_file(root / "正文", chapter, outline=False)
+    outline_path = find_chapter_file(root / OUTLINES_DIR, chapter, outline=True)
+    body_path = find_chapter_file(root / CHAPTERS_DIR, chapter, outline=False)
     try:
         outline = outline_path.read_text(encoding="utf-8")
         body_bytes = body_path.read_bytes()

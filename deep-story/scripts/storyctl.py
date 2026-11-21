@@ -164,7 +164,7 @@ def _read_json_object(path: Path, label: str) -> dict[str, Any]:
 
 def chapter_work_dir(project: Path, chapter: int) -> Path:
     width = max(3, len(str(chapter)))
-    return project.resolve().joinpath(*WORK_ROOT, f"第{chapter:0{width}d}章")
+    return project.resolve().joinpath(*WORK_ROOT, f"ch_{chapter:0{width}d}")
 
 
 def _remove_chapter_work_dir(project: Path, chapter: int) -> str | None:
@@ -204,12 +204,6 @@ def _json_findings(output: str) -> list[dict[str, Any]] | None:
     if not isinstance(findings, list) or not all(isinstance(row, dict) for row in findings):
         return None
     return findings
-
-
-NODE_REQUIRED = (
-    "質量檢查（AI 句式、退化、標點、細綱照搬）要用 Node.js 運行，本機找不到 node。"
-    "安裝 Node.js 18 或更高版本並確認 `node --version` 可用後重跑本命令；裝好之前本章不能提交。"
-)
 
 
 def _semantic_advisories(advisories: list[dict[str, Any]]) -> int:

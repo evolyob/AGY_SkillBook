@@ -34,8 +34,8 @@ class DeepStoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             proj = Path(tmp) / "book"
             proj.mkdir()
-            (proj / "大綱").mkdir()
-            (proj / "正文").mkdir()
+            (proj / "outlines").mkdir()
+            (proj / "chapters").mkdir()
             init_json = Path(tmp) / "init.json"
             init_json.write_text(
                 json.dumps({
@@ -60,7 +60,7 @@ class DeepStoryTests(unittest.TestCase):
             )
             self.assertEqual(r_check.returncode, 0, r_check.stderr)
 
-            ctx = proj / "追蹤" / "上下文.md"
+            ctx = proj / "tracking" / "context.md"
             ctx.write_text(ctx.read_text(encoding="utf-8") + "\nManual tamper\n", encoding="utf-8")
             r_tamper = subprocess.run(
                 [sys.executable, str(SCRIPTS_DIR / "tracking_commit.py"), "check", "--project", str(proj)],
@@ -107,8 +107,8 @@ class DeepStoryTests(unittest.TestCase):
     def test_storyctl_chapter_check_e2e(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             proj = Path(tmp) / "book"
-            (proj / "大綱").mkdir(parents=True)
-            (proj / "正文").mkdir(parents=True)
+            (proj / "outlines").mkdir(parents=True)
+            (proj / "chapters").mkdir(parents=True)
             init_json = Path(tmp) / "init.json"
             init_json.write_text(
                 json.dumps({
@@ -125,8 +125,9 @@ class DeepStoryTests(unittest.TestCase):
                 [sys.executable, str(SCRIPTS_DIR / "tracking_commit.py"), "init", "--project", str(proj), "--input", str(init_json)],
                 check=True,
             )
-            (proj / "大綱" / "細綱_第001章.md").write_text("# 細綱 第1章\n- 核心事件: 測試\n- 字數目標: 2000字\n", encoding="utf-8")
-            (proj / "正文" / "第001章_測試.md").write_text("# 第一章 測試\n\n他推開值班室的門，桌上放著一張發黃的登記表。\n", encoding="utf-8")
+            (proj / "outlines" / "ch_001.md").write_text("# 細綱 第1章\n- 核心事件: 測試\n- 字數目標: 2000字\n", encoding="utf-8")
+            (proj / "chapters" / "ch_001.md").write_text("# 第一章 測試\n\n他推開值班室的門，桌上放著一張發黃的登記表。\n", encoding="utf-8")
+            (proj / "chapters" / "ch_001_bak_20261121.md").write_text("# 第一章 舊稿\n\n備份檔不應干擾正文定位。\n", encoding="utf-8")
             r_chk = subprocess.run(
                 [sys.executable, str(SCRIPTS_DIR / "storyctl.py"), "chapter", "check", "--project", str(proj), "--chapter", "1"],
                 capture_output=True, text=True, check=False,
@@ -138,7 +139,7 @@ class DeepStoryTests(unittest.TestCase):
 
     def test_outline_contract_zhtw_and_en_aliases(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            outline = Path(tmp) / "細綱_第001章.md"
+            outline = Path(tmp) / "ch_001.md"
             outline.write_text(
                 "# 第1章 細綱\n\n"
                 "- Core Event: 測試系統登錄與取證\n"
@@ -173,10 +174,10 @@ class DeepStoryTests(unittest.TestCase):
     def test_book_local_deslop_whitelist(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             book = Path(tmp) / "book"
-            prose_dir = book / "正文"
+            prose_dir = book / "chapters"
             prose_dir.mkdir(parents=True)
             (book / ".deslop-whitelist").write_text("# Domain anchors\n合理隱私期待——界線\n", encoding="utf-8")
-            chap = prose_dir / "第001章_開庭.md"
+            chap = prose_dir / "ch_001.md"
             chap.write_text("# 第一章\n\n律師指著卷宗說出合理隱私期待——界線這六個字。\n", encoding="utf-8")
 
             r_norm = subprocess.run(
@@ -195,8 +196,8 @@ class DeepStoryTests(unittest.TestCase):
         templates_dir = SKILL_ROOT / "templates"
         with tempfile.TemporaryDirectory() as tmp:
             proj = Path(tmp) / "book"
-            (proj / "大綱").mkdir(parents=True)
-            (proj / "正文").mkdir(parents=True)
+            (proj / "outlines").mkdir(parents=True)
+            (proj / "chapters").mkdir(parents=True)
             r_init = subprocess.run(
                 [sys.executable, str(SCRIPTS_DIR / "tracking_commit.py"), "init", "--project", str(proj), "--input", str(templates_dir / "init.json")],
                 capture_output=True, text=True, check=False,

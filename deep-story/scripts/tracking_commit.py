@@ -78,7 +78,7 @@ WINDOWS_RESERVED_NAMES = {
     *(f"LPT{index}" for index in range(1, 10)),
 }
 RETIRED_TRACKING_PATHS = tuple(_TRACKING_LIMITS["retired_tracking_paths"])
-RETIRED_ARCHIVE_DIR = "_舊追蹤存檔"
+RETIRED_ARCHIVE_DIR = "_archive"
 
 
 class TrackingError(ValueError):
@@ -245,7 +245,7 @@ def write_if_changed(path: Path, payload: str) -> None:
 
 
 def tracking_root(project: Path) -> Path:
-    return project.resolve() / "追蹤"
+    return project.resolve() / "tracking"
 
 
 def state_path(project: Path) -> Path:
@@ -265,7 +265,7 @@ def project_write_lock(project: Path, *, timeout_seconds: float = 10.0):
         except FileExistsError:
             if time.monotonic() >= deadline:
                 raise TrackingError(
-                    "tracking commit lock is busy or stale; retry, or remove 追蹤/.tracking-commit.lock after confirming no commit is running"
+                    "tracking commit lock is busy or stale; retry, or remove tracking/.tracking-commit.lock after confirming no commit is running"
                 )
             time.sleep(0.05)
     try:
@@ -282,12 +282,12 @@ def project_write_lock(project: Path, *, timeout_seconds: float = 10.0):
 
 def delta_path(tracking: Path, chapter: int) -> Path:
     width = max(3, len(str(chapter)))
-    return tracking / "逐章記錄" / f"第{chapter:0{width}d}章.md"
+    return tracking / "logs" / f"ch_{chapter:0{width}d}.md"
 
 
 def chapter_work_dir(project: Path, chapter: int) -> Path:
     width = max(3, len(str(chapter)))
-    return project / ".story" / "work" / f"第{chapter:0{width}d}章"
+    return project / ".story" / "work" / f"ch_{chapter:0{width}d}"
 
 
 def find_retired_tracking_paths(tracking: Path) -> list[str]:
@@ -1222,29 +1222,28 @@ def merge_transaction(state: dict[str, Any], transaction: dict[str, Any]) -> dic
 def render_views(state: dict[str, Any]) -> dict[str, str]:
     revision = state["state_revision"]
     views = {
-        "上下文.md": render_context(state),
-        "伏筆.md": render_foreshadow(state["foreshadow"], revision),
+        "context.md": render_context(state),
+        "foreshadowing.md": render_foreshadow(state["foreshadow"], revision),
     }
     author, reader = render_timeline_views(state["timeline"], revision)
-    views["時間線/作者真相.md"] = author
-    views["時間線/讀者已知.md"] = reader
+    views["timeline/author_truth.md"] = author
+    views["timeline/reader_known.md"] = reader
     for name, snapshot in state["characters"].items():
-        views[f"角色狀態/{name}.md"] = render_snapshot(
+        views[f"characters/{name}.md"] = render_snapshot(
             name, snapshot, state["last_committed_chapter"], revision
         )
     return views
 
 
 def write_views(tracking: Path, views: dict[str, str]) -> None:
-    # 上下文攜帶 next revision，先寫它；任何後續失敗都會讓 hook/check 發現
-    # 上下文 revision 與最後提交的 _tracking-state.json 不一致。
-    write_if_changed(tracking / "上下文.md", views["上下文.md"])
-    for relative in sorted(path for path in views if path != "上下文.md"):
+    # context.md carries next revision; write it first so any subsequent failure is caught by check.
+    write_if_changed(tracking / "context.md", views["context.md"])
+    for relative in sorted(path for path in views if path != "context.md"):
         write_if_changed(tracking / relative, views[relative])
     expected_character_files = {
-        Path(relative).name for relative in views if relative.startswith("角色狀態/")
+        Path(relative).name for relative in views if relative.startswith("characters/")
     }
-    character_dir = tracking / "角色狀態"
+    character_dir = tracking / "characters"
     character_dir.mkdir(parents=True, exist_ok=True)
     for path in character_dir.glob("*.md"):
         if path.name not in expected_character_files:
@@ -1257,11 +1256,11 @@ def warn_sizes(views: dict[str, str], delta_payload: str | None = None) -> None:
             f"WARNING: chapter delta is {byte_size(delta_payload)} bytes; target is <= {DELTA_TARGET_BYTES}",
             error=True,
         )
-    context_size = byte_size(views["上下文.md"])
+    context_size = byte_size(views["context.md"])
     if context_size > CONTEXT_TARGET_BYTES:
         emit(f"WARNING: hot context is {context_size} bytes; target is <= {CONTEXT_TARGET_BYTES}", error=True)
     for relative, payload in views.items():
-        if not relative.startswith("角色狀態/"):
+        if not relative.startswith("characters/"):
             continue
         size = byte_size(payload)
         if size > SNAPSHOT_TARGET_BYTES:
@@ -1283,14 +1282,14 @@ def _initialize_locked(project: Path, document: object) -> dict[str, Any]:
 
     # 輸入全部校驗通過後才動用戶文件，失敗的 init 不會挪走任何東西。
     archived = archive_retired_tracking_paths(tracking)
-    for directory in (tracking / "逐章記錄", tracking / "角色狀態", tracking / "時間線"):
+    for directory in (tracking / "logs", tracking / "characters", tracking / "timeline"):
         directory.mkdir(parents=True, exist_ok=True)
     write_views(tracking, views)
     atomic_write_text(state_path(project), state_payload)
     warn_sizes(views)
     if archived:
         emit(
-            f"NOTE: 舊追蹤結構已原樣移入 追蹤/{RETIRED_ARCHIVE_DIR}/：{', '.join(archived)}；"
+            f"NOTE: 舊追蹤結構已原樣移入 tracking/{RETIRED_ARCHIVE_DIR}/：{', '.join(archived)}；"
             "當前狀態以本次 init 輸入為準，舊文件不參與解析。",
             error=True,
         )
@@ -1390,8 +1389,8 @@ def check_project(project: Path) -> dict[str, Any]:
     required_delta_start = state["imported_through_chapter"] + 1
     for chapter in range(required_delta_start, last_chapter + 1):
         require(delta_path(tracking, chapter).exists(), f"chapter delta {chapter} is missing")
-    for path in (tracking / "逐章記錄").glob("第*章.md"):
-        match = re.fullmatch(r"第(\d+)章\.md", path.name)
+    for path in (tracking / "logs").glob("ch_*.md"):
+        match = re.fullmatch(r"ch_(\d+)\.md", path.name)
         require(match is not None, f"chapter delta has an invalid filename: {path.name}")
         chapter = as_int(int(match.group(1)), f"chapter delta {path.name}", minimum=1)
         require(path == delta_path(tracking, chapter), f"chapter delta {chapter} filename is not canonical")
@@ -1407,9 +1406,9 @@ def check_project(project: Path) -> dict[str, Any]:
             f"derived view differs from _tracking-state.json: {relative}",
         )
     expected_character_files = {
-        Path(relative).name for relative in expected_views if relative.startswith("角色狀態/")
+        Path(relative).name for relative in expected_views if relative.startswith("characters/")
     }
-    actual_character_files = {path.name for path in (tracking / "角色狀態").glob("*.md")}
+    actual_character_files = {path.name for path in (tracking / "characters").glob("*.md")}
     require(actual_character_files == expected_character_files, "character snapshot files differ from tracking state")
     return state
 
@@ -1721,7 +1720,7 @@ def build_parser() -> argparse.ArgumentParser:
     draft_parser = subparsers.add_parser("draft", help="write a pre-filled chapter transaction to fill in")
     draft_parser.add_argument("--project", type=Path, required=True, help="book project root containing 追蹤/")
     draft_parser.add_argument("--chapter", type=int, required=True)
-    draft_parser.add_argument("--out", type=Path, help="default: <project>/.story/work/第NNN章/tracking.json")
+    draft_parser.add_argument("--out", type=Path, help="default: <project>/.story/work/ch_<NNN>/tracking.json")
     draft_parser.add_argument("--force", action="store_true",
                               help="discard an existing draft instead of only refreshing its revision")
     return parser

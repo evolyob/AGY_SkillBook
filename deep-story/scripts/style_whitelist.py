@@ -17,7 +17,7 @@ def load_style_whitelist(file: str | os.PathLike[str]) -> list[str]:
     Returns an empty list if `.deslop-whitelist` does not exist.
     """
     parent = Path(file).resolve().parent
-    book = parent.parent if parent.name == "正文" else parent
+    book = parent.parent if parent.name == "chapters" else parent
     whitelist_path = book / ".deslop-whitelist"
     try:
         raw = whitelist_path.read_text(encoding="utf-8")
