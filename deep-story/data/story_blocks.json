@@ -319,8 +319,8 @@
         "payoff": "Earned shift in leverage, knowledge, or relationship standing."
       },
       "tone_and_persona": {
-        "scene_anchors": "Concrete physical props, schedules, receipts, doors/thresholds, and objects carrying relational weight.",
-        "taboos": "Never pad scenes with static mood prose or unmotivated exposition."
+        "scene_anchors": "Focused light/shadow framing, color tones, surface textures (warmth, grain, dampness), quiet micro-motion in stillness, and everyday objects carrying time and memory.",
+        "taboos": "Never pad scenes with static mood prose, abstract emotional labels, or preachy clichés; use sensory restraint and quiet understatement at emotional peaks."
       },
       "recommended_character_mix": [
         "emotional_debt",
@@ -500,5 +500,22 @@
   "scene_discipline": {
     "speaking_cap": "Limit key speaking supporting roles to 2-3 per normal scene; drop roles with zero scene function.",
     "crowd_grouping": "In courts, banquets, or assemblies, rank speakers by authority and merge same-stance bystander reactions."
+  },
+  "tone_presets": {
+    "sensory_framing": {
+      "label": "物象光影（預設）",
+      "scene_anchors": "Focused light/shadow framing, color tones, surface textures (warmth, grain, dampness), quiet micro-motion in stillness, and everyday objects carrying time and memory.",
+      "taboos": "Never pad scenes with abstract emotional labels or preachy clichés; use sensory restraint and quiet understatement at emotional peaks."
+    },
+    "cold_anatomy": {
+      "label": "冷峻解剖",
+      "scene_anchors": "Blunt short openings, contradictory micro-gestures or absurd social rituals, lean verbs/nouns, and restrained ironic endings that leave a quiet sting.",
+      "taboos": "Never soften critique with polite filler, melodrama, or preachy 'therefore we should' morals."
+    },
+    "evidence_verdict": {
+      "label": "考據直球",
+      "scene_anchors": "Plainspoken verdict openings, exact dates/statutes/figures/verbatim quotes for confrontation, rapid rhythmic parallel short clauses, and decisive closing cuts.",
+      "taboos": "Never use vague hearsay examples or wishy-washy hedging; keep the argument evidence-backed without drifting into personal abuse."
+    }
   }
 }

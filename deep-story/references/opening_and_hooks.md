@@ -91,3 +91,17 @@ Pick based on what the previous chapter left open: **Impact** (6, 3), **Curiosit
 > - `❌` *"She closed the ledger, finally understanding his intentions. Little did she know a massive vortex awaited."* (Violates limited POV + empty "vortex" filler.)
 > - `✅` Pick **one** concrete stop: either `Object` (ferry ticket dated next month in missing father's name) OR `Action` (circling "Old East-Bank Pier" to ask tomorrow morning)—never cram both, and stop on the exact sentence where suspense peaks.
 > - **Next-Chapter Pickup**: Never dodge the hook with *"more secrets ahead"*; immediately verify the concrete lead (ticket serial number / phone log) to move the thread forward by one solid step.
+
+---
+
+## 4. Three-Act Prose Formula (Short Series / Essay Craft)
+
+**Core Arc**: `物象定錨 (sensory_framing) -> 衝突解剖 (cold_anatomy) -> 事實收刀 (evidence_verdict)` *(style specs in `data/story_blocks.json -> tone_presets`)*
+
+| Act (Default / Argument / Lyric) | Tone Preset | Core Task | Hard Taboo |
+| :--- | :--- | :--- | :--- |
+| **起** (`20%` / `15%` / `45%`) | `sensory_framing` | Convert abstract themes into touchable light, texture, and micro-motion | No abstract emotion labels or preachy openers |
+| **轉** (`50%` / `40%` / `40%`) | `cold_anatomy` | Expose behavioral contradiction via sharp verbs and ironic contrast | No padded parallelism or direct name-calling |
+| **合** (`30%` / `45%` / `15%`) | `evidence_verdict` | Anchor judgment with exact dates, rules, figures, or verbatim quotes | No vague hearsay, fabricated stats, or em-dash slogans |
+
+- **Evidence Safety Gate**: When exact years or figures cannot be verified, cite verified classic texts or established logical principles instead of inventing numbers.
