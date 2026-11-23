@@ -216,6 +216,93 @@ class DeepStoryTests(unittest.TestCase):
         )
         self.assertEqual(r_chap.returncode, 0, r_chap.stdout + r_chap.stderr)
 
+    def test_english_path_autodiscovery_and_setting_refs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            proj = Path(tmp) / "book"
+            (proj / "outlines").mkdir(parents=True)
+            (proj / "chapters").mkdir(parents=True)
+            (proj / "settings" / "world").mkdir(parents=True)
+            (proj / "stories" / "ep01").mkdir(parents=True)
+
+            init_json = Path(tmp) / "init.json"
+            init_json.write_text(
+                json.dumps({
+                    "schema_version": 1,
+                    "book_title": "PathTest",
+                    "last_chapter": 0,
+                    "context": {
+                        "position": {"scene": "Lab", "volume": "Vol 1", "story_time": "Day 1", "volume_start_chapter": 1},
+                        "long_term_constraints": ["Hard limit"],
+                    },
+                }),
+                encoding="utf-8",
+            )
+            subprocess.run(
+                [sys.executable, str(SCRIPTS_DIR / "tracking_commit.py"), "init", "--project", str(proj), "--input", str(init_json)],
+                check=True,
+            )
+
+            # 1. check_outline_copy auto-discovers outlines/ch_001.md and stories/ep01/short_outline.md
+            outline_1 = proj / "outlines" / "ch_001.md"
+            outline_1.write_text(
+                "# Chapter 1 Outline: Cold Boot\n\n"
+                "- Core Event: Audit `settings/world/missing_rule.md`\n"
+                "- Word Count Target: 2000\n"
+                "- Unit Position: L1-01\n"
+                "- Target Emotion: A -> B\n"
+                "- Protagonist Goal / Key Choice: X / Y\n"
+                "- Opening Hook: Hook\n"
+                "- Payoff: Payoff\n"
+                "- Forbidden Reveals: 無\n\n"
+                "### Chapter Flow\n- Cause: c\n- Escalation: e\n- Turn: t\n- Climax: cl\n- Ending: en\n\n"
+                "### Plot Arrangement\nMain plot.\n\n"
+                "### Character Relationships & Presence Order\nHero.\n\n"
+                "### Plot Beats\n| # | Plot Beat | Function | Bounds |\n|---|---|---|---|\n"
+                "| 1 | Check server room | Setup | 禁：Nothing |\n"
+                "| 2 | Find log tamper | Advance | 放：Badge |\n",
+                encoding="utf-8",
+            )
+            chap_1 = proj / "chapters" / "ch_001.md"
+            chap_1.write_text("# 第一章\n\n他走進機房檢查日誌。\n", encoding="utf-8")
+
+            r_copy_long = subprocess.run(
+                [sys.executable, str(SCRIPTS_DIR / "check_outline_copy.py"), str(chap_1)],
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(r_copy_long.returncode, 0, r_copy_long.stdout + r_copy_long.stderr)
+
+            short_out = proj / "stories" / "ep01" / "short_outline.md"
+            short_out.write_text("# Short Outline\n\n### Plot Beats\n| # | Plot Beat | Function | Bounds |\n|---|---|---|---|\n| 1 | A | Hook | 禁：X |\n", encoding="utf-8")
+            short_story = proj / "stories" / "ep01" / "story.md"
+            short_story.write_text("# 單元一\n\n完全不同的正文字句。\n", encoding="utf-8")
+            r_copy_short = subprocess.run(
+                [sys.executable, str(SCRIPTS_DIR / "check_outline_copy.py"), str(short_story)],
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(r_copy_short.returncode, 0, r_copy_short.stdout + r_copy_short.stderr)
+
+            # 2. check_outline_contract detects missing `settings/world/missing_rule.md` and passes once created
+            r_ref_fail = subprocess.run(
+                [sys.executable, str(SCRIPTS_DIR / "check_outline_contract.py"), "--json", "--project", str(proj), "--chapter", "1"],
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(r_ref_fail.returncode, 1)
+            (proj / "settings" / "world" / "missing_rule.md").write_text("# Rule\n", encoding="utf-8")
+            r_ref_ok = subprocess.run(
+                [sys.executable, str(SCRIPTS_DIR / "check_outline_contract.py"), "--json", "--project", str(proj), "--chapter", "1"],
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(r_ref_ok.returncode, 0, r_ref_ok.stdout + r_ref_ok.stderr)
+
+            # 3. tracking_commit draft extracts chapter_title from outlines/ch_001.md
+            r_draft = subprocess.run(
+                [sys.executable, str(SCRIPTS_DIR / "tracking_commit.py"), "draft", "--project", str(proj), "--chapter", "1"],
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(r_draft.returncode, 0, r_draft.stderr)
+            draft_doc = json.loads((proj / ".story" / "work" / "ch_001" / "tracking.json").read_text(encoding="utf-8"))
+            self.assertEqual(draft_doc["chapter_title"], "Cold Boot")
+
 
 if __name__ == "__main__":
     unittest.main()

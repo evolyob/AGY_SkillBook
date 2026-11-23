@@ -189,6 +189,11 @@
       "契約破壞": "有硬傷"
     },
     "ref_dir_prefixes": [
+      "settings",
+      "outlines",
+      "tracking",
+      "chapters",
+      "stories",
       "設定",
       "大綱",
       "追蹤",
@@ -252,7 +257,8 @@
     },
     "chapter_unit_fields": [
       "屬於哪段劇情",
-      "單元ID/位置"
+      "單元ID/位置",
+      "Unit Position"
     ]
   }
 }

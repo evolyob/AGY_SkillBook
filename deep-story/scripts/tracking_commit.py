@@ -1547,10 +1547,17 @@ def draft_transaction(
     require(1 <= chapter <= last + 1, f"draft chapter must be between 1 and {last + 1}")
     mode = "append" if chapter == last + 1 else "revision"
     title = ""
-    for outline in sorted((project / "大綱").glob(f"細綱_第{chapter:03d}章*.md")):
-        match = re.search(rf"^#{{1,4}}\s*第\s*0*{chapter}\s*章\s*[：:]\s*(.+?)\s*$",
-                          outline.read_text(encoding="utf-8"), re.M)
-        if match:
+    outline_candidates = [
+        *sorted((project / "outlines").glob(f"ch_{chapter:03d}*.md")),
+        *sorted((project / "大綱").glob(f"細綱_第{chapter:03d}章*.md")),
+    ]
+    for outline in outline_candidates:
+        match = re.search(
+            rf"^#{{1,4}}\s*(?:Chapter\s*0*{chapter}|第\s*0*{chapter}\s*章)(?:\s+Outline|\s*細綱)?\s*(?:[：:—\-]\s*(.+?))?\s*$",
+            outline.read_text(encoding="utf-8"),
+            re.M | re.I,
+        )
+        if match and match.group(1):
             title = match.group(1).strip()
             break
     context = json.loads(json.dumps(state["context"], ensure_ascii=False))
@@ -1713,12 +1720,12 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
     for command in ("init", "commit"):
         subparser = subparsers.add_parser(command)
-        subparser.add_argument("--project", type=Path, required=True, help="book project root containing 追蹤/")
+        subparser.add_argument("--project", type=Path, required=True, help="book project root containing tracking/")
         subparser.add_argument("--input", type=Path, required=True, help="UTF-8 JSON input document")
     check_parser = subparsers.add_parser("check")
-    check_parser.add_argument("--project", type=Path, required=True, help="book project root containing 追蹤/")
+    check_parser.add_argument("--project", type=Path, required=True, help="book project root containing tracking/")
     draft_parser = subparsers.add_parser("draft", help="write a pre-filled chapter transaction to fill in")
-    draft_parser.add_argument("--project", type=Path, required=True, help="book project root containing 追蹤/")
+    draft_parser.add_argument("--project", type=Path, required=True, help="book project root containing tracking/")
     draft_parser.add_argument("--chapter", type=int, required=True)
     draft_parser.add_argument("--out", type=Path, help="default: <project>/.story/work/ch_<NNN>/tracking.json")
     draft_parser.add_argument("--force", action="store_true",
@@ -1761,7 +1768,7 @@ def main() -> int:
                 args.project, args.chapter, all_characters, active_names
             )
             if document["mode"] == "revision" and not record_prefilled:
-                fill = (f"這是修訂，但本章逐章記錄缺失或讀不了（{delta_path(Path('追蹤'), args.chapter).as_posix()}），delta 沒有預填："
+                fill = (f"這是修訂，但本章逐章記錄缺失或讀不了（{delta_path(Path('tracking'), args.chapter).as_posix()}），delta 沒有預填："
                         "按修訂後正文把本章完整記錄整份寫上（結果、承諾、角色變化、伏筆、時間線、約束），沒寫的項不會進記錄。"
                         "角色快照、伏筆、時間線寫截至最新已寫章的當前值（已有核心角色的當前快照見 snapshot_files）；context 原樣保留全部當前條目（修訂不能退役）。"
                         "正文改過就用 story-long-write 的 storyctl.py chapter commit 提交（重新計數並清理本章工作目錄）。"

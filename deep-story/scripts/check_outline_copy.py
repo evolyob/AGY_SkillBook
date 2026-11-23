@@ -37,8 +37,8 @@ ANCHOR_BLOCK_RE = re.compile(
 ANCHOR_PREFIX_RE = re.compile(
     r'^\s*[-*+]?\s*(?:\d+[.、)]\s*)?(?:點\s*\d+\s*[：:])?'
 )
-CHAPTER_PREFIX_RE = re.compile(r'^第\s*0*(\d+)\s*章')
-OUTLINE_FILE_RE = re.compile(r'^細綱_第0*(\d+)章.*\.md$')
+CHAPTER_PREFIX_RE = re.compile(r'^(?:ch_0*(\d+)(?:[_\-].*)?\.md|第\s*0*(\d+)\s*章)')
+OUTLINE_FILE_RE = re.compile(r'^(?:ch_0*(\d+)(?:[_\-].*)?\.md|細綱_第0*(\d+)章.*\.md)$')
 MARKDOWN_HEADING_RE = re.compile(r'^#.*$', re.MULTILINE)
 
 
@@ -167,26 +167,31 @@ def split_by_anchors(frag: str, anchors: list[str]) -> tuple[list[str], int]:
 def find_outline(prose_file: str) -> str | None:
     """Auto-discover the matching outline file for a prose file."""
     base = os.path.basename(prose_file)
-    if base == '正文.md':
-        sibling = os.path.join(os.path.dirname(prose_file), '小節大綱.md')
-        return sibling if os.path.exists(sibling) else None
+    parent_dir = os.path.dirname(prose_file)
+    if base in ('story.md', '正文.md'):
+        for cand in ('short_outline.md', '小節大綱.md'):
+            sibling = os.path.join(parent_dir, cand)
+            if os.path.exists(sibling):
+                return sibling
+        return None
 
     match = CHAPTER_PREFIX_RE.match(base)
     if not match:
         return None
-    chapter = match.group(1)
-    outline_dir = os.path.join(os.path.dirname(os.path.dirname(prose_file)), '大綱')
-    try:
-        entries = os.listdir(outline_dir)
-    except OSError as exc:
-        if exc.errno == errno.ENOENT:
-            return None
-        raise
-
-    for filename in entries:
-        fm = OUTLINE_FILE_RE.match(filename)
-        if fm and fm.group(1) == chapter:
-            return os.path.join(outline_dir, filename)
+    chapter = int(match.group(1) or match.group(2))
+    book_root = os.path.dirname(parent_dir)
+    for dir_name in ('outlines', '大綱'):
+        outline_dir = os.path.join(book_root, dir_name)
+        try:
+            entries = os.listdir(outline_dir)
+        except OSError as exc:
+            if exc.errno == errno.ENOENT:
+                continue
+            raise
+        for filename in sorted(entries):
+            fm = OUTLINE_FILE_RE.match(filename)
+            if fm and int(fm.group(1) or fm.group(2)) == chapter:
+                return os.path.join(outline_dir, filename)
     return None
 
 
@@ -250,7 +255,7 @@ def _format_report(
 ) -> str:
     """Format the overlap detection report for stdout."""
     rate = f'{(copied * 100) / prose_len:.1f}'
-    is_short = os.path.basename(outline_file) == '小節大綱.md'
+    is_short = os.path.basename(outline_file) in ('short_outline.md', '小節大綱.md')
     if is_short:
         guidance = (
             '逐條對照原文判斷：確屬把小節大綱敘述搬進正文就重寫——大綱只鎖功能與結果，'
